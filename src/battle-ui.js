@@ -1,1 +1,1 @@
-export { mountBattleSystem } from './ui/mount.js';
+export { mountBattleSystem } from '../dist/battle-ui.bundle.js';
