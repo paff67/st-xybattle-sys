@@ -7,7 +7,17 @@
   "scripts": {
     "test": "node --test",
     "lint": "node scripts/lint.mjs",
-    "dev": "node scripts/dev.mjs",
-    "build": "node scripts_sync.mjs"
+    "dev": "vite",
+    "build": "vite build && node scripts_sync.mjs",
+    "serve": "node scripts/dev.mjs"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.9",
+    "vite": "^8.3.2",
+    "vue": "^3.5.43"
+  },
+  "dependencies": {
+    "@lucide/vue": "^1.51.0",
+    "lucide-vue-next": "^1.0.0"
   }
 }

@@ -2,16 +2,27 @@
 
 这是一个独立的 SillyTavern 扩展原型。它自行创建可拖动悬浮按钮和横向战斗工作台，战斗设置存放在自己的设置面板，不调用旧“小手机”入口、DOM 或状态。主战斗页采用左主角、右敌人的横板对战布局；主角功法和敌方公开招式以可点击的花瓣词条展开，增益/负面效果位于对应角色上方，场地效果位于中央，行动输入固定在底部。
 
-## 快速运行
+## 开发与快速运行
 
 在仓库根目录执行：
 
 ```powershell
+# 运行单元测试（67项契约测试全通）
 npm test
+
+# 检查源文件语法合规
 npm run lint
+
+# 本地 Vite 开发调试（支持 Vue 3 SFC 热重载）
+npm run dev
+
+# 编译独立 UI bundle 并自动同步分发目录
+npm run build
 ```
 
-将仓库作为扩展目录加载 `index.js`（或使用 `third-party/st-xybattle-sys/manifest.json` 目录）。点击悬浮的“⚔ 战斗”按钮打开工作台。默认裁定状态是“未配置（阻止请求）”；要离线演示，请在独立设置选择“离线 Mock 演示”。裁定和正文分别配置模式、endpoint、model、最大输出、温度和仅驻留内存的 API key；温度 `0` 和修复次数 `0` 都会保留。
+前端 UI 基于 Vue 3 单文件组件（SFC）重构（位于 `src/ui/`），通过 Vite 打包为独立且无外部依赖的 ES Module（`dist/battle-ui.bundle.js`），并通过 `scripts_sync.mjs` 自动同步到 `third-party/st-xybattle-sys/`。SillyTavern 可直接加载分发目录而无需额外安装 Vue 或处理模块解析错误。
+
+将仓库分发目录（`third-party/st-xybattle-sys/`）复制或软链接至 SillyTavern 插件目录 `public/scripts/extensions/third-party/st-xybattle-sys` 即可在酒馆中载入。点击悬浮的“⚔ 战斗”按钮打开对战工作台。默认裁定状态是“未配置（阻止请求）”；要离线演示，请在独立设置选择“离线 Mock 演示”。裁定和正文分别配置模式、endpoint、model、最大输出、温度和仅驻留内存的 API key；温度 `0` 和修复次数 `0` 都会保留。
 
 裁定提交前的请求或校验失败会回到玩家阶段。正文失败会保留已提交裁定，允许只重写正文；用相同 `actionId` 重试不会重新裁定。
 

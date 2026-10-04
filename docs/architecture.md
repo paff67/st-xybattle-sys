@@ -22,11 +22,42 @@ flowchart LR
 
 扩展内部至少有五个逻辑边界：
 
-1. **Mount/UI**：创建和销毁独立根节点，转发用户行动，不持有隐藏信息。
+1. **Mount/UI**：创建和销毁独立根节点，转发用户行动，不持有隐藏信息。前端 UI 采用 Vue 3 单文件组件（SFC）模块化架构（`src/ui/`），通过响应式状态绑定控制器。
 2. **Controller/state machine**：按回合和 `actionId` 驱动状态转移；只有提交后的裁定才能影响下一回合。
 3. **Registry**：保存可校验的功法和招式条目，提供版本、可见性和 `ruleRefs`。
 4. **Adapters**：把结构化裁定请求交给模型或离线 mock，并校验返回结构。
 5. **Storage/logging**：按分支保存会话和日志；日志可以审计流程，但不能把 hidden 信息发布到玩家层。
+
+## 前端 UI 架构与双轨分发契约
+
+为了兼顾开发体验与 SillyTavern 原生环境运行无依赖加载，系统采用双轨入口架构：
+
+```mermaid
+flowchart TD
+  subgraph DevTrack["开发轨 (Dev Track)"]
+    DEV_UI["src/ui/ (*.vue)"] --> VITE_DEV["Vite Dev Server (npm run dev)"]
+    VITE_DEV --> DEMO["demo.html 原生 SFC HMR 预览"]
+  end
+
+  subgraph BuildTrack["构建与分发轨 (Distribution Track)"]
+    DEV_UI --> VITE_BUILD["Vite Build (vite.config.js)"]
+    VITE_BUILD --> BUNDLE["dist/battle-ui.bundle.js<br/>(内嵌 Vue 运行时的独立 ES 模块)"]
+    BUNDLE --> SYNC["scripts_sync.mjs 同步脚本"]
+    SYNC --> RELEASE_UI["third-party/st-xybattle-sys/src/battle-ui.js<br/>(重定向导出 bundle)"]
+    RELEASE_UI --> ST_HOST["SillyTavern 原生浏览器加载<br/>(零裸模块报错，零外部依赖)"]
+  end
+```
+
+- **开发轨 (`src/battle-ui.js`)**：直接导出 `src/ui/mount.js`，借助 Vite 插件即时编译 Vue 3 SFC，享受极速热重载（HMR）。
+- **分发轨 (`third-party/st-xybattle-sys/src/battle-ui.js`)**：由 `scripts_sync.mjs` 自动生成，指向 `../dist/battle-ui.bundle.js`。该 bundle 将 Vue 运行时完全内联打包为单文件 ES Module，彻底解决 SillyTavern 作为纯静态扩展加载时浏览器出现 `Failed to resolve module specifier 'vue'` 的问题。
+- **UI 模块化拆分**：
+  - `BattleStage.vue`：对战主视窗与战场背景。
+  - `FighterZone.vue`：角色状态栏（气血、真元、架势）与气运花瓣。
+  - `CenterStage.vue`：战场场地效果与决斗碰撞动效。
+  - `ChordWings.vue`：太音五相与叠浪律动翼形光羽。
+  - `ActionDock.vue`：固定底部玩家行动操作台（攻/防/法/应）。
+  - `SkillModal.vue` / `TimelineDrawer.vue`：招式选择与回合时间轴抽屉。
+  - `SettingsPanel.vue` / `DataPanel.vue` / `DeveloperPanel.vue`：独立设置、战况数据与安全脱敏审计面板。
 
 ## 两阶段模型调用
 
