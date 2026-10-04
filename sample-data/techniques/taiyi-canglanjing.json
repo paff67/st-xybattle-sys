@@ -1,0 +1,130 @@
+{
+  "id": "gongfa.taiyi-canglanjing",
+  "name": "太一沧澜经",
+  "rank": "天阶",
+  "element": "纯水",
+  "corePrinciple": "水不争先，却能容纳万物；水不固形，却能回到自身源头。",
+  "mechanics": [
+    "太一水元纯而不杂，能够承载其他水属术式",
+    "气海回流回收未湮灭的散逸自身水元",
+    "多相并行心法自由分配神念维持多路行动",
+    "至柔化厄法分流磨平外来冲击并炼化无属性游离灵气"
+  ],
+  "techniques": [
+    {
+      "id": "chengyuan-qihaihuiliu",
+      "name": "澄渊·气海回流",
+      "originalDefinition": "使散落在战场的自身水元沿水意归海。回流速度与环境、距离和水元完整程度有关。",
+      "mechanics": [
+        "回收散逸法力",
+        "不可提前回收正在维持领域或被控制的水元"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "战场中有散逸或未湮灭的自身水元"
+        ]
+      },
+      "triggeredState": [
+        "气海回流生效",
+        "散逸水元回收"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "taiyi.qihai-huiliu"
+      ]
+    },
+    {
+      "id": "wuxiang-fenshen",
+      "name": "五相分神",
+      "originalDefinition": "以多相并行心法分出数路稳定神念，可同时维持不同方向的行动。神魂越强，越能在复杂战场中维持清醒。",
+      "mechanics": [
+        "抗冲击威压",
+        "同时维持多路术式与观察",
+        "被打断后迅速重新分配心神"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "神魂保持清醒"
+        ]
+      },
+      "triggeredState": [
+        "多相神念维持中"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "taiyi.wuxiang-fenshen"
+      ]
+    },
+    {
+      "id": "zhirou-huae",
+      "name": "至柔·化厄",
+      "originalDefinition": "以水障承接外力，将无法硬接的攻击分成数股，再逐一化解。化解后的纯净部分可补入气海，但不会留下敌人的属性和传承。",
+      "mechanics": [
+        "分流卸力",
+        "减免冲击伤害",
+        "纯净灵力回补气海",
+        "面对超限力量只能减伤不能完全吸收"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "面临外来冲击或攻击"
+        ]
+      },
+      "triggeredState": [
+        "化厄分流",
+        "外力磨平"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "taiyi.zhirou-huae"
+      ]
+    },
+    {
+      "id": "taiyi-huilan",
+      "name": "太一回澜",
+      "originalDefinition": "将已经散开的水势重新收拢。它既能回收自身法力，也能把失控的水术重新纳入掌握。",
+      "mechanics": [
+        "重拢散逸水势",
+        "重新掌控失控术式"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "战场中存在散逸或失控水势"
+        ]
+      },
+      "triggeredState": [
+        "水势重拢",
+        "掌控恢复"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "taiyi.huilan"
+      ]
+    }
+  ],
+  "synergies": [
+    "为澄心听澜诀提供神魂底气",
+    "为无相水镜法提供水元主场",
+    "为流光踏潮步提供跨距落点",
+    "为叠浪玄潮诀提供连续潮势",
+    "为弦海共鸣篇提供承载和回流"
+  ],
+  "narrativeGuidance": [
+    "太一水元纯而不杂，不把纯水改造成杂乱的万能力量",
+    "小提琴乐曲是许妍整理神念和控制灵力的方式，不是功法力量来源",
+    "对神魂直击和因果诅咒无天然免疫，污秽血煞与混乱神念不可直接吸收"
+  ],
+  "version": "1.0.0",
+  "visibility": "player",
+  "ruleRefs": [
+    "taiyi.core",
+    "taiyi.qihai-huiliu",
+    "taiyi.wuxiang-fenshen",
+    "taiyi.zhirou-huae",
+    "taiyi.huilan"
+  ]
+}

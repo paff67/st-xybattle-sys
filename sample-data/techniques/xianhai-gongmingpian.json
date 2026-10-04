@@ -1,0 +1,176 @@
+{
+  "id": "gongfa.xianhai-gongmingpian",
+  "name": "弦海共鸣篇",
+  "rank": "天阶",
+  "element": "水属弦律",
+  "corePrinciple": "万法皆有相连之处；能听见联系，便能断开、改接或倒转它。",
+  "mechanics": [
+    "听弦辨识法宝与主人、护盾与经脉、招式之间的联系",
+    "断弦切断关键联系破坏法术结构完整性",
+    "借弦将敌方已出之力改接到自身潮势水镜上",
+    "倒弦颠倒法宝与阵法运转次序令其自相冲撞",
+    "合奏将六法多路术式无缝接续形成共鸣弦海"
+  ],
+  "techniques": [
+    {
+      "id": "tingxian-bianluo",
+      "name": "听弦·辨络",
+      "originalDefinition": "找出敌方术法、法宝、阵法和肉身之间最重要的联系。",
+      "mechanics": [
+        "洞悉灵力链条",
+        "定位结构维系枢纽"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "目标存在外放灵力结构或法宝法阵"
+        ]
+      },
+      "triggeredState": [
+        "联系脉络洞悉"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "gongming.tingxian"
+      ]
+    },
+    {
+      "id": "duanxian-shixu",
+      "name": "断弦·失续",
+      "originalDefinition": "让一条联系短暂失效。适合打断收招、截断法宝回转或让阵法出现缺口。",
+      "mechanics": [
+        "斩断回转链接",
+        "破除连招与后继法力供给"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "已听出关键联系"
+        ]
+      },
+      "triggeredState": [
+        "关键链接断绝",
+        "法术后继中断"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "gongming.duanxian"
+      ]
+    },
+    {
+      "id": "jiexian-gaidiao",
+      "name": "借弦·改调",
+      "originalDefinition": "把敌方力量接入水镜或潮势，改变其原本的落点和用途。",
+      "mechanics": [
+        "截引敌方攻势",
+        "借力转入水镜或己方潮势"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "已接触敌方外放攻击"
+        ]
+      },
+      "triggeredState": [
+        "敌势改调",
+        "落点重置"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "gongming.jiexian"
+      ]
+    },
+    {
+      "id": "daoxian-nixu",
+      "name": "倒弦·逆序",
+      "originalDefinition": "让防御先开后合、法宝先回后攻、阵法先封自己再封敌人。",
+      "mechanics": [
+        "倒转运行次序",
+        "诱发法器与阵法内耗自噬"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "敌方催动多段或复合机制法术"
+        ]
+      },
+      "triggeredState": [
+        "次序倒错",
+        "阵序内乱"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "gongming.daoxian"
+      ]
+    },
+    {
+      "id": "xianhai-hezou",
+      "name": "弦海·合奏",
+      "originalDefinition": "在多个术式已经互相接触后，把它们接成一体。敌方的攻击、护盾和移动越复杂，可被触碰的联系越多。",
+      "mechanics": [
+        "串联己方六法节点与借引力量",
+        "化作整体干涉弦海"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "已有至少两种六法术式或节点在场"
+        ]
+      },
+      "triggeredState": [
+        "弦海合奏成型",
+        "多法共鸣共振"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "gongming.hezou"
+      ]
+    },
+    {
+      "id": "xianhai-jimiezhang",
+      "name": "弦海·寂灭章",
+      "originalDefinition": "短暂抹去一件术式中的关键联系，使其无法继续维持。它不是摧毁法术本身，而是让法术失去“继续存在的理由”。",
+      "mechanics": [
+        "根本解构法术因果基础",
+        "令法术自发瓦解消散"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "深度洞悉目标术式核心链条"
+        ]
+      },
+      "triggeredState": [
+        "术式消解",
+        "存在因果瓦解"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "gongming.jimiezhang"
+      ]
+    }
+  ],
+  "synergies": [
+    "听澜负责发现联系",
+    "水镜负责把目标留在可接触范围",
+    "踏潮负责取得接触位置",
+    "叠浪负责把改道后的力量变成潮势",
+    "太一负责承载和回流"
+  ],
+  "narrativeGuidance": [
+    "不是简单破盾术，不夺取敌方属性和传承",
+    "对完全陌生瞬发即散的力量只能短暂扰乱",
+    "使六法从并列招式变为互相接续的干涉体系"
+  ],
+  "version": "1.0.0",
+  "visibility": "player",
+  "ruleRefs": [
+    "gongming.core",
+    "gongming.tingxian",
+    "gongming.duanxian",
+    "gongming.jiexian",
+    "gongming.daoxian",
+    "gongming.hezou",
+    "gongming.jimiezhang"
+  ]
+}

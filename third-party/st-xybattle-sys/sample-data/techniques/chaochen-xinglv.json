@@ -1,0 +1,125 @@
+{
+  "id": "fabao.chaochen-xinglv",
+  "name": "潮痕行履",
+  "rank": "天阶",
+  "element": "水·行履",
+  "corePrinciple": "足所至处，皆可为潮；潮所至处，皆可为路；路既成立，天涯不过一跬。",
+  "mechanics": [
+    "潮痕道印：落足之处留下联系道印，使万物皆可为潮路入口",
+    "远近折叠：凡建立潮痕联系之处皆属同一潮海，千里与咫尺一步互换",
+    "先至之步：使落点先于本体成立，换位与施术同时完成",
+    "拒止行路：在敌方移动路径上留下反向潮痕，干涉其起点终点关系"
+  ],
+  "techniques": [
+    {
+      "id": "tachujiechao",
+      "name": "踏处皆潮",
+      "originalDefinition": "每一次落足都在落足处留下潮痕道印，水面、云雾、法宝表面与敌方法阵边缘皆可承载。",
+      "mechanics": [
+        "生成持久潮痕道印",
+        "不因地形破坏而轻易消失"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "装备潮痕行履"
+        ]
+      },
+      "triggeredState": [
+        "潮痕道印成型"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "fabao.xinglv.daoyin"
+      ]
+    },
+    {
+      "id": "tianyayikui",
+      "name": "天涯一跬",
+      "originalDefinition": "从一处潮痕直接抵达另一处潮痕，距离不再是必须经过的道路，常规空间障碍无法阻隔。",
+      "mechanics": [
+        "潮海折叠跨距抵达",
+        "无视中间地形阻隔"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "装备潮痕行履",
+          "目标处已唤醒潮痕联系"
+        ]
+      },
+      "triggeredState": [
+        "天涯折叠抵达"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "fabao.xinglv.yikui"
+      ]
+    },
+    {
+      "id": "chaoxianyushen",
+      "name": "潮先于身",
+      "originalDefinition": "目的地的潮痕提前承认这一步，当敌人试图锁定本体时，抵达与起手已然完成。",
+      "mechanics": [
+        "落点先于身形确立",
+        "抢占先机起手"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "装备潮痕行履",
+          "抢占反击身位"
+        ]
+      },
+      "triggeredState": [
+        "先至落点确立"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "fabao.xinglv.xianshen"
+      ]
+    },
+    {
+      "id": "nichao-wugui",
+      "name": "逆潮·无归",
+      "originalDefinition": "在敌人移动路径上留下反向潮痕，干涉其起点与终点，使其前进而返退，逃离而重入。",
+      "mechanics": [
+        "干涉敌方移动方位",
+        "拒止撤离并重置接战距离"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "装备潮痕行履",
+          "敌人处于潮痕覆盖范围"
+        ]
+      },
+      "triggeredState": [
+        "逆潮折回",
+        "行路受阻"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "fabao.xinglv.nichao"
+      ]
+    }
+  ],
+  "synergies": [
+    "为流光踏潮步提供潮痕承认与主场拓展",
+    "为叠浪玄潮诀提供移动起弦的稳定身位",
+    "配合无相水镜法构建天地行界"
+  ],
+  "narrativeGuidance": [
+    "日常形态为极简银蓝色踝环/薄袜/趾甲灵漆，战斗时无履承潮",
+    "严禁跨件泄漏能力：绝不提供乐理音律放大或水镜分层透析"
+  ],
+  "version": "1.0.0",
+  "visibility": "player",
+  "ruleRefs": [
+    "fabao.xinglv.core",
+    "fabao.xinglv.daoyin",
+    "fabao.xinglv.yikui",
+    "fabao.xinglv.xianshen",
+    "fabao.xinglv.nichao"
+  ]
+}
