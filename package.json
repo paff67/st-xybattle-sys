@@ -1,0 +1,11 @@
+{
+  "name": "st-xybattle-sys",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Independent SillyTavern battle_v2 extension with offline adapters",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "lint": "node --check src/battle-state.js && node --check src/battle-ui.js && node --check src/index.js && node --check index.js"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "display_name": "独立战斗系统 battle_v2",
+  "author": "paff67",
+  "version": "0.1.0",
+  "home_page": "https://github.com/paff67/st-xybattle-sys",
+  "js": "index.js",
+  "css": "",
+  "requires": [],
+  "description": "Independent battle workstation with scoped state, structured adjudication and optional BATTLE_SCENE_PACKET bridge."
+}
