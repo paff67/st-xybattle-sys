@@ -1,6 +1,5 @@
 import { cp, mkdir } from 'node:fs/promises';
 await mkdir('third-party/st-xybattle-sys', { recursive: true });
-await cp('src', 'third-party/st-xybattle-sys/src', { recursive: true, force: true });
-await cp('sample-data', 'third-party/st-xybattle-sys/sample-data', { recursive: true, force: true });
-await cp('index.js', 'third-party/st-xybattle-sys/index.js');
-await cp('manifest.json', 'third-party/st-xybattle-sys/manifest.json');
+for(const directory of ['src','sample-data','schema'])await cp(directory,`third-party/st-xybattle-sys/${directory}`,{recursive:true,force:true});
+for(const file of ['index.js','manifest.json','style.css','battle-stage.css'])await cp(file,`third-party/st-xybattle-sys/${file}`);
+console.log('Extension package synchronized: third-party/st-xybattle-sys');

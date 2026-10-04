@@ -1,56 +1,81 @@
-function extractJson(content) {
-  if (content && typeof content === 'object') return content;
-  const text = String(content || '').trim().replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
+import { clone, abortIfNeeded } from './common.js';
+export function normalizeSettings(input = {}) {
+  const defaultConfig = { mode: 'unconfigured', endpoint: '', model: '', maxOutput: 1600, temperature: 0.2, repairAttempts: 2, timeoutMs: 60000 };
+  const adjudicator = { ...defaultConfig, ...(input.adjudicator || {}) };
+  if (!input.adjudicator) for (const key of Object.keys(defaultConfig).concat('apiKey')) if (input[key] !== undefined) adjudicator[key] = input[key];
+  const narrator = { ...defaultConfig, mode: 'main_story', temperature: 0.7, ...input.narrator };
+  if (!input.narrator && input.mode === 'mock') narrator.mode = 'mock';
+  if (!input.narrator && input.mode === 'http') Object.assign(narrator, { ...adjudicator, repairAttempts: 0 });
+  for (const config of [adjudicator, narrator]) {
+    if (!['unconfigured','http','mock','main_story','packet'].includes(config.mode)) throw new Error('未知模型模式');
+    config.temperature = Number(config.temperature); config.maxOutput = Number(config.maxOutput); config.repairAttempts = Number(config.repairAttempts); config.timeoutMs = Number(config.timeoutMs);
+    if (!Number.isFinite(config.temperature) || config.temperature < 0 || config.temperature > 2 || !Number.isInteger(config.maxOutput) || config.maxOutput < 1 || !Number.isInteger(config.repairAttempts) || config.repairAttempts < 0 || config.repairAttempts > 3 || !Number.isFinite(config.timeoutMs) || config.timeoutMs < 100) throw new Error('模型参数无效（温度0~2；修复0~3）');
+  }
+  return { adjudicator, narrator, autoNarrative: input.autoNarrative !== false, originalPrompt: input.originalPrompt || '', developerLogs: input.developerLogs !== false };
+}
+export function extractJson(content) {
+  if (content && typeof content === 'object') return clone(content);
+  const text = String(content || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
   try { return JSON.parse(text); } catch { const start = text.indexOf('{'); const end = text.lastIndexOf('}'); if (start >= 0 && end > start) return JSON.parse(text.slice(start, end + 1)); throw new Error('AI 响应不是合法 JSON'); }
 }
-function authHeaders(apiKey) { const headers = { 'content-type': 'application/json' }; if (apiKey) headers.authorization = `Bearer ${apiKey}`; return headers; }
-function abortError() { const error = new Error('请求已停止'); error.name = 'AbortError'; return error; }
-
 export class UnconfiguredAdjudicator { async judge() { throw new Error('未配置裁定 AI；请在独立设置中选择 HTTP，或明确选择离线 Mock 演示'); } }
-export class UnconfiguredNarrator { async generate() { throw new Error('未配置正文桥接 AI；可关闭自动正文或选择离线 Mock 演示'); } async rewrite() { throw new Error('未配置正文桥接 AI'); } }
-
+export class UnconfiguredNarrator { async generate() { throw new Error('未配置正文 AI；默认可选择主剧情一次性注入'); } async rewrite() { return this.generate(); } }
+export class MainStoryNarrator { constructor() { this.mode = 'main_story'; } async generate() { return { pending: true, text: '', metadata: { mode: 'main_story', status: 'waiting_for_normal_generation' } }; } async rewrite() { return this.generate(); } }
+export class PacketNarrator extends MainStoryNarrator { constructor() { super(); this.mode = 'packet'; } }
 export class MockAdjudicator {
-  constructor() { this.calls = []; }
-  async judge(request) {
-    this.calls.push(request); const before = request.context.semanticState; const after = { ...before };
-    const technique = request.action.techniqueId;
-    if ('潮眼' in before) after['潮眼'] = Boolean(before['潮眼']) || ['chaoyan','fanyin-chaoyan'].includes(technique);
-    if ('回弦' in before) after['回弦'] = ['huixian','zhendang-huichao'].includes(technique);
-    if ('站位' in before && technique === 'xianshi') after['站位'] = '中近距';
-    if ('压制' in before && technique === 'dielang') after['压制'] = '我方取得节奏';
-    if ('破绽' in before && technique === 'fanyin-chaoyan') after['破绽'] = [...new Set([...(before['破绽'] || []), '敌方节奏出现可见偏差'])];
-    if ('effects' in before) after.effects = [...(before.effects || []), ...(technique ? [`${technique}已触发`] : [])];
-    if ('statuses' in before) after.statuses = [...(before.statuses || []), ...(technique ? [`${technique}:triggered`] : [])];
-    return { summary: `离线裁定：${request.action.label}`, before, after, reason: 'Mock 仅验证结构、语义状态和幂等流程。', ruleRefs: ['mock.semantic.1'], publicEvents: [`${request.action.label}造成可观察的节奏变化`], confidence: 0.5 };
+  constructor() { this.calls = []; this.isMock = true; }
+  async judge(request, { signal } = {}) {
+    abortIfNeeded(signal); this.calls.push(clone(request)); const before = clone(request.context.semanticState); const after = clone(before); const techniqueId = request.action.techniqueId;
+    if ('潮眼' in after && techniqueId === 'chaoyan') after['潮眼'] = true;
+    if ('回弦' in after && techniqueId === 'huixian') after['回弦'] = true;
+    if ('站位' in after && techniqueId === 'xianshi') after['站位'] = '中近距';
+    if ('压制' in after && techniqueId === 'dielang') after['压制'] = '我方取得节奏';
+    if ('破绽' in after && techniqueId === 'fanyin-chaoyan') after['破绽'] = ['敌方节奏出现可见偏差'];
+    after.statuses = [...new Set([...(after.statuses || []), ...(techniqueId ? [`${techniqueId}:triggered`] : [])])];
+    after.effects = [...(after.effects || []).filter((effect) => effect.id !== `mock-${techniqueId}`), ...(techniqueId ? [{ id: `mock-${techniqueId}`, label: `${techniqueId}余势`, techniqueId, remainingRounds: 2, visibility: 'public', ruleRefs: ['mock.semantic.1'] }] : [])];
+    const result = { summary: `离线裁定：${request.action.label}`, before, after, reason: 'Mock 仅验证结构、语义状态和幂等流程。', ruleRefs: ['mock.semantic.1'], publicEvents: [`${request.action.label}造成可观察的节奏变化`], confidence: 0.5 };
+    return result;
   }
 }
 export class MockNarrator {
-  constructor() { this.calls = []; }
+  constructor() { this.calls = []; this.mode = 'mock'; }
   async generate(packet) { this.calls.push(packet); return { text: `【离线正文演示】${packet.originalAction.label}使${packet.location}的节奏发生变化。下一决策点：${packet.nextDecisionPoint}` }; }
   async rewrite(packet) { this.calls.push({ rewrite: true, packet }); return { text: `【离线重写】保留已提交事实：${packet.committedFacts.join('；')}。` }; }
 }
-
+async function chatCompletion(config, messages, options = {}) {
+  if (!config.endpoint || !config.model) throw new Error('HTTP 适配器缺少 endpoint 或 model');
+  abortIfNeeded(options.signal); const controller = new AbortController(); const abort = () => controller.abort(); options.signal?.addEventListener('abort', abort, { once: true }); const timer = setTimeout(abort, config.timeoutMs ?? 60000);
+  const headers = { 'content-type': 'application/json' }; if (config.apiKey) headers.authorization = `Bearer ${config.apiKey}`;
+  const body = { model: config.model, messages, temperature: config.temperature ?? 0.2, max_tokens: config.maxOutput ?? 1600, stream: false };
+  if (options.jsonMode && config.jsonMode === true) body.response_format = { type: 'json_object' };
+  options.logger?.({ kind: 'model_request', requestMetadata: { model: config.model, temperature: body.temperature, maxOutput: body.max_tokens }, body: clone(body) });
+  try {
+    const response = await fetch(config.endpoint, { method: 'POST', headers, signal: controller.signal, body: JSON.stringify(body) });
+    const raw = await response.text(); options.logger?.({ kind: 'model_response', metadata: { status: response.status, requestId: response.headers.get('x-request-id'), model: config.model }, rawResponse: raw });
+    if (!response.ok) throw new Error(`模型 API ${response.status}（详情见开发者日志）`);
+    const payload = JSON.parse(raw); const content = payload.result ?? payload.choices?.[0]?.message?.content ?? payload.output_text ?? payload.text ?? payload;
+    return { content, metadata: { model: payload.model || config.model, usage: payload.usage || null } };
+  } finally { clearTimeout(timer); options.signal?.removeEventListener('abort', abort); }
+}
 export class HttpJsonAdjudicator {
-  constructor(config = {}) { this.config = { endpoint: '', apiKey: '', model: '', timeoutMs: 45000, ...config }; }
-  async judge(request, { signal } = {}) {
-    if (!this.config.endpoint || !this.config.model) throw new Error('裁定 HTTP 适配器缺少 endpoint 或 model');
-    const controller = new AbortController(); if (signal?.aborted) controller.abort(); const timer = setTimeout(() => controller.abort(), this.config.timeoutMs); const linked = signal ? () => controller.abort() : null; signal?.addEventListener('abort', linked, { once: true });
-    try {
-      const response = await fetch(this.config.endpoint, { method: 'POST', headers: authHeaders(this.config.apiKey), signal: controller.signal, body: JSON.stringify({ model: this.config.model, messages: [{ role: 'system', content: '你是严格 JSON 输出的独立战斗裁定器。' }, { role: 'user', content: request.prompt }], temperature: request.settings.temperature, max_tokens: request.settings.maxOutput }) });
-      if (!response.ok) throw new Error(`裁定 API ${response.status}`); const payload = await response.json(); const content = payload.result ?? payload.choices?.[0]?.message?.content ?? payload.output_text ?? payload; return extractJson(content);
-    } catch (error) { if (error.name === 'AbortError') throw abortError(); throw error; } finally { clearTimeout(timer); if (signal && linked) signal.removeEventListener('abort', linked); }
+  constructor(config = {}) { this.config = { timeoutMs: 60000, repairAttempts: 2, ...config }; this.isMock = false; }
+  async judge(request, options = {}) {
+    const config = { ...this.config, temperature: this.config.temperature ?? request.settings.temperature, maxOutput: this.config.maxOutput ?? request.settings.maxOutput };
+    const messages = [{ role: 'system', content: '你是独立战斗裁定器。只依据给定规则返回 JSON，不描写正文。' }, { role: 'user', content: request.prompt }];
+    const response = await chatCompletion(config, messages, { ...options, jsonMode: true });
+    try { return extractJson(response.content); } catch (error) { error.rawContent = response.content; throw error; }
+  }
+  async repair(request, raw, error, options = {}) {
+    const messages = [{ role: 'system', content: '这是结构修复；保持原行动裁定事实，禁止重新裁定。只修复 JSON 和被程序指出的字段。' }, { role: 'user', content: `${request.prompt}\n原返回：${JSON.stringify(raw)}\n程序拒绝原因：${error.message}` }];
+    const response = await chatCompletion(this.config, messages, { ...options, jsonMode: true }); return extractJson(response.content);
   }
 }
 export class HttpJsonNarrator {
-  constructor(config = {}) { this.config = { endpoint: '', apiKey: '', model: '', timeoutMs: 45000, ...config }; }
-  async generate(packet, options = {}) { return this.#call(packet, options.originalPrompt || this.config.originalPrompt || '', options); }
-  async rewrite(packet, prior, options = {}) { return this.#call(packet, `上一版正文（仅用于重写，不重新裁定）：${JSON.stringify(prior || {})}`, options); }
-  async #call(packet, originalPrompt, { signal } = {}) {
-    if (!this.config.endpoint || !this.config.model) throw new Error('正文 HTTP 适配器缺少 endpoint 或 model');
-    const controller = new AbortController(); if (signal?.aborted) controller.abort(); const timer = setTimeout(() => controller.abort(), this.config.timeoutMs); const linked = signal ? () => controller.abort() : null; signal?.addEventListener('abort', linked, { once: true });
-    try {
-      const response = await fetch(this.config.endpoint, { method: 'POST', headers: authHeaders(this.config.apiKey), signal: controller.signal, body: JSON.stringify({ model: this.config.model, messages: [{ role: 'system', content: '你是主剧情正文桥接器。保留用户原 prompt，只描写已提交 battle scene packet，禁止复判。' }, { role: 'user', content: `${originalPrompt}\nBATTLE_SCENE_PACKET:\n${JSON.stringify(packet)}` }], temperature: this.config.temperature ?? 0.7, max_tokens: this.config.maxOutput ?? 1600 }) });
-      if (!response.ok) throw new Error(`正文 API ${response.status}`); const payload = await response.json(); return { text: payload.choices?.[0]?.message?.content ?? payload.output_text ?? payload.text ?? JSON.stringify(payload) };
-    } catch (error) { if (error.name === 'AbortError') throw abortError(); throw error; } finally { clearTimeout(timer); if (signal && linked) signal.removeEventListener('abort', linked); }
+  constructor(config = {}) { this.config = { timeoutMs: 60000, ...config }; this.mode = 'http'; }
+  async generate(packet, options = {}) { return this.generateFromBattlePacket(options.originalPrompt ?? this.config.originalPrompt ?? '', packet, options); }
+  async generateFromBattlePacket(originalPrompt, packet, options = {}) {
+    const messages = [{ role: 'system', content: `依据已提交战斗场景描写，禁止复判；禁止新增未提交结算。\nBATTLE_SCENE_PACKET:\n${JSON.stringify(packet)}` }, { role: 'user', content: originalPrompt || '继续描写这一已提交战斗场景。' }];
+    const response = await chatCompletion(this.config, messages, options); return { text: typeof response.content === 'string' ? response.content : JSON.stringify(response.content), metadata: response.metadata };
   }
+  async rewrite(packet, prior, options = {}) { return this.generateFromBattlePacket(`${options.originalPrompt ?? this.config.originalPrompt ?? ''}\n重写正文，保持提交事实：${prior?.text || ''}`, packet, options); }
 }

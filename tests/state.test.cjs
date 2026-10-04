@@ -91,14 +91,14 @@ test('invalid before state is rejected and returns to awaiting_player', async ()
   const [{ getAiReadContext }, { BattleController }] = await modules;
   const badAdjudicator = { async judge(request) {
     const before = { ...request.context.semanticState, statuses: ['not-the-current-status'] };
-    return { summary: 'invalid', before, after: request.context.semanticState, reason: 'invalid test result', ruleRefs: ['mock.test'] };
+    return { summary: 'invalid', before, after: request.context.semanticState, reason: 'invalid test result', ruleRefs: ['mock.test'], publicEvents: [] };
   } };
   const controller = new BattleController({ storage: new MemoryStorage(), chatId: 'test-chat', branchId: 'invalid-before', adjudicator: badAdjudicator, narrator: { async generate() { return { text: 'unused' }; } } });
   controller.start();
 
   await assert.rejects(() => controller.submit({ actionId: 'bad-before', label: '会被拒绝' }), /before|当前状态/);
   assert.equal(controller.state.phase, 'awaiting_player');
-  assert.equal(controller.state.history.length, 0);
+  assert.equal(controller.state.history.filter((record) => ['committed', 'complete'].includes(record.status)).length, 0);
   assert.equal(getAiReadContext(controller.state).session.phase, 'awaiting_player');
 });
 
@@ -152,21 +152,20 @@ test('stop prevents a late adjudication result from replacing the ended state', 
   const result = await pending;
   assert.equal(result.stale, true);
   assert.equal(controller.state.phase, 'ended');
-  assert.equal(controller.state.history.length, 0);
+  assert.equal(controller.state.history.filter((record) => ['committed', 'complete'].includes(record.status)).length, 0);
 });
 
-test('host adapter receives committed receipt and scene packet without changing the state path', async () => {
-  const [, { BattleController }, , { MockAdjudicator, MockNarrator }] = await modules;
+test('host adapter receives final committed receipt and a main-story packet', async () => {
+  const [, { BattleController }, , { MockAdjudicator }] = await modules;
   const calls = [];
-  const hostAdapter = { persistReceipt: async (receipt) => calls.push(['receipt', receipt]), injectScenePacket: async (packet) => calls.push(['inject', packet]), clearScenePacket: () => calls.push(['clear']) };
-  const controller = new BattleController({ storage: new MemoryStorage(), chatId: 'test-chat', branchId: 'host', adjudicator: new MockAdjudicator(), narrator: new MockNarrator(), hostAdapter });
-  controller.start();
+  const hostAdapter = { scope: () => ({chatId:'test-chat',branchId:'host'}), persistReceipt: async (receipt) => { if (receipt) calls.push(['receipt',receipt]); return {persisted:true,confirmed:true}; }, injectScenePacket: async (packet) => { calls.push(['inject',packet]); return {queued:true}; }, clearScenePacket: () => calls.push(['clear']) };
+  const controller = new BattleController({ storage: new MemoryStorage(), chatId: 'test-chat', branchId: 'host', adjudicator: new MockAdjudicator(), hostAdapter });
+  await controller.ready; controller.start();
   const result = await controller.submit({ actionId: 'host-action', label: '桥接行动' });
   assert.equal(result.state.phase, 'awaiting_next');
-  assert.equal(calls[0][0], 'receipt');
-  assert.equal(calls[1][0], 'inject');
-  await controller.rewrite('host-action');
-  assert.equal(calls.at(-1)[0], 'clear');
-  controller.stop();
+  assert.equal(calls.find((item) => item[0]==='receipt')[1].actionId,'host-action');
+  assert.ok(calls.find((item) => item[0]==='inject'));
+  assert.throws(() => controller.continueNext(), /等待主剧情/);
+  controller.skipPendingNarrative(); controller.continueNext(); controller.stop();
   assert.equal(calls.at(-1)[0], 'clear');
 });

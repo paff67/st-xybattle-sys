@@ -1,21 +1,207 @@
 {
   "id": "gongfa.dielang-xuanchaojue",
   "name": "叠浪玄潮诀",
-  "rank": "玄阶上品",
+  "rank": "演示摘录（非权威全本）",
   "element": "水·弦",
   "corePrinciple": "以弦势引潮，以叠潮积势，再以回弦回收冲击；潮眼是可观察的稳定窗口。",
-  "mechanics": ["语义状态优先", "弦势与叠潮可并存", "回弦会改变站位与压制关系", "潮眼出现时下一次相关行动更容易稳定"],
-  "techniques": [
-    {"id":"xianshi","name":"弦势","originalDefinition":"以无形弦线建立身体、武器与目标之间的牵引方向。","mechanics":["建立牵引方向","可改变站位解释"],"availability":{"default":"available","conditions":["需要可感知的目标或媒介"]},"triggeredState":["弦势已建立"],"visibility":"player","ruleRefs":["wave-string.1"]},
-    {"id":"dielang","name":"叠潮","originalDefinition":"将连续动作的余势叠入同一潮线，形成累积压制。","mechanics":["叠加前序余势","不直接等价固定伤害"],"availability":{"default":"available","conditions":["弦势已建立或已有潮势"]},"triggeredState":["叠潮层数变化"],"visibility":"player","ruleRefs":["wave-stack.1"]},
-    {"id":"huixian","name":"回弦","originalDefinition":"沿已建立弦线收回自身或冲击，重置部分距离关系。","mechanics":["回收冲击","可能改变站位"],"availability":{"default":"conditional","conditions":["存在弦势"]},"triggeredState":["回弦窗口打开"],"visibility":"player","ruleRefs":["wave-recoil.1"]},
-    {"id":"chaoyan","name":"潮眼","originalDefinition":"叠潮中的短暂稳定点，可用于观察敌方破绽与重定节奏。","mechanics":["稳定语义状态","允许更可靠的下一步判断"],"availability":{"default":"conditional","conditions":["叠潮达到临界或裁定明确形成"]},"triggeredState":["潮眼存在"],"visibility":"player","ruleRefs":["wave-eye.1"]},
-    {"id":"zhendang-huichao","name":"颤弓·回潮","originalDefinition":"令弦势短促震颤，把外放的潮势折返至弓身与脚下。","mechanics":["折返外放潮势","可缓解被压制的站位"],"availability":{"default":"conditional","conditions":["有可回收潮势"]},"triggeredState":["回潮已触发"],"visibility":"player","ruleRefs":["wave-return.1"]},
-    {"id":"fanyin-chaoyan","name":"泛音·潮眼","originalDefinition":"在潮眼内叠加泛音，让观察到的微小偏差成为可用的节奏信号。","mechanics":["放大可见偏差","为下一次行动提供叙事依据"],"availability":{"default":"conditional","conditions":["潮眼存在"]},"triggeredState":["泛音已触发"],"visibility":"player","ruleRefs":["wave-harmonic.1"]}
+  "mechanics": [
+    "语义状态优先",
+    "弦势与叠潮可并存",
+    "回弦会改变站位与压制关系",
+    "潮眼出现时下一次相关行动更容易稳定"
   ],
-  "synergies": ["弦势→叠潮→潮眼", "潮眼→泛音·潮眼", "回弦→颤弓·回潮"],
-  "narrativeGuidance": ["用水面、弦鸣、回流和站位描写状态变化", "不要把语义状态自动换算为固定伤害"],
+  "techniques": [
+    {
+      "id": "xianshi",
+      "name": "弦势",
+      "originalDefinition": "以无形弦线建立身体、武器与目标之间的牵引方向。",
+      "mechanics": [
+        "建立牵引方向",
+        "可改变站位解释"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "需要可感知的目标或媒介"
+        ],
+        "requires": []
+      },
+      "triggeredState": [
+        "弦势已建立"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "wave-string.1"
+      ],
+      "rawDescription": "以无形弦线建立身体、武器与目标之间的牵引方向。"
+    },
+    {
+      "id": "dielang",
+      "name": "叠潮",
+      "originalDefinition": "将连续动作的余势叠入同一潮线，形成累积压制。",
+      "mechanics": [
+        "叠加前序余势",
+        "不直接等价固定伤害"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "弦势已建立或已有潮势"
+        ],
+        "requires": [
+          {
+            "path": "statuses",
+            "op": "includes",
+            "value": "xianshi:triggered"
+          }
+        ]
+      },
+      "triggeredState": [
+        "叠潮层数变化"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "wave-stack.1"
+      ],
+      "rawDescription": "将连续动作的余势叠入同一潮线，形成累积压制。"
+    },
+    {
+      "id": "huixian",
+      "name": "回弦",
+      "originalDefinition": "沿已建立弦线收回自身或冲击，重置部分距离关系。",
+      "mechanics": [
+        "回收冲击",
+        "可能改变站位"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "存在弦势"
+        ],
+        "requires": [
+          {
+            "path": "statuses",
+            "op": "includes",
+            "value": "xianshi:triggered"
+          }
+        ]
+      },
+      "triggeredState": [
+        "回弦窗口打开"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "wave-recoil.1"
+      ],
+      "rawDescription": "沿已建立弦线收回自身或冲击，重置部分距离关系。"
+    },
+    {
+      "id": "chaoyan",
+      "name": "潮眼",
+      "originalDefinition": "叠潮中的短暂稳定点，可用于观察敌方破绽与重定节奏。",
+      "mechanics": [
+        "稳定语义状态",
+        "允许更可靠的下一步判断"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "叠潮达到临界或裁定明确形成"
+        ],
+        "requires": [
+          {
+            "path": "statuses",
+            "op": "includes",
+            "value": "dielang:triggered"
+          }
+        ]
+      },
+      "triggeredState": [
+        "潮眼存在"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "wave-eye.1"
+      ],
+      "rawDescription": "叠潮中的短暂稳定点，可用于观察敌方破绽与重定节奏。"
+    },
+    {
+      "id": "zhendang-huichao",
+      "name": "颤弓·回潮",
+      "originalDefinition": "令弦势短促震颤，把外放的潮势折返至弓身与脚下。",
+      "mechanics": [
+        "折返外放潮势",
+        "可缓解被压制的站位"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "有可回收潮势"
+        ],
+        "requires": [
+          {
+            "path": "statuses",
+            "op": "includes",
+            "value": "huixian:triggered"
+          }
+        ]
+      },
+      "triggeredState": [
+        "回潮已触发"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "wave-return.1"
+      ],
+      "rawDescription": "令弦势短促震颤，把外放的潮势折返至弓身与脚下。"
+    },
+    {
+      "id": "fanyin-chaoyan",
+      "name": "泛音·潮眼",
+      "originalDefinition": "在潮眼内叠加泛音，让观察到的微小偏差成为可用的节奏信号。",
+      "mechanics": [
+        "放大可见偏差",
+        "为下一次行动提供叙事依据"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "潮眼存在"
+        ],
+        "requires": [
+          {
+            "path": "潮眼",
+            "op": "truthy"
+          }
+        ]
+      },
+      "triggeredState": [
+        "泛音已触发"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "wave-harmonic.1"
+      ],
+      "rawDescription": "在潮眼内叠加泛音，让观察到的微小偏差成为可用的节奏信号。"
+    }
+  ],
+  "synergies": [
+    "弦势→叠潮→潮眼",
+    "潮眼→泛音·潮眼",
+    "回弦→颤弓·回潮"
+  ],
+  "narrativeGuidance": [
+    "用水面、弦鸣、回流和站位描写状态变化",
+    "不要把语义状态自动换算为固定伤害"
+  ],
   "version": "1.0.0",
   "visibility": "player",
-  "ruleRefs": ["wave-core.1", "semantic-state.1"]
+  "ruleRefs": [
+    "wave-core.1",
+    "semantic-state.1"
+  ],
+  "source": {
+    "kind": "demonstration",
+    "note": "仅验证 registry/UI；原始功法全文应以经用户确认的世界书来源导入。"
+  }
 }
