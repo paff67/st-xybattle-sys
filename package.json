@@ -5,7 +5,7 @@
   "description": "Independent SillyTavern battle_v2 extension with offline adapters",
   "type": "module",
   "scripts": {
-    "test": "node --test",
+    "test": "node --test tests/*.test.js tests/*.test.cjs",
     "lint": "node scripts/lint.mjs",
     "dev": "vite",
     "build": "vite build && node scripts_sync.mjs",

@@ -4,3 +4,13 @@ output/
 *.log
 .env
 .env.*
+
+# Temporary test scripts, logs, and screenshots
+scripts/cdp-*
+scripts/inspect-*
+scripts/test-*
+scripts/check-*
+scripts/save-*
+scripts/view-*
+scripts/*.png
+scripts/*.txt

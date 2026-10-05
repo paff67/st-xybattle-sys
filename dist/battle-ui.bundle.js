@@ -5577,7 +5577,79 @@ var Rf = class {
 			triggered: o
 		};
 	}
-}, zf = Object.freeze([
+}, zf = "你是修仙战斗系统专属的【天道推演玄枢 · 独立功法战斗裁定核心】（Heavenly Combat Adjudicator）。\n你的唯一职责是：纯粹、严密、客观地对本轮攻防交锋进行功法机理推演与规则裁定。\n你完全独立于宿主聊天主预设、角色卡背景和世俗剧情，禁止进行小说文学创作，禁止输出剧情正文，只返回符合天道规范的结构化裁定数据 JSON。\n\n【核心裁定职责与分析原则】\n1. 功法招式机理推演（Technique Mechanics）：\n   - 深入分析主角所施展招式的起手运劲、真元流转、引动法则（如音波织网、叠浪贯通、潮汐共鸣）与出招心念意图。\n   - 深入分析敌方当前姿态、防御手段、已知功法与境界压制（如重剑开合、体魄罡气、真元厚度）。\n   - 内部因果考量（含暗藏私密底牌）：你拥有探知敌方隐藏底牌、暗疾与暗中算计（hidden）的天道神念。必须依据敌我真实情况裁定深层因果，但【严禁】在面向玩家公开的 summary 和 publicEvents 中明文泄露尚未暴露的隐藏底牌！\n\n2. 给出对敌人的实质影响（Target Impact）：\n   - 严谨判定招式对敌手造成的物理与灵力效果：\n     * 受制部位（如双足被水网缠裹、重剑挥击受阻、重心失衡向前倾跌）；\n     * 灵力与经脉反应（如真元运行滞涩、护体罡罩受震碎裂、逆流反噬）；\n     * 战术姿态改变（如硬直后退、招架露出破绽、狂攻冲锋被迫中断）；\n     * 资源损耗（若规则定义了气血/真元/架势消耗）。\n\n3. 给出对战场环境的天地剧变（Environmental Impact）：\n   - 严谨判定打斗对周围天地气象、灵气分布与地形造成的剧烈冲击：\n     * 地形形貌破坏（如青玄石板碎裂飞溅、深坑沟壑、碎石四溅）；\n     * 灵气与气象变化（如水汽撕裂凝聚成网、狂暴重浪屏风横推、煞气黑烟被冲散或压缩、狂风呼啸）；\n     * 天地灵压与声学变化（如音波炸裂、龙吟长啸、水平如镜被打破）。\n\n4. 确立战局走向与确凿事实（Committed Facts）：\n   - 判定节奏归属（谁取得节奏、谁被压制、站位变动）；\n   - 更新持续语义效果（如生效余势剩余回合、新激活状态）；\n   - 输出明确的公开事实列表（publicEvents），将对敌效果与对环境效果封装确立；\n   - 本裁定一经落定即为天道定数，后续正文 AI 必须严格遵守，禁止复判或推翻。\n\n【严格输出格式（JSON）】\n只返回合法 JSON 对象，严禁包裹任何 markdown 解释，结构如下：\n{\n  \"summary\": \"简练概括本轮核心攻防战况与裁定结果（包含对敌与对环境的核心定论）\",\n  \"before\": { /* 完整的原 semanticState 对象，必须原样保持 */ },\n  \"after\": {\n    /* 更新后的完整 semanticState 对象，保留原有所有字段，更新 statuses, effects, 站位, 压制, 破绽等 */\n  },\n  \"reason\": \"天道裁定因果推演阐述（阐述功法机理如何克制或受挫，可引用内部因果与敌我暗藏底牌）\",\n  \"ruleRefs\": [ \"引用的权威功法规则或词条ID，如 gongfa.dielang-xuanchaojue.xianshi\" ],\n  \"publicEvents\": [\n    \"【对敌影响】具体受制部位、姿态破坏与灵力震荡事实（无剧透）\",\n    \"【环境剧变】具体地形破坏与天地气象冲击事实\",\n    \"【局势转移】站位距离与攻守节奏归属事实\"\n  ],\n  \"confidence\": 0.95,\n  \"resourceChanges\": [\n    /* 可选资源变动：[{ \"actorId\": \"player\", \"resource\": \"qi\", \"before\": 120, \"after\": 105, \"reason\": \"消耗真元\", \"ruleRefs\": [...] }] */\n  ]\n}";
+function Bf(e, t) {
+	let n = e.actors?.player || {}, r = e.actors?.enemies || [], i = e.scene || {}, a = e.semanticState || {};
+	return [
+		"=== 天道功法裁定请求 (ADJUDICATION REQUEST) ===",
+		"",
+		"【1. 修士本轮行止行动】",
+		`- 动作招式：${t.label || "自由出招"}`,
+		`- 选用功法词条ID：${t.techniqueId || "无（自由身法）"}`,
+		`- 出招心念与意图：${t.intent || "凝神运劲，克敌制胜"}`,
+		"",
+		"【2. 主角修者面板】",
+		`- 道号姓名：${n.name || "主角"} (#${n.id || "player"})`,
+		`- 境界与装备：${JSON.stringify(n.visibleInfo || {})}`,
+		`- 气海机枢：${JSON.stringify(n.resources || {})}`,
+		`- 所修功法与传承词条：${JSON.stringify(n.techniques || [])}`,
+		"",
+		"【3. 敌方修者面板】",
+		...r.map((e, t) => [
+			`[敌手 ${t + 1}]：${e.name || "对手"} (#${e.id || "enemy"})`,
+			`- 公开情报与境界：${JSON.stringify(e.visibleInfo || {})}`,
+			`- 气海机枢：${JSON.stringify(e.resources || {})}`,
+			`- 已知招式：${JSON.stringify(e.observedTechniques || [])}`,
+			`- 【天道私密情报·仅供内部因果裁定·严禁公开泄密】：${JSON.stringify(e.hidden || {})}`
+		].join("\n")),
+		"",
+		"【4. 战场环境与时空标尺】",
+		`- 对决地点：${i.location || "未知战场"}`,
+		`- 时辰天色：${i.time || "破晓"}`,
+		`- 天地气象：${i.weather || "长风激荡"}`,
+		`- 先手天机：${i.initiative || "均势"}`,
+		"",
+		"【5. 交锋前战局语义状态 (before)】",
+		JSON.stringify(a, null, 2),
+		"",
+		"【6. 权威功法注册表与可用规则库】",
+		JSON.stringify(e.registry || {}, null, 2),
+		"",
+		"【7. 裁定要求】",
+		"1. 依据【主角招式机理】与【敌方功法防备】，深度推演功法碰撞与生克因果。",
+		"2. 明确给出【对敌人的实质影响】（受制、破防、身法脱节、经脉反噬、破绽）。",
+		"3. 明确给出【对战场环境的天地剧变】（地形破坏、水汽激荡、灵气屏风、气象冲击）。",
+		"4. 确立节奏转移并更新 semanticState（before 必须原样一致，after 必须为完整更新对象）。",
+		"5. 输出标准 JSON，字段包含 summary, before, after, reason, ruleRefs, publicEvents, confidence。"
+	].join("\n");
+}
+function Vf(e, t = "") {
+	let n = Array.isArray(e.committedFacts) ? e.committedFacts : [], r = Array.isArray(e.descriptionRequirements) ? e.descriptionRequirements : [], i = Array.isArray(e.prohibitions) ? e.prohibitions : [];
+	return [
+		"【天道战局裁定已确立 · 主剧情战斗正文描写指令】",
+		"天道功法战斗系统已完成本回合交锋的推演与规则裁定。以下为已发生的确凿事实链，禁止重新判定胜负或颠覆事实：",
+		"",
+		`【本轮交锋行止】：${e.originalAction?.label || "双方交手"}`,
+		e.originalAction?.intent ? `【主角出招意图】：${e.originalAction.intent}` : "",
+		`【战场环境与地点】：${e.location || "战场"}（${e.time || "破晓"}）`,
+		"",
+		"【已确凿落定的事实判定（必须在正文中生动展开展现）】：",
+		...n.map((e) => `• ${e}`),
+		"",
+		"【正文撰刻约束】：",
+		...r.map((e) => `• ${e}`),
+		...i.map((e) => `• 警告：${e}`),
+		`• 下一步决断点：${e.nextDecisionPoint || "等待玩家行动"}`,
+		"",
+		"请结合当前小说的上下文情节、世界观主预设与人物性格，展开波澜壮阔、生动精妙的修仙小说战斗正文描写。",
+		t ? `玩家剧情引导：${t}` : "",
+		"",
+		`BATTLE_SCENE_PACKET_JSON:\n${JSON.stringify(e)}`
+	].filter(Boolean).join("\n");
+}
+//#endregion
+//#region src/battle-state.js
+var Hf = Object.freeze([
 	"idle",
 	"active",
 	"awaiting_player",
@@ -5587,13 +5659,13 @@ var Rf = class {
 	"awaiting_next",
 	"ended",
 	"rewrite"
-]), Bf = [
+]), Uf = [
 	"statuses",
 	"effects",
 	"positions",
 	"control"
 ];
-function Vf({ sessionId: e = `battle-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, chatId: t = "default-chat", branchId: n = "main", location: r = "未设定地点", time: i = "未设定时间", player: a, enemies: o = [], registrySnapshot: s = [], semanticState: c, resourceRules: l = [], scene: u = {} } = {}) {
+function Wf({ sessionId: e = `battle-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, chatId: t = "default-chat", branchId: n = "main", location: r = "未设定地点", time: i = "未设定时间", player: a, enemies: o = [], registrySnapshot: s = [], semanticState: c, resourceRules: l = [], scene: u = {} } = {}) {
 	return {
 		schema: "battle_v2",
 		version: 1,
@@ -5641,7 +5713,7 @@ function Vf({ sessionId: e = `battle-${Date.now()}-${Math.random().toString(36).
 		updatedAt: (/* @__PURE__ */ new Date()).toISOString()
 	};
 }
-function Hf(e, t, n = {}) {
+function Gf(e, t, n = {}) {
 	return {
 		...e,
 		...n,
@@ -5650,11 +5722,11 @@ function Hf(e, t, n = {}) {
 		updatedAt: (/* @__PURE__ */ new Date()).toISOString()
 	};
 }
-function Uf(e, t) {
+function Kf(e, t) {
 	if (!t.includes(e.phase)) throw Error(`当前状态 ${e.phase} 不允许此操作，需要 ${t.join("/")}`);
 }
-function Wf(e) {
-	return Uf(e, ["idle", "ended"]), Hf(e, "awaiting_player", {
+function qf(e) {
+	return Kf(e, ["idle", "ended"]), Gf(e, "awaiting_player", {
 		round: e.round + 1,
 		roundId: `${e.sessionId}-r${e.round + 1}`,
 		scene: {
@@ -5665,11 +5737,11 @@ function Wf(e) {
 		lastError: null
 	});
 }
-function Gf(e, t = "用户停止") {
-	return Hf(e, "ended", { lastError: t });
+function Jf(e, t = "用户停止") {
+	return Gf(e, "ended", { lastError: t });
 }
-function Kf(e) {
-	if (!e || e.schema !== "battle_v2" || !zf.includes(e.phase) || !e.scope || !e.actors || !e.semanticState || !Array.isArray(e.history) || !Array.isArray(e.registrySnapshot)) throw Error("无法恢复：不是有效 battle_v2 会话");
+function Yf(e) {
+	if (!e || e.schema !== "battle_v2" || !Hf.includes(e.phase) || !e.scope || !e.actors || !e.semanticState || !Array.isArray(e.history) || !Array.isArray(e.registrySnapshot)) throw Error("无法恢复：不是有效 battle_v2 会话");
 	let t = Z(e);
 	if (new Rf(t.registrySnapshot), t.resourceRules ||= [], [
 		"judging",
@@ -5687,25 +5759,25 @@ function Kf(e) {
 	}
 	return t;
 }
-function qf(e = []) {
+function Xf(e = []) {
 	return e.flatMap((e) => typeof e == "string" || !Number.isInteger(e.remainingRounds) ? [e] : e.remainingRounds > 1 ? [{
 		...e,
 		remainingRounds: e.remainingRounds - 1
 	}] : []);
 }
-function Jf(e) {
-	Uf(e, ["awaiting_next", "committed"]);
+function Zf(e) {
+	Kf(e, ["awaiting_next", "committed"]);
 	let t = {
 		...e.semanticState,
-		effects: qf(e.semanticState.effects)
+		effects: Xf(e.semanticState.effects)
 	};
-	return Wf({
+	return qf({
 		...e,
 		phase: "ended",
 		semanticState: t
 	});
 }
-function Yf(e) {
+function Qf(e) {
 	return {
 		...Z(e),
 		effects: (e.effects || []).filter((e) => typeof e == "string" || [
@@ -5715,7 +5787,7 @@ function Yf(e) {
 		].includes(e.visibility))
 	};
 }
-function Xf(e) {
+function $f(e) {
 	return {
 		schema: e.schema,
 		version: e.version,
@@ -5724,7 +5796,7 @@ function Xf(e) {
 		round: e.round,
 		roundId: e.roundId,
 		scene: Z(e.scene),
-		semanticState: Yf(e.semanticState),
+		semanticState: Qf(e.semanticState),
 		player: Z(e.actors.player),
 		enemies: e.actors.enemies.map((e) => ({
 			id: e.id,
@@ -5741,7 +5813,7 @@ function Xf(e) {
 		}))
 	};
 }
-function Zf(e) {
+function ep(e) {
 	return {
 		session: {
 			id: e.sessionId,
@@ -5758,9 +5830,9 @@ function Zf(e) {
 		priorCommittedFacts: e.history.filter((e) => ["committed", "complete"].includes(e.status)).map((e) => Z(e.adjudication))
 	};
 }
-function Qf(e, t, n = {}) {
-	if (Uf(e, ["awaiting_player"]), !t || typeof t.label != "string" || !t.label.trim()) throw Error("行动需要非空 label");
-	let r = Zf(e);
+function tp(e, t, n = {}) {
+	if (Kf(e, ["awaiting_player"]), !t || typeof t.label != "string" || !t.label.trim()) throw Error("行动需要非空 label");
+	let r = ep(e);
 	if (t.techniqueId) {
 		let n = new Rf(e.registrySnapshot), r = n.findTechnique(t.techniqueId);
 		if (!r) throw Error("行动功法未注册");
@@ -5787,25 +5859,15 @@ function Qf(e, t, n = {}) {
 			intent: t.intent || ""
 		},
 		context: r,
-		playerVisibleContext: Xf(e),
-		prompt: $f(r, t)
+		playerVisibleContext: $f(e),
+		systemPrompt: zf,
+		prompt: Bf(r, t)
 	};
 }
-function $f(e, t) {
-	return [
-		"你是独立 battle_v2 战斗裁定器。只依据给定结构化上下文和原始功法定义裁定本轮，不使用酒馆主预设。",
-		"只返回 JSON：{summary,before,after,reason,ruleRefs,publicEvents,confidence,resourceChanges?}。before/after 是完整 semanticState；summary/publicEvents 只含玩家可观察事实；hidden 用于决定内部因果，不得泄露。",
-		"资源只按 resourceRules 定义的边界改变，未定义数值不得创建。语义站位、压制、破绽和持续效果优先。effects 对象格式：{id,label,techniqueId?,remainingRounds:正整数,visibility:\"public\"|\"player\"|\"gm\"|\"internal\",ruleRefs:[]}；不设remainingRounds表示直到显式终止。",
-		`行动 JSON：${JSON.stringify(t)}`,
-		`完整上下文 JSON：${JSON.stringify(e)}`,
-		"可选 resourceChanges 是 [{actorId,resource,before,after,reason,ruleRefs}]，只能改变resourceRules已声明的角色资源；没有变更请省略。",
-		"ruleRefs 必须引用给定 registry/resourceRules 中的精确引用。禁止自由编造规则；不返回演员整表、不复写 session/version。"
-	].join("\n");
+function np(e) {
+	return !e || typeof e != "object" ? typeof e == "string" && e.length > 3 ? [e] : [] : Object.values(e).flatMap(np);
 }
-function ep(e) {
-	return !e || typeof e != "object" ? typeof e == "string" && e.length > 3 ? [e] : [] : Object.values(e).flatMap(ep);
-}
-function tp(e, t, { allowMock: n = !1 } = {}) {
+function rp(e, t, { allowMock: n = !1 } = {}) {
 	if (!e || typeof e != "object" || Array.isArray(e)) throw Error("裁定响应不是对象");
 	for (let t of [
 		"summary",
@@ -5820,7 +5882,7 @@ function tp(e, t, { allowMock: n = !1 } = {}) {
 	if (!e.after || Array.isArray(e.after) || typeof e.after != "object") throw Error("after 必须是完整对象");
 	let r = Object.keys(t.semanticState);
 	for (let t of r) if (!(t in e.after)) throw Error(`after 缺少 ${t}`);
-	let i = /* @__PURE__ */ new Set([...Bf, ...r]);
+	let i = /* @__PURE__ */ new Set([...Uf, ...r]);
 	for (let t of Object.keys(e.after)) if (!i.has(t)) throw Error(`裁定越权修改字段 ${t}`);
 	for (let [n, r] of Object.entries(t.semanticState)) {
 		let i = e.after[n];
@@ -5856,9 +5918,9 @@ function tp(e, t, { allowMock: n = !1 } = {}) {
 	let c = JSON.stringify({
 		summary: e.summary,
 		publicEvents: e.publicEvents,
-		after: Yf(e.after)
+		after: Qf(e.after)
 	});
-	for (let e of t.actors.enemies.flatMap((e) => ep(e.hidden))) if (c.includes(e)) throw Error("裁定公开结果包含敌方隐藏信息，拒绝发布");
+	for (let e of t.actors.enemies.flatMap((e) => np(e.hidden))) if (c.includes(e)) throw Error("裁定公开结果包含敌方隐藏信息，拒绝发布");
 	return {
 		summary: e.summary,
 		before: Z(e.before),
@@ -5870,8 +5932,8 @@ function tp(e, t, { allowMock: n = !1 } = {}) {
 		confidence: Number.isFinite(e.confidence) ? e.confidence : null
 	};
 }
-function np(e, t, n) {
-	return {
+function ip(e, t, n) {
+	let r = {
 		type: "BATTLE_SCENE_PACKET",
 		schema: "battle_v2",
 		scope: Z(e.scope),
@@ -5883,39 +5945,44 @@ function np(e, t, n) {
 		location: e.scene.location,
 		time: e.scene.time,
 		publicEvents: Z(e.scene.publicEvents),
-		descriptionRequirements: ["描写本轮可见因果和语义状态变化", "保持角色信息边界"],
+		descriptionRequirements: [
+			"细致描写本轮交锋对敌手造成的物理与灵力实质创伤/制约",
+			"生动描写本轮交锋对周围地形与天地气象造成的剧烈冲击",
+			"保持修者境界与功法机理特色，严守敌我可见信息边界"
+		],
 		prohibitions: [
-			"禁止复判本轮行动",
+			"禁止复判本轮行动胜负",
 			"禁止新增未提交数值结算",
 			"禁止泄露隐藏敌情"
 		],
 		nextDecisionPoint: "等待玩家选择下一步行动",
-		playerVisibleContext: Xf(e),
+		playerVisibleContext: $f(e),
 		originalAction: Z(n.action)
 	};
+	return r.storyAiDirective = Vf(r), r;
 }
-function rp(e) {
+function ap(e) {
 	return typeof e == "string" ? { text: e } : {
 		text: String(e?.text || ""),
 		pending: e?.pending === !0,
 		metadata: Z(e?.metadata || {})
 	};
 }
-async function ip(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal: a, save: o = () => {}, logger: s = () => {}, onCommit: c = () => {} } = {}) {
+async function op(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal: a, save: o = () => {}, logger: s = () => {}, onCommit: c = () => {} } = {}) {
 	let l = t?.actionId ? e.history.find((e) => e.actionId === t.actionId) : null;
 	if (l) return {
 		state: e,
 		record: Z(l),
 		deduplicated: !0
 	};
-	let u = Qf(e, t, i), d = n?.isMock === !0 || (i.adjudicator?.mode || i.mode) === "mock", f = {
+	let u = tp(e, t, i), d = n?.isMock === !0 || (i.adjudicator?.mode || i.mode) === "mock", f = {
 		actionId: u.actionId,
 		roundId: u.roundId,
 		action: Z(u.action),
 		status: "prepared",
 		version: e.version,
 		before: Z(e.semanticState)
-	}, p = Hf(e, "judging", {
+	}, p = Gf(e, "judging", {
 		actionSeq: e.actionSeq + 1,
 		pending: {
 			actionId: u.actionId,
@@ -5952,7 +6019,7 @@ async function ip(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 				actionId: u.actionId,
 				rawResponse: Z(m),
 				repairAttempt: t
-			}), h = tp(m, e, { allowMock: d }), s({
+			}), h = rp(m, e, { allowMock: d }), s({
 				kind: "program_validation",
 				actionId: u.actionId,
 				validation: {
@@ -5974,7 +6041,7 @@ async function ip(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 			h = e;
 		}
 	} catch (e) {
-		throw p = Hf(p, "awaiting_player", {
+		throw p = Gf(p, "awaiting_player", {
 			pending: null,
 			lastError: e.message,
 			history: p.history.map((t) => t.actionId === u.actionId ? {
@@ -5989,7 +6056,7 @@ async function ip(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		let t = [_.player, ..._.enemies].find((t) => t.id === e.actorId);
 		t.resources[e.resource] = e.after;
 	}
-	p = Hf(p, "committed", {
+	p = Gf(p, "committed", {
 		actors: _,
 		semanticState: Z(h.after),
 		scene: {
@@ -6007,13 +6074,13 @@ async function ip(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		after: Z(p.semanticState),
 		createdAt: (/* @__PURE__ */ new Date()).toISOString()
 	};
-	v.narrativePacket = np(p, v, u), p = {
+	v.narrativePacket = ip(p, v, u), p = {
 		...p,
 		history: p.history.map((e) => e.actionId === v.actionId ? v : e)
 	}, hd(a), await o(p), s({
 		kind: "commit",
 		actionId: v.actionId,
-		playerVisible: Xf(p),
+		playerVisible: $f(p),
 		record: Z(v),
 		internal: {
 			programValidation: { valid: !0 },
@@ -6021,7 +6088,7 @@ async function ip(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		}
 	});
 	let y = await c(Z(v), p);
-	if (hd(a), y?.allowed === !1) return p = Hf(p, "awaiting_next", {
+	if (hd(a), y?.allowed === !1) return p = Gf(p, "awaiting_next", {
 		lastError: y.reason || "宿主保存待确认；裁定已保留，不重裁",
 		history: p.history.map((e) => e.actionId === v.actionId ? {
 			...v,
@@ -6033,7 +6100,7 @@ async function ip(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		request: u,
 		deduplicated: !1
 	};
-	if (i.autoNarrative === !1) return p = Hf(p, "awaiting_next"), await o(p), s({
+	if (i.autoNarrative === !1) return p = Gf(p, "awaiting_next"), await o(p), s({
 		kind: "narrative_packet",
 		actionId: v.actionId,
 		packet: v.narrativePacket
@@ -6043,19 +6110,19 @@ async function ip(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		request: u,
 		deduplicated: !1
 	};
-	p = Hf(p, "narrating", { pending: {
+	p = Gf(p, "narrating", { pending: {
 		actionId: v.actionId,
 		roundId: v.roundId
 	} }), await o(p);
 	let b;
 	try {
-		b = rp(await r.generate(v.narrativePacket, {
+		b = ap(await r.generate(v.narrativePacket, {
 			signal: a,
 			logger: s,
 			originalPrompt: i.originalPrompt || ""
 		})), hd(a);
 	} catch (e) {
-		throw p = Hf(p, "awaiting_next", {
+		throw p = Gf(p, "awaiting_next", {
 			pending: null,
 			lastError: e.message,
 			history: p.history.map((t) => t.actionId === v.actionId ? {
@@ -6069,7 +6136,7 @@ async function ip(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		narrative: b,
 		status: b.pending ? "committed" : "complete"
 	};
-	return p = Hf(p, "awaiting_next", {
+	return p = Gf(p, "awaiting_next", {
 		history: p.history.map((e) => e.actionId === v.actionId ? x : e),
 		pending: null,
 		lastError: null
@@ -6085,28 +6152,28 @@ async function ip(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		deduplicated: !1
 	};
 }
-async function ap(e, t, n, { signal: r, save: i = () => {}, logger: a = () => {}, originalPrompt: o = "" } = {}) {
-	Uf(e, [
+async function sp(e, t, n, { signal: r, save: i = () => {}, logger: a = () => {}, originalPrompt: o = "" } = {}) {
+	Kf(e, [
 		"awaiting_next",
 		"committed",
 		"ended"
 	]);
 	let s = e.history.find((e) => e.actionId === t && ["committed", "complete"].includes(e.status));
 	if (!s?.narrativePacket) throw Error("找不到可重写的已提交行动");
-	let c = Hf(e, "rewrite", { pending: {
+	let c = Gf(e, "rewrite", { pending: {
 		actionId: t,
 		roundId: s.roundId
 	} });
 	await i(c);
 	let l;
 	try {
-		l = rp(await n.rewrite(s.narrativePacket, s.narrative, {
+		l = ap(await n.rewrite(s.narrativePacket, s.narrative, {
 			signal: r,
 			logger: a,
 			originalPrompt: o
 		})), hd(r);
 	} catch (e) {
-		throw r?.aborted || await i(Hf(c, "awaiting_next", {
+		throw r?.aborted || await i(Gf(c, "awaiting_next", {
 			pending: null,
 			lastError: e.message
 		})), e;
@@ -6116,7 +6183,7 @@ async function ap(e, t, n, { signal: r, save: i = () => {}, logger: a = () => {}
 		narrative: l,
 		status: l.pending ? "committed" : "complete",
 		rewrittenAt: (/* @__PURE__ */ new Date()).toISOString()
-	}, d = Hf(c, "awaiting_next", {
+	}, d = Gf(c, "awaiting_next", {
 		history: c.history.map((e) => e.actionId === t ? u : e),
 		pending: null,
 		lastError: null
@@ -6131,7 +6198,7 @@ async function ap(e, t, n, { signal: r, save: i = () => {}, logger: a = () => {}
 		record: Z(u)
 	};
 }
-var op = {
+var cp = {
 	schema: "battle_v2_scene",
 	scene: {
 		location: "离线演示·临水练武台",
@@ -6327,15 +6394,15 @@ var op = {
 			note: "仅验证 registry/UI；原始功法全文应以经用户确认的世界书来源导入。"
 		}
 	}]
-}, sp = {
+}, lp = {
 	id: "xybattle-v2-root",
 	class: "xy-root-container"
-}, cp = {
+}, up = {
 	id: "xybattle-v2-panel",
 	class: "xy-workbench-panel",
 	role: "dialog",
 	"aria-label": "独立战斗工作台"
-}, lp = { class: "xy-notice-icon" }, up = { class: "xy-notice-text" }, dp = {
+}, dp = { class: "xy-notice-icon" }, fp = { class: "xy-notice-text" }, pp = {
 	__name: "App",
 	props: {
 		controller: {
@@ -6481,7 +6548,7 @@ var op = {
 		}
 		function T() {
 			try {
-				n.controller.importScene(op), a.value = "已成功载入《叠浪玄潮决》演示场景", c();
+				n.controller.importScene(cp), a.value = "已成功载入《叠浪玄潮决》演示场景", c();
 			} catch (e) {
 				a.value = e.message;
 			}
@@ -6527,7 +6594,7 @@ var op = {
 			actors: s.value.actors,
 			semanticState: s.value.semanticState,
 			resourceRules: s.value.resourceRules
-		})), le = J(() => Q(Zf(s.value), n.controller.secrets()));
+		})), le = J(() => Q(ep(s.value), n.controller.secrets()));
 		return t({
 			open: () => {
 				r.value = !0;
@@ -6535,7 +6602,7 @@ var op = {
 			close: () => {
 				r.value = !1;
 			}
-		}), (t, n) => (H(), U("div", sp, [W("button", {
+		}), (t, n) => (H(), U("div", lp, [W("button", {
 			ref: "launcherRef",
 			id: "xybattle-v2-launcher",
 			class: k(["xy-launcher-seal", {
@@ -6558,7 +6625,7 @@ var op = {
 				key: 0,
 				class: "xy-modal-backdrop",
 				onClick: rs(_, ["self"])
-			}, [W("section", cp, [
+			}, [W("section", up, [
 				G(Ks, {
 					scene: o.value.scene,
 					"semantic-state": o.value.semanticState,
@@ -6591,8 +6658,8 @@ var op = {
 						class: k(["xy-notice-banner", { "is-error": !!s.value.lastError }]),
 						role: "status"
 					}, [
-						W("span", lp, A(s.value.lastError ? "⚠️" : "✨"), 1),
-						W("span", up, A(a.value || s.value.lastError), 1),
+						W("span", dp, A(s.value.lastError ? "⚠️" : "✨"), 1),
+						W("span", fp, A(a.value || s.value.lastError), 1),
 						W("button", {
 							class: "xy-notice-dismiss",
 							onClick: n[1] ||= (e) => {
@@ -6647,7 +6714,7 @@ var op = {
 };
 //#endregion
 //#region src/adapters.js
-function fp(e = {}) {
+function mp(e = {}) {
 	let t = {
 		mode: "unconfigured",
 		endpoint: "",
@@ -6689,7 +6756,7 @@ function fp(e = {}) {
 		developerLogs: e.developerLogs !== !1
 	};
 }
-function pp(e) {
+function hp(e) {
 	if (e && typeof e == "object") return Z(e);
 	let t = String(e || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```$/i, "").trim();
 	try {
@@ -6700,18 +6767,18 @@ function pp(e) {
 		throw Error("AI 响应不是合法 JSON");
 	}
 }
-var mp = class {
+var gp = class {
 	async judge() {
 		throw Error("未配置裁定 AI；请在独立设置中选择 HTTP，或明确选择离线 Mock 演示");
 	}
-}, hp = class {
+}, _p = class {
 	async generate() {
 		throw Error("未配置正文 AI；默认可选择主剧情一次性注入");
 	}
 	async rewrite() {
 		return this.generate();
 	}
-}, gp = class {
+}, vp = class {
 	constructor() {
 		this.mode = "main_story";
 	}
@@ -6728,35 +6795,41 @@ var mp = class {
 	async rewrite() {
 		return this.generate();
 	}
-}, _p = class extends gp {
+}, yp = class extends vp {
 	constructor() {
 		super(), this.mode = "packet";
 	}
-}, vp = class {
+}, bp = class {
 	constructor() {
 		this.calls = [], this.isMock = !0;
 	}
 	async judge(e, { signal: t } = {}) {
 		hd(t), this.calls.push(Z(e));
 		let n = Z(e.context.semanticState), r = Z(n), i = e.action.techniqueId;
-		return "潮眼" in r && i === "chaoyan" && (r.潮眼 = !0), "回弦" in r && i === "huixian" && (r.回弦 = !0), "站位" in r && i === "xianshi" && (r.站位 = "中近距"), "压制" in r && i === "dielang" && (r.压制 = "我方取得节奏"), "破绽" in r && i === "fanyin-chaoyan" && (r.破绽 = ["敌方节奏出现可见偏差"]), r.statuses = [.../* @__PURE__ */ new Set([...r.statuses || [], ...i ? [`${i}:triggered`] : []])], r.effects = [...(r.effects || []).filter((e) => e.id !== `mock-${i}`), ...i ? [{
+		"潮眼" in r && i === "chaoyan" && (r.潮眼 = !0), "回弦" in r && i === "huixian" && (r.回弦 = !0), "站位" in r && i === "xianshi" && (r.站位 = "中近距"), "压制" in r && i === "dielang" && (r.压制 = "我方取得节奏"), "破绽" in r && i === "fanyin-chaoyan" && (r.破绽 = ["敌方节奏出现可见偏差"]), r.statuses = [.../* @__PURE__ */ new Set([...r.statuses || [], ...i ? [`${i}:triggered`] : []])], r.effects = [...(r.effects || []).filter((e) => e.id !== `mock-${i}`), ...i ? [{
 			id: `mock-${i}`,
 			label: `${i}余势`,
 			techniqueId: i,
 			remainingRounds: 2,
 			visibility: "public",
 			ruleRefs: ["mock.semantic.1"]
-		}] : []], {
-			summary: `离线裁定：${e.action.label}`,
+		}] : []];
+		let a = i === "xianshi" ? "【对敌影响】弦音水网无形延展缠缚敌手重靴下盘，敌方冲锋攻势受阻，重心脱节" : i === "dielang" ? "【对敌影响】三重重浪连续砸击敌方护体煞气罡罩，产生钝力冲击，逼退敌方并造成硬直破绽" : `【对敌影响】${e.action.label}迫使敌方防御身法出现停滞`, o = i === "xianshi" ? "【环境剧变】试剑台周遭弥漫水汽被清越琴音撕裂重聚，在青石板缝隙间织成微光水网" : i === "dielang" ? "【环境剧变】湖面激荡掀起半人高碧青水浪屏风，青玄石台受水压与煞气碰撞震裂数处" : "【环境剧变】气劲与灵波激荡四周天地环境", s = `${e.action.label}造成可观察的节奏变化`;
+		return {
+			summary: `离线裁定：${e.action.label}。${a}；${o}。`,
 			before: n,
 			after: r,
-			reason: "Mock 仅验证结构、语义状态和幂等流程。",
+			reason: "独立裁定预设推演：功法起手与机理契合水域环境，达成对敌实质牵制与天地水势共鸣。",
 			ruleRefs: ["mock.semantic.1"],
-			publicEvents: [`${e.action.label}造成可观察的节奏变化`],
-			confidence: .5
+			publicEvents: [
+				s,
+				a,
+				o
+			],
+			confidence: .95
 		};
 	}
-}, yp = class {
+}, xp = class {
 	constructor() {
 		this.calls = [], this.mode = "mock";
 	}
@@ -6770,7 +6843,7 @@ var mp = class {
 		}), { text: `【离线重写】保留已提交事实：${e.committedFacts.join("；")}。` };
 	}
 };
-async function bp(e, t, n = {}) {
+async function Sp(e, t, n = {}) {
 	if (!e.endpoint || !e.model) throw Error("HTTP 适配器缺少 endpoint 或 model");
 	hd(n.signal);
 	let r = new AbortController(), i = () => r.abort();
@@ -6821,7 +6894,7 @@ async function bp(e, t, n = {}) {
 		clearTimeout(a), n.signal?.removeEventListener("abort", i);
 	}
 }
-var xp = class {
+var Cp = class {
 	constructor(e = {}) {
 		this.config = {
 			timeoutMs: 6e4,
@@ -6830,13 +6903,13 @@ var xp = class {
 		}, this.isMock = !1;
 	}
 	async judge(e, t = {}) {
-		let n = await bp({
+		let n = await Sp({
 			...this.config,
 			temperature: this.config.temperature ?? e.settings.temperature,
 			maxOutput: this.config.maxOutput ?? e.settings.maxOutput
 		}, [{
 			role: "system",
-			content: "你是独立战斗裁定器。只依据给定规则返回 JSON，不描写正文。"
+			content: e.systemPrompt || zf
 		}, {
 			role: "user",
 			content: e.prompt
@@ -6845,7 +6918,7 @@ var xp = class {
 			jsonMode: !0
 		});
 		try {
-			return pp(n.content);
+			return hp(n.content);
 		} catch (e) {
 			throw e.rawContent = n.content, e;
 		}
@@ -6853,17 +6926,17 @@ var xp = class {
 	async repair(e, t, n, r = {}) {
 		let i = [{
 			role: "system",
-			content: "这是结构修复；保持原行动裁定事实，禁止重新裁定。只修复 JSON 和被程序指出的字段。"
+			content: "这是结构修复；保持原行动裁定事实与对敌对环境影响，禁止重新裁定。只修复 JSON 和被程序指出的字段。"
 		}, {
 			role: "user",
 			content: `${e.prompt}\n原返回：${JSON.stringify(t)}\n程序拒绝原因：${n.message}`
 		}];
-		return pp((await bp(this.config, i, {
+		return hp((await Sp(this.config, i, {
 			...r,
 			jsonMode: !0
 		})).content);
 	}
-}, Sp = class {
+}, wp = class {
 	constructor(e = {}) {
 		this.config = {
 			timeoutMs: 6e4,
@@ -6876,11 +6949,11 @@ var xp = class {
 	async generateFromBattlePacket(e, t, n = {}) {
 		let r = [{
 			role: "system",
-			content: `依据已提交战斗场景描写，禁止复判；禁止新增未提交结算。\nBATTLE_SCENE_PACKET:\n${JSON.stringify(t)}`
+			content: `依据已提交战斗场景描写，禁止复判；禁止新增未提交结算。\n${Vf(t, e)}`
 		}, {
 			role: "user",
 			content: e || "继续描写这一已提交战斗场景。"
-		}], i = await bp(this.config, r, n);
+		}], i = await Sp(this.config, r, n);
 		return {
 			text: typeof i.content == "string" ? i.content : JSON.stringify(i.content),
 			metadata: i.metadata
@@ -6889,11 +6962,11 @@ var xp = class {
 	async rewrite(e, t, n = {}) {
 		return this.generateFromBattlePacket(`${n.originalPrompt ?? this.config.originalPrompt ?? ""}\n重写正文，保持提交事实：${t?.text || ""}`, e, n);
 	}
-}, Cp = "battle_v2";
-function wp(e) {
+}, Tp = "battle_v2";
+function Ep(e) {
 	return JSON.stringify([String(e.chatId || "default-chat"), String(e.branchId || "main")]);
 }
-var Tp = class e {
+var Dp = class e {
 	constructor(e = globalThis.localStorage, t = {
 		chatId: "default-chat",
 		branchId: "main"
@@ -6901,20 +6974,20 @@ var Tp = class e {
 		this.storage = e && typeof e.getItem == "function" ? e : null, this.scope = {
 			chatId: String(t.chatId || "default-chat"),
 			branchId: String(t.branchId || "main")
-		}, this.token = encodeURIComponent(wp(this.scope)), this.memory = /* @__PURE__ */ new Map();
+		}, this.token = encodeURIComponent(Ep(this.scope)), this.memory = /* @__PURE__ */ new Map();
 	}
 	withScope(t) {
 		return new e(this.storage, t);
 	}
 	key(e) {
-		return `${Cp}.${e}.${this.token}`;
+		return `${Tp}.${e}.${this.token}`;
 	}
 	readSettings() {
-		return this.read(`${Cp}.settings`, this.read(this.key("settings"), {}));
+		return this.read(`${Tp}.settings`, this.read(this.key("settings"), {}));
 	}
 	writeSettings(e) {
 		let t = Q(e);
-		return this.write(`${Cp}.settings`, t), t;
+		return this.write(`${Tp}.settings`, t), t;
 	}
 	readSession() {
 		return this.read(this.key("session"), null);
@@ -6956,20 +7029,20 @@ var Tp = class e {
 };
 //#endregion
 //#region src/battle-controller.js
-function Ep(e = {}) {
-	let t = fp(e), n = t.adjudicator, r = t.narrator;
+function Op(e = {}) {
+	let t = mp(e), n = t.adjudicator, r = t.narrator;
 	return {
-		adjudicator: n.mode === "mock" ? new vp() : n.mode === "http" ? new xp(n) : new mp(),
-		narrator: r.mode === "mock" ? new yp() : r.mode === "http" ? new Sp(r) : r.mode === "main_story" ? new gp() : r.mode === "packet" ? new _p() : new hp()
+		adjudicator: n.mode === "mock" ? new bp() : n.mode === "http" ? new Cp(n) : new gp(),
+		narrator: r.mode === "mock" ? new xp() : r.mode === "http" ? new wp(r) : r.mode === "main_story" ? new vp() : r.mode === "packet" ? new yp() : new _p()
 	};
 }
-var Dp = class {
+var kp = class {
 	constructor({ storage: e, chatId: t = "default-chat", branchId: n = "main", adjudicator: r, narrator: i, hostAdapter: a, registry: o = new Rf(), onChange: s = () => {}, initialScene: c = {}, initialPlayer: l, initialEnemies: u = [], semanticState: d } = {}) {
-		this.storage = e instanceof Tp ? e : new Tp(e, {
+		this.storage = e instanceof Dp ? e : new Dp(e, {
 			chatId: t,
 			branchId: n
-		}), this.registry = o, this.settings = fp(this.storage.readSettings());
-		let f = Ep(this.settings);
+		}), this.registry = o, this.settings = mp(this.storage.readSettings());
+		let f = Op(this.settings);
 		this.adjudicator = r || f.adjudicator, this.narrator = i || f.narrator, this.customAdapters = {
 			adjudicator: r,
 			narrator: i
@@ -6981,7 +7054,7 @@ var Dp = class {
 			semanticState: d
 		};
 		let p = this.storage.readSession();
-		this.state = p ? Kf(p) : Vf({
+		this.state = p ? Yf(p) : Wf({
 			...this.initialOptions,
 			chatId: t,
 			branchId: n
@@ -7008,7 +7081,7 @@ var Dp = class {
 		let n = this.storage.readSession();
 		t && (this.cancelPending("聊天/分支切换"), this.hostAdapter?.clearScenePacket?.());
 		let r = this.state.scope;
-		(r.chatId !== String(e.chatId) || r.branchId !== String(e.branchId)) && (this.storage = this.storage.withScope(e), n = this.storage.readSession(), this.state = n ? Kf(n) : Vf({
+		(r.chatId !== String(e.chatId) || r.branchId !== String(e.branchId)) && (this.storage = this.storage.withScope(e), n = this.storage.readSession(), this.state = n ? Yf(n) : Wf({
 			...this.initialOptions,
 			chatId: e.chatId,
 			branchId: e.branchId
@@ -7016,7 +7089,7 @@ var Dp = class {
 		let i = this.epoch, a = await this.hostAdapter?.loadSession?.(e);
 		if (i === this.epoch) {
 			if (a?.loaded && a.state) {
-				let e = Kf(a.state);
+				let e = Yf(a.state);
 				e.scope.chatId === this.state.scope.chatId && e.scope.branchId === this.state.scope.branchId && (!n || e.sessionId === this.state.sessionId && e.version >= this.state.version || Date.parse(e.updatedAt) > Date.parse(this.state.updatedAt) ? (this.state = e, this.storage.writeSession(e)) : this.log({
 					kind: "host_local_ahead",
 					capability: { reason: "本地checkpoint比宿主新，将重试持久化；不回退回合" }
@@ -7026,7 +7099,7 @@ var Dp = class {
 		}
 	}
 	emit() {
-		if (this.storage.writeSession(Q(this.state, this.secrets())), this.onChange(this.state, Xf(this.state)), this.hostAdapter) {
+		if (this.storage.writeSession(Q(this.state, this.secrets())), this.onChange(this.state, $f(this.state)), this.hostAdapter) {
 			let e = Z(this.state), t = Z(this.hostAdapter.scope?.() || this.state.scope), n = this.epoch;
 			this.checkpoints = this.checkpoints.catch(() => {}).then(async () => {
 				if (n !== this.epoch) return {
@@ -7038,7 +7111,7 @@ var Dp = class {
 				return n === this.epoch && this.state.version === e.version && (this.state.hostSync = {
 					status: r?.persisted && r?.confirmed ? "confirmed" : "pending",
 					reason: r?.reason || null
-				}, this.storage.writeSession(Q(this.state, this.secrets())), this.onChange(this.state, Xf(this.state))), r;
+				}, this.storage.writeSession(Q(this.state, this.secrets())), this.onChange(this.state, $f(this.state))), r;
 			});
 		}
 	}
@@ -7060,19 +7133,19 @@ var Dp = class {
 		}), e.narrator && (t.narrator = {
 			...this.settings.narrator,
 			...e.narrator
-		}), e.mode !== void 0 && (delete t.adjudicator, delete t.narrator), this.settings = fp(t), this.storage.writeSettings(this.settings), this.setAdapters(Ep(this.settings)), this.emit(), this.settings;
+		}), e.mode !== void 0 && (delete t.adjudicator, delete t.narrator), this.settings = mp(t), this.storage.writeSettings(this.settings), this.setAdapters(Op(this.settings)), this.emit(), this.settings;
 	}
 	setAdapters({ adjudicator: e, narrator: t } = {}) {
 		e && (this.adjudicator = e), t && (this.narrator = t);
 	}
 	start() {
-		return this.assertIdleRequest(), this.state = Wf(this.state), this.emit(), this.state;
+		return this.assertIdleRequest(), this.state = qf(this.state), this.emit(), this.state;
 	}
 	cancelPending() {
 		this.epoch += 1, this.inFlight?.abort(), this.inFlight = null, this.bridgeQueuedAction = null;
 	}
 	stop(e = "用户停止") {
-		return this.cancelPending(), this.hostAdapter?.clearScenePacket?.(), this.state = Gf({
+		return this.cancelPending(), this.hostAdapter?.clearScenePacket?.(), this.state = Jf({
 			...this.state,
 			history: this.state.history.map((t) => t.status === "prepared" ? {
 				...t,
@@ -7083,7 +7156,7 @@ var Dp = class {
 	}
 	continueNext() {
 		if (this.assertIdleRequest(), this.bridgeQueuedAction) throw Error("本轮场景包仍等待主剧情生成；请先生成正文或跳过本轮正文");
-		return this.state = Jf(this.state), this.emit(), this.state;
+		return this.state = Zf(this.state), this.emit(), this.state;
 	}
 	assertIdleRequest() {
 		if (this.inFlight) throw Error("正在处理本轮请求，请等待或停止");
@@ -7178,7 +7251,7 @@ var Dp = class {
 			this.state = e, this.emit(), await this.checkpoints;
 		};
 		try {
-			let t = await ip(this.state, e, {
+			let t = await op(this.state, e, {
 				adjudicator: this.adjudicator,
 				narrator: this.narrator,
 				settings: this.settings,
@@ -7205,7 +7278,7 @@ var Dp = class {
 			return this.settings.autoNarrative && this.settings.narrator.mode === "main_story" && o?.persisted && o?.confirmed ? await this.queueMainStory(t.record, i) : this.settings.narrator.mode === "main_story" && this.hostAdapter && (this.state.hostSync = {
 				status: "pending",
 				reason: o?.reason
-			}), this.storage.writeSession(Q(this.state, this.secrets())), this.onChange(this.state, Xf(this.state)), t;
+			}), this.storage.writeSession(Q(this.state, this.secrets())), this.onChange(this.state, $f(this.state)), t;
 		} catch (e) {
 			if (n !== this.epoch || r.signal.aborted) return {
 				stale: !0,
@@ -7225,7 +7298,7 @@ var Dp = class {
 			this.state = e, this.emit(), await this.checkpoints;
 		};
 		try {
-			let a = await ap(this.state, e, this.narrator, {
+			let a = await sp(this.state, e, this.narrator, {
 				signal: n.signal,
 				save: i,
 				logger: (e) => {
@@ -7253,7 +7326,7 @@ var Dp = class {
 		return this.state.hostSync = {
 			status: n?.persisted && n?.confirmed ? "confirmed" : "pending",
 			reason: n?.reason
-		}, this.storage.writeSession(Q(this.state, this.secrets())), n?.persisted && n?.confirmed && t && !t.narrative?.text && this.settings.narrator.mode === "main_story" && await this.queueMainStory(t, e), this.onChange(this.state, Xf(this.state)), n;
+		}, this.storage.writeSession(Q(this.state, this.secrets())), n?.persisted && n?.confirmed && t && !t.narrative?.text && this.settings.narrator.mode === "main_story" && await this.queueMainStory(t, e), this.onChange(this.state, $f(this.state)), n;
 	}
 	skipPendingNarrative() {
 		this.hostAdapter?.clearScenePacket?.(), this.bridgeQueuedAction = null;
@@ -7296,7 +7369,7 @@ var Dp = class {
 		if (new Set([t.actors.player, ...t.actors.enemies].map((e) => e.id)).size !== t.actors.enemies.length + 1) throw Error("角色id重复");
 		this.cancelPending(), this.hostAdapter?.clearScenePacket?.();
 		let r = this.state.version;
-		return this.registry = n, this.state = Vf({
+		return this.registry = n, this.state = Wf({
 			chatId: this.state.scope.chatId,
 			branchId: this.state.scope.branchId,
 			scene: t.scene,
@@ -7328,15 +7401,15 @@ var Dp = class {
 	}
 	importData(e) {
 		this.assertIdleRequest();
-		let t = typeof e == "string" ? JSON.parse(e) : Z(e), n = Kf(t.state || t);
+		let t = typeof e == "string" ? JSON.parse(e) : Z(e), n = Yf(t.state || t);
 		if (n.scope.chatId !== this.state.scope.chatId || n.scope.branchId !== this.state.scope.branchId) throw Error("导入文件作用域与当前聊天/分支不一致");
 		return this.cancelPending(), this.hostAdapter?.clearScenePacket?.(), this.state = {
 			...n,
 			version: Math.max(n.version, this.state.version) + 1
-		}, this.registry = new Rf(n.registrySnapshot), this.logs = Q(Array.isArray(t.logs) ? t.logs : [], this.secrets()), this.storage.replaceLogs(this.logs), t.settings && (this.settings = fp(Q(t.settings)), this.storage.writeSettings(this.settings), this.setAdapters(Ep(this.settings))), this.emit(), this.state;
+		}, this.registry = new Rf(n.registrySnapshot), this.logs = Q(Array.isArray(t.logs) ? t.logs : [], this.secrets()), this.storage.replaceLogs(this.logs), t.settings && (this.settings = mp(Q(t.settings)), this.storage.writeSettings(this.settings), this.setAdapters(Op(this.settings))), this.emit(), this.state;
 	}
 	playerView() {
-		return Xf(this.state);
+		return $f(this.state);
 	}
 	logExport() {
 		return JSON.stringify(this.logs.map(gd), null, 2);
@@ -7347,27 +7420,27 @@ var Dp = class {
 	dispose() {
 		this.cancelPending(), this.unsubScope?.(), this.unsubNarrative?.(), this.hostAdapter?.dispose?.();
 	}
-}, $ = (e) => e == null ? e : JSON.parse(JSON.stringify(e)), Op = (e) => e != null && e !== "" && Number.isInteger(Number(e)) && Number(e) >= 0 ? Number(e) : null, kp = (e) => !!e && (e.role === "assistant" || e.role == null && e.is_user === !1 && e.extra?.type !== "narrator"), Ap = [
+}, $ = (e) => e == null ? e : JSON.parse(JSON.stringify(e)), Ap = (e) => e != null && e !== "" && Number.isInteger(Number(e)) && Number(e) >= 0 ? Number(e) : null, jp = (e) => !!e && (e.role === "assistant" || e.role == null && e.is_user === !1 && e.extra?.type !== "narrator"), Mp = [
 	"chatId",
 	"branchId",
 	"messageId",
 	"swipeId",
 	"messageUid"
-], jp = (e, t, n = !1) => !!e && !!t && Ap.every((n) => e[n] == null || String(e[n]) === String(t[n])) && (!n || e.scopeEpoch == null || e.scopeEpoch === t.scopeEpoch), Mp = (e) => Object.fromEntries(Ap.map((t) => [t, e[t]]));
-function Np(e) {
-	return Array.isArray(e) ? `[${e.map(Np).join(",")}]` : e && typeof e == "object" ? `{${Object.keys(e).sort().map((t) => `${JSON.stringify(t)}:${Np(e[t])}`).join(",")}}` : JSON.stringify(e);
+], Np = (e, t, n = !1) => !!e && !!t && Mp.every((n) => e[n] == null || String(e[n]) === String(t[n])) && (!n || e.scopeEpoch == null || e.scopeEpoch === t.scopeEpoch), Pp = (e) => Object.fromEntries(Mp.map((t) => [t, e[t]]));
+function Fp(e) {
+	return Array.isArray(e) ? `[${e.map(Fp).join(",")}]` : e && typeof e == "object" ? `{${Object.keys(e).sort().map((t) => `${JSON.stringify(t)}:${Fp(e[t])}`).join(",")}}` : JSON.stringify(e);
 }
-function Pp(e) {
-	return Array.isArray(e) ? e.map(Pp) : !e || typeof e != "object" ? e : Object.fromEntries(Object.entries(e).filter(([e]) => ![
+function Ip(e) {
+	return Array.isArray(e) ? e.map(Ip) : !e || typeof e != "object" ? e : Object.fromEntries(Object.entries(e).filter(([e]) => ![
 		"apiKey",
 		"api_key",
 		"authorization"
-	].includes(e)).map(([e, t]) => [e, Pp(t)]));
+	].includes(e)).map(([e, t]) => [e, Ip(t)]));
 }
-function Fp(e) {
+function Lp(e) {
 	return e?.extra?.battle_v2_message_uuid || e?.extra?.message_uuid || e?.swipe_info?.find((e) => e?.battle_v2_message_uuid)?.battle_v2_message_uuid || e?.swipes_info?.find((e) => e?.battle_v2_message_uuid)?.battle_v2_message_uuid;
 }
-var Ip = class {
+var Rp = class {
 	constructor({ contextProvider: e = () => globalThis.SillyTavern?.getContext?.() || {}, helper: t, eventEmitter: n, eventTypes: r, windowRef: i = globalThis, extensionName: a = "st-xybattle-sys" } = {}) {
 		Object.assign(this, {
 			contextProvider: e,
@@ -7388,18 +7461,18 @@ var Ip = class {
 		return String(e.chatId ?? e.getCurrentChatId?.() ?? e.chat?.id ?? "");
 	}
 	explicitMessageId(e) {
-		return Op(e.messageId ?? e.message_id ?? e.message?.message_id);
+		return Ap(e.messageId ?? e.message_id ?? e.message?.message_id);
 	}
 	latestAssistantId(e) {
 		if (!Array.isArray(e.chat)) return null;
-		for (let t = e.chat.length - 1; t >= 0; --t) if (kp(e.chat[t])) return t;
+		for (let t = e.chat.length - 1; t >= 0; --t) if (jp(e.chat[t])) return t;
 		return null;
 	}
 	storedAnchorId(e, t) {
 		if (!Array.isArray(e.chat)) return null;
 		for (let n = e.chat.length - 1; n >= 0; --n) {
 			let r = e.chat[n], i = r?.swipe_info?.[r.swipe_id ?? 0]?.battle_v2 || r?.extra?.battle_v2;
-			if (kp(r) && i?.schema === "battle_v2_host_store" && i.scope?.chatId === t && i.scope?.messageId === n && i.scope?.swipeId === (r.swipe_id ?? 0)) return n;
+			if (jp(r) && i?.schema === "battle_v2_host_store" && i.scope?.chatId === t && i.scope?.messageId === n && i.scope?.swipeId === (r.swipe_id ?? 0)) return n;
 		}
 		return null;
 	}
@@ -7418,7 +7491,7 @@ var Ip = class {
 		}
 		let r = t.chat?.[e] || (this.explicitMessageId(t) === e ? t.message : null);
 		if (!r) return null;
-		let i = r.swipes || [r.mes ?? r.message ?? ""], a = Op(r.swipe_id ?? r.swipeId) ?? 0, o = Array.from({ length: i.length }, (e, t) => $(r.swipe_info?.[t] ?? r.swipes_info?.[t] ?? (t === a ? r.extra : {}) ?? {}));
+		let i = r.swipes || [r.mes ?? r.message ?? ""], a = Ap(r.swipe_id ?? r.swipeId) ?? 0, o = Array.from({ length: i.length }, (e, t) => $(r.swipe_info?.[t] ?? r.swipes_info?.[t] ?? (t === a ? r.extra : {}) ?? {}));
 		return o[a] = {
 			...$(r.extra || {}),
 			...o[a]
@@ -7436,7 +7509,7 @@ var Ip = class {
 	scope() {
 		let e = this.context(), t = this.chatId(e), n = this.explicitMessageId(e), r = this.anchor?.chatId === t ? this.anchor.messageId : null, i = !1;
 		if (n != null && (r = n), r == null && (r = this.storedAnchorId(e, t), i = r != null, r ??= this.latestAssistantId(e), r == null)) try {
-			r = Op(this.helper()?.getCurrentMessageId?.());
+			r = Ap(this.helper()?.getCurrentMessageId?.());
 		} catch {}
 		let a;
 		try {
@@ -7445,7 +7518,7 @@ var Ip = class {
 			a = null;
 		}
 		let o = e.chat?.[r] || (n === r ? e.message : null);
-		if (!t || !kp(a) || Op(a?.swipe_id) == null) return this.publishScope({
+		if (!t || !jp(a) || Ap(a?.swipe_id) == null) return this.publishScope({
 			chatId: t || "default-chat",
 			branchId: "main",
 			messageId: null,
@@ -7454,7 +7527,7 @@ var Ip = class {
 			available: !1,
 			writable: !1
 		}), this.anchor = null, { ...this.currentScope };
-		let s = Fp(o) || Fp(a), c = this.anchor?.chatId === t && this.anchor.messageId === r && (o ? o === this.anchor.raw || s === this.anchor.messageUid : !s || s === this.anchor.messageUid), l = s || (c ? this.anchor.messageUid : o && this.messageUids.get(o));
+		let s = Lp(o) || Lp(a), c = this.anchor?.chatId === t && this.anchor.messageId === r && (o ? o === this.anchor.raw || s === this.anchor.messageUid : !s || s === this.anchor.messageUid), l = s || (c ? this.anchor.messageUid : o && this.messageUids.get(o));
 		l ||= globalThis.crypto?.randomUUID?.() || `battle-message-${Date.now()}-${Math.random().toString(36).slice(2)}`, o && this.messageUids.set(o, l);
 		let u = this.latestAssistantId(e), d = c ? this.anchor.writable : i || u == null || u === r;
 		return this.anchor = {
@@ -7475,7 +7548,7 @@ var Ip = class {
 	}
 	publishScope(e, t = !1) {
 		let n = this.currentScope;
-		if (t || !n || !jp(n, e) || n.available !== e.available || n.writable !== e.writable) {
+		if (t || !n || !Np(n, e) || n.available !== e.available || n.writable !== e.writable) {
 			this.epoch += 1, this.currentScope = {
 				...e,
 				scopeEpoch: this.epoch
@@ -7489,7 +7562,7 @@ var Ip = class {
 	validateScope(e, { writable: t = !1 } = {}) {
 		let n = this.scope();
 		if (!n.available) throw Error("No assistant message anchor is available");
-		if (!jp(e, n, !0)) throw Error("Host scope changed; refusing a late cross-chat or cross-swipe operation");
+		if (!Np(e, n, !0)) throw Error("Host scope changed; refusing a late cross-chat or cross-swipe operation");
 		if (t && !n.writable) throw Error("Historical message anchors are read-only");
 		return n;
 	}
@@ -7527,7 +7600,7 @@ var Ip = class {
 				scope: n,
 				capability: t
 			};
-			if (r.schema !== "battle_v2_host_store" || !jp(r.scope, n) || !jp(r.state?.scope || r.scope, n)) throw Error("Stored battle_v2 scope does not match this message branch");
+			if (r.schema !== "battle_v2_host_store" || !Np(r.scope, n) || !Np(r.state?.scope || r.scope, n)) throw Error("Stored battle_v2 scope does not match this message branch");
 			let i = $(r.state);
 			return i && (i.scope = {
 				...i.scope,
@@ -7553,14 +7626,14 @@ var Ip = class {
 		}
 	}
 	persistReceipt(e, t, n = e?.scope || t?.scope || this.scope()) {
-		let r = { ...n }, i = Pp($(e)), a = Pp($(t)), o = this.writeQueue.catch(() => {}).then(() => this.writeReceipt(i, a, r));
+		let r = { ...n }, i = Ip($(e)), a = Ip($(t)), o = this.writeQueue.catch(() => {}).then(() => this.writeReceipt(i, a, r));
 		return this.writeQueue = o, o;
 	}
 	async writeReceipt(e, t, n) {
 		let r = this.capability();
 		try {
 			let i = this.validateScope(n, { writable: !0 });
-			if (e?.scope && !jp(e.scope, i, !0) || t?.scope && !jp(t.scope, i, !0)) throw Error("Receipt/session scope mismatch");
+			if (e?.scope && !Np(e.scope, i, !0) || t?.scope && !Np(t.scope, i, !0)) throw Error("Receipt/session scope mismatch");
 			if (r.write === "unavailable" || r.save !== "awaitable-save-chat") return {
 				persisted: !1,
 				confirmed: !1,
@@ -7571,15 +7644,15 @@ var Ip = class {
 			let a = this.readMessageSync(i.messageId);
 			if (!a || a.swipe_id !== i.swipeId) throw Error("Anchored swipe is no longer selected");
 			let o = a.swipes_info?.[i.swipeId]?.battle_v2;
-			if (o && (o.schema !== "battle_v2_host_store" || !jp(o.scope, i))) throw Error("Existing host store has an incompatible scope/schema");
-			let s = Np(Mp(i)), c = Math.max(Number(e?.version ?? 0), Number(t?.version ?? 0));
+			if (o && (o.schema !== "battle_v2_host_store" || !Np(o.scope, i))) throw Error("Existing host store has an incompatible scope/schema");
+			let s = Fp(Pp(i)), c = Math.max(Number(e?.version ?? 0), Number(t?.version ?? 0));
 			if (!Number.isFinite(c) || c < 0) throw Error("Invalid host store version");
 			let l = e?.actionId && o?.receipts?.[e.actionId], u = e && {
 				...e,
-				scope: Mp(i)
+				scope: Pp(i)
 			};
 			if (o && c < o.version) {
-				if (!this.uncertainScopes.has(s) && l && Np(l) === Np(u)) return {
+				if (!this.uncertainScopes.has(s) && l && Fp(l) === Fp(u)) return {
 					persisted: !0,
 					confirmed: !0,
 					scope: i,
@@ -7599,7 +7672,7 @@ var Ip = class {
 					"before",
 					"after",
 					"narrativePacket"
-				]) if (l.status !== "prepared" && Np(l[e]) !== Np(u[e])) throw Error("Conflicting duplicate actionId refused");
+				]) if (l.status !== "prepared" && Fp(l[e]) !== Fp(u[e])) throw Error("Conflicting duplicate actionId refused");
 				let t = {
 					prepared: 0,
 					committed: 1,
@@ -7610,18 +7683,18 @@ var Ip = class {
 			let d = {
 				...o || {},
 				schema: "battle_v2_host_store",
-				scope: Mp(i),
+				scope: Pp(i),
 				version: Math.max(c, o?.version || 0),
 				state: t ? {
 					...t,
 					scope: {
 						...t.scope,
-						...Mp(i)
+						...Pp(i)
 					}
 				} : o?.state || null,
 				receipts: { ...o?.receipts }
 			};
-			if (u && (d.receipts[e.actionId] = u, d.lastActionId = e.actionId), !this.uncertainScopes.has(s) && o && Np(o) === Np(d)) return {
+			if (u && (d.receipts[e.actionId] = u, d.lastActionId = e.actionId), !this.uncertainScopes.has(s) && o && Fp(o) === Fp(d)) return {
 				persisted: !0,
 				confirmed: !0,
 				scope: i,
@@ -7657,7 +7730,7 @@ var Ip = class {
 			if (this.validateScope(i, { writable: !0 }), await m.saveChat() === !1) throw Error("saveChat returned false");
 			this.validateScope(i, { writable: !0 });
 			let h = this.readMessageSync(i.messageId)?.swipes_info?.[i.swipeId]?.battle_v2;
-			if (Np(h) !== Np(d)) throw Error("Host persistence readback mismatch");
+			if (Fp(h) !== Fp(d)) throw Error("Host persistence readback mismatch");
 			return this.uncertainScopes.delete(s), {
 				persisted: !0,
 				confirmed: !0,
@@ -7681,7 +7754,7 @@ var Ip = class {
 		try {
 			let n = this.validateScope(t, { writable: !0 });
 			if (!e || e.type !== "BATTLE_SCENE_PACKET" || !e.actionId) throw Error("A committed BATTLE_SCENE_PACKET with actionId is required");
-			if (e.scope && !jp(e.scope, n, !0)) throw Error("Scene packet scope mismatch");
+			if (e.scope && !Np(e.scope, n, !0)) throw Error("Scene packet scope mismatch");
 			if (this.capability().injection === "unavailable") return {
 				queued: !1,
 				injected: !1,
@@ -7689,7 +7762,7 @@ var Ip = class {
 				reason: "injectPrompts or generation events are unavailable"
 			};
 			let r = this.readMessageSync(n.messageId)?.swipes_info?.[n.swipeId]?.battle_v2, i = r?.receipts?.[e.actionId];
-			if (this.uncertainScopes.has(Np(Mp(n)))) throw Error("Host persistence is unconfirmed after a failed save");
+			if (this.uncertainScopes.has(Fp(Pp(n)))) throw Error("Host persistence is unconfirmed after a failed save");
 			if (!i || ["prepared", "judging"].includes(i.status)) throw Error("Scene packet has no persisted committed receipt");
 			if (e.version != null && Number(e.version) !== r.version) throw Error("Scene packet version mismatch");
 			return this.clearScenePacket(), this.packet = {
@@ -7807,9 +7880,9 @@ var Ip = class {
 				"MESSAGE_DELETED",
 				"MESSAGE_UPDATED"
 			]) i(r[e] || e, (t) => {
-				this.clearScenePacket(), e === "MESSAGE_SWIPED" && Op(t) != null && this.anchor && (this.anchor = {
+				this.clearScenePacket(), e === "MESSAGE_SWIPED" && Ap(t) != null && this.anchor && (this.anchor = {
 					...this.anchor,
-					messageId: Op(t),
+					messageId: Ap(t),
 					raw: null
 				}), this.scope();
 			});
@@ -7828,7 +7901,7 @@ var Ip = class {
 };
 //#endregion
 //#region src/ui/mount.js
-function Lp({ documentRef: e = globalThis.document, storage: t = globalThis.localStorage, hostAdapter: n, controller: r, chatId: i = "demo-local", branchId: a = "main" } = {}) {
+function zp({ documentRef: e = globalThis.document, storage: t = globalThis.localStorage, hostAdapter: n, controller: r, chatId: i = "demo-local", branchId: a = "main" } = {}) {
 	if (!e) return null;
 	if (e.getElementById("xybattle-v2-root")) return globalThis.XYBattle;
 	let o = e.createElement("div");
@@ -7840,12 +7913,12 @@ function Lp({ documentRef: e = globalThis.document, storage: t = globalThis.loca
 			n.rel = "stylesheet", n.href = t, e.head.appendChild(n);
 		}
 	} catch {}
-	let s = n || (globalThis.SillyTavern?.getContext ? new Ip({ contextProvider: () => globalThis.SillyTavern.getContext() }) : null), c = r || new Dp({
+	let s = n || (globalThis.SillyTavern?.getContext ? new Rp({ contextProvider: () => globalThis.SillyTavern.getContext() }) : null), c = r || new kp({
 		storage: t,
 		chatId: i,
 		branchId: a,
 		hostAdapter: s
-	}), l = ls(dp, {
+	}), l = ls(pp, {
 		controller: c,
 		hostAdapter: s
 	}), u = l.mount(o), d = {
@@ -7865,4 +7938,4 @@ function Lp({ documentRef: e = globalThis.document, storage: t = globalThis.loca
 	return globalThis.XYBattle = d, d;
 }
 //#endregion
-export { Lp as mountBattleSystem };
+export { zp as mountBattleSystem };

@@ -1,4 +1,5 @@
 import { clone, abortIfNeeded } from './common.js';
+import { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, formatScenePacketForStoryAI } from './battle-adjudicator-prompt.js';
 export function normalizeSettings(input = {}) {
   const defaultConfig = { mode: 'unconfigured', endpoint: '', model: '', maxOutput: 1600, temperature: 0.2, repairAttempts: 2, timeoutMs: 60000 };
   const adjudicator = { ...defaultConfig, ...(input.adjudicator || {}) };
@@ -33,7 +34,26 @@ export class MockAdjudicator {
     if ('破绽' in after && techniqueId === 'fanyin-chaoyan') after['破绽'] = ['敌方节奏出现可见偏差'];
     after.statuses = [...new Set([...(after.statuses || []), ...(techniqueId ? [`${techniqueId}:triggered`] : [])])];
     after.effects = [...(after.effects || []).filter((effect) => effect.id !== `mock-${techniqueId}`), ...(techniqueId ? [{ id: `mock-${techniqueId}`, label: `${techniqueId}余势`, techniqueId, remainingRounds: 2, visibility: 'public', ruleRefs: ['mock.semantic.1'] }] : [])];
-    const result = { summary: `离线裁定：${request.action.label}`, before, after, reason: 'Mock 仅验证结构、语义状态和幂等流程。', ruleRefs: ['mock.semantic.1'], publicEvents: [`${request.action.label}造成可观察的节奏变化`], confidence: 0.5 };
+    const enemyImpact = techniqueId === 'xianshi'
+      ? '【对敌影响】弦音水网无形延展缠缚敌手重靴下盘，敌方冲锋攻势受阻，重心脱节'
+      : techniqueId === 'dielang'
+      ? '【对敌影响】三重重浪连续砸击敌方护体煞气罡罩，产生钝力冲击，逼退敌方并造成硬直破绽'
+      : `【对敌影响】${request.action.label}迫使敌方防御身法出现停滞`;
+    const envImpact = techniqueId === 'xianshi'
+      ? '【环境剧变】试剑台周遭弥漫水汽被清越琴音撕裂重聚，在青石板缝隙间织成微光水网'
+      : techniqueId === 'dielang'
+      ? '【环境剧变】湖面激荡掀起半人高碧青水浪屏风，青玄石台受水压与煞气碰撞震裂数处'
+      : `【环境剧变】气劲与灵波激荡四周天地环境`;
+    const rhythmImpact = `${request.action.label}造成可观察的节奏变化`;
+    const result = {
+      summary: `离线裁定：${request.action.label}。${enemyImpact}；${envImpact}。`,
+      before,
+      after,
+      reason: '独立裁定预设推演：功法起手与机理契合水域环境，达成对敌实质牵制与天地水势共鸣。',
+      ruleRefs: ['mock.semantic.1'],
+      publicEvents: [rhythmImpact, enemyImpact, envImpact],
+      confidence: 0.95
+    };
     return result;
   }
 }
@@ -61,12 +81,13 @@ export class HttpJsonAdjudicator {
   constructor(config = {}) { this.config = { timeoutMs: 60000, repairAttempts: 2, ...config }; this.isMock = false; }
   async judge(request, options = {}) {
     const config = { ...this.config, temperature: this.config.temperature ?? request.settings.temperature, maxOutput: this.config.maxOutput ?? request.settings.maxOutput };
-    const messages = [{ role: 'system', content: '你是独立战斗裁定器。只依据给定规则返回 JSON，不描写正文。' }, { role: 'user', content: request.prompt }];
+    const systemPrompt = request.systemPrompt || HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT;
+    const messages = [{ role: 'system', content: systemPrompt }, { role: 'user', content: request.prompt }];
     const response = await chatCompletion(config, messages, { ...options, jsonMode: true });
     try { return extractJson(response.content); } catch (error) { error.rawContent = response.content; throw error; }
   }
   async repair(request, raw, error, options = {}) {
-    const messages = [{ role: 'system', content: '这是结构修复；保持原行动裁定事实，禁止重新裁定。只修复 JSON 和被程序指出的字段。' }, { role: 'user', content: `${request.prompt}\n原返回：${JSON.stringify(raw)}\n程序拒绝原因：${error.message}` }];
+    const messages = [{ role: 'system', content: '这是结构修复；保持原行动裁定事实与对敌对环境影响，禁止重新裁定。只修复 JSON 和被程序指出的字段。' }, { role: 'user', content: `${request.prompt}\n原返回：${JSON.stringify(raw)}\n程序拒绝原因：${error.message}` }];
     const response = await chatCompletion(this.config, messages, { ...options, jsonMode: true }); return extractJson(response.content);
   }
 }
@@ -74,7 +95,8 @@ export class HttpJsonNarrator {
   constructor(config = {}) { this.config = { timeoutMs: 60000, ...config }; this.mode = 'http'; }
   async generate(packet, options = {}) { return this.generateFromBattlePacket(options.originalPrompt ?? this.config.originalPrompt ?? '', packet, options); }
   async generateFromBattlePacket(originalPrompt, packet, options = {}) {
-    const messages = [{ role: 'system', content: `依据已提交战斗场景描写，禁止复判；禁止新增未提交结算。\nBATTLE_SCENE_PACKET:\n${JSON.stringify(packet)}` }, { role: 'user', content: originalPrompt || '继续描写这一已提交战斗场景。' }];
+    const formatted = formatScenePacketForStoryAI(packet, originalPrompt);
+    const messages = [{ role: 'system', content: `依据已提交战斗场景描写，禁止复判；禁止新增未提交结算。\n${formatted}` }, { role: 'user', content: originalPrompt || '继续描写这一已提交战斗场景。' }];
     const response = await chatCompletion(this.config, messages, options); return { text: typeof response.content === 'string' ? response.content : JSON.stringify(response.content), metadata: response.metadata };
   }
   async rewrite(packet, prior, options = {}) { return this.generateFromBattlePacket(`${options.originalPrompt ?? this.config.originalPrompt ?? ''}\n重写正文，保持提交事实：${prior?.text || ''}`, packet, options); }
