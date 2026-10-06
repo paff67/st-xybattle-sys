@@ -94,7 +94,33 @@ export class BattleController {
   continueNext(options = {}){this.assertIdleRequest();if(this.bridgeQueuedAction)throw new Error('本轮场景包仍等待主剧情生成；请先生成正文或跳过本轮正文');this.state=nextRound(this.state, options);this.emit();return this.state;}
   assertIdleRequest(){if(this.inFlight)throw new Error('正在处理本轮请求，请等待或停止');}
   async persistToHost(record,state,scope){if(!this.hostAdapter)return{persisted:true,confirmed:true,localOnly:true};try{const result=await this.hostAdapter.persistReceipt?.(stripSecrets(record,this.secrets()),stripSecrets(state,this.secrets()),scope);this.log({kind:'host_persistence',actionId:record?.actionId,capability:result});return result||{persisted:false,confirmed:false,reason:'宿主未返回保存确认'};}catch(error){const result={persisted:false,confirmed:false,reason:error.message};this.log({kind:'host_persistence',capability:result});return result;}}
-  async queueMainStory(record,scope){await this.checkpoints;const saved=await this.persistToHost(record,this.state,scope);if(this.hostAdapter&&(!saved?.persisted||!saved?.confirmed)){this.state.hostSync={status:'pending',reason:saved?.reason};this.storage.writeSession(stripSecrets(this.state,this.secrets()));this.log({kind:'host_injection',actionId:record.actionId,capability:{queued:false,reason:'宿主保存未确认，已保留本地提交；重试保存不会重新裁定'}});return{queued:false,pending:true};}if(!this.hostAdapter){this.log({kind:'host_injection',actionId:record.actionId,capability:{queued:false,reason:'宿主不可用；可复制场景包或使用独立正文API'}});return;}try{const result=await this.hostAdapter.injectScenePacket?.(record.narrativePacket,scope);this.log({kind:'host_injection',actionId:record.actionId,capability:result});if(result?.queued)this.bridgeQueuedAction=record.actionId;return result;}catch(error){this.log({kind:'host_injection',capability:{queued:false,reason:error.message}});}}
+  async queueMainStory(record, scope) {
+    await this.checkpoints;
+    const saved = await this.persistToHost(record, this.state, scope);
+    if (this.hostAdapter && (!saved?.persisted || !saved?.confirmed)) {
+      this.state.hostSync = { status: 'pending', reason: saved?.reason };
+      this.storage.writeSession(stripSecrets(this.state, this.secrets()));
+      this.log({ kind: 'host_injection', actionId: record.actionId, capability: { queued: false, reason: '宿主保存未确认，已保留本地提交；重试保存不会重新裁定' } });
+      return { queued: false, pending: true };
+    }
+    if (!this.hostAdapter) return { queued: false, reason: '宿主不可用；可复制场景包或使用独立正文API' };
+    try {
+      const result = await this.hostAdapter.injectScenePacket?.(record.narrativePacket, scope);
+      this.log({ kind: 'host_injection', actionId: record.actionId, capability: result });
+      if (!result?.queued) return result;
+      this.bridgeQueuedAction = record.actionId;
+      // Set the action before native send; completion can arrive immediately.
+      const send = this.hostAdapter.sendQueuedScenePacket?.(scope) || { requested: false, reason: '宿主不支持自动发送，场景包已保留' };
+      this.log({ kind: 'host_auto_send', actionId: record.actionId, capability: send });
+      this.state.lastError = send.requested ? null : send.reason;
+      this.storage.writeSession(stripSecrets(this.state, this.secrets()));
+      this.onChange(this.state, getPlayerView(this.state));
+      return { ...result, sendRequested: send.requested, reason: send.reason };
+    } catch (error) {
+      this.log({ kind: 'host_injection', capability: { queued: false, reason: error.message } });
+      return { queued: false, reason: error.message };
+    }
+  }
   async submit(action){await this.ready;await this.checkpoints;const existing=action?.actionId?this.state.history.find((record)=>record.actionId===action.actionId):null;if(existing)return{state:this.state,record:clone(existing),deduplicated:true};this.assertIdleRequest();const epoch=this.epoch;const controller=new AbortController();this.inFlight=controller;const scope=clone(this.hostAdapter?.scope?.()||this.state.scope);const save=async(state)=>{if(epoch!==this.epoch)throw new DOMException('作用域已变化','AbortError');this.state=state;this.emit();await this.checkpoints;};
     try{const result=await judgeAndCommit(this.state,action,{adjudicator:this.adjudicator,narrator:this.narrator,settings:this.settings,signal:controller.signal,save,logger:(entry)=>{if(epoch===this.epoch)this.log(entry);},onCommit:async(record,state)=>{if(epoch!==this.epoch)return;const saved=await this.persistToHost(record,state,scope);abortIfNeeded(controller.signal);return{allowed:!this.hostAdapter||!!(saved?.persisted&&saved?.confirmed),reason:saved?.reason};}});if(epoch!==this.epoch)return{stale:true,state:this.state};this.state=result.state;this.emit();await this.checkpoints;const saved=await this.persistToHost(result.record,this.state,scope);if(this.settings.autoNarrative&&this.settings.narrator.mode==='main_story'&&saved?.persisted&&saved?.confirmed)await this.queueMainStory(result.record,scope);else if(this.settings.narrator.mode==='main_story'&&this.hostAdapter)this.state.hostSync={status:'pending',reason:saved?.reason};this.storage.writeSession(stripSecrets(this.state,this.secrets()));this.onChange(this.state,getPlayerView(this.state));return result;}catch(error){if(epoch!==this.epoch||controller.signal.aborted)return{stale:true,state:this.state};throw error;}finally{if(this.inFlight===controller)this.inFlight=null;}}
   async rewrite(actionId){await this.ready;this.assertIdleRequest();this.hostAdapter?.clearScenePacket?.();const epoch=this.epoch;const controller=new AbortController();this.inFlight=controller;const scope=clone(this.hostAdapter?.scope?.()||this.state.scope);const save=async(state)=>{if(epoch!==this.epoch)throw new DOMException('作用域已变化','AbortError');this.state=state;this.emit();await this.checkpoints;};try{const result=await rewriteNarrative(this.state,actionId,this.narrator,{signal:controller.signal,save,logger:(entry)=>{if(epoch===this.epoch)this.log(entry);},originalPrompt:this.settings.originalPrompt});if(epoch!==this.epoch)return{stale:true,state:this.state};this.state=result.state;await this.persistToHost(result.record,this.state,scope);this.emit();await this.checkpoints;if(this.settings.narrator.mode==='main_story')await this.queueMainStory(result.record,scope);return result;}catch(error){if(epoch!==this.epoch||controller.signal.aborted)return{stale:true,state:this.state};throw error;}finally{if(this.inFlight===controller)this.inFlight=null;}}

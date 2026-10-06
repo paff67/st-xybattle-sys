@@ -1,3 +1,5 @@
+import { projectScenePacket } from './scene-packet.js';
+import { stableStringify } from './common.js';
 /**
  * A small, host-agnostic bridge for carrying a committed battle packet in the
  * normal user message.  The marker is deliberately plain text: SillyTavern's
@@ -64,7 +66,7 @@ export function serializeBattlePacket(packet, scope = {}) {
   const token = encodeURIComponent(JSON.stringify(header));
   // Escape the closing token inside JSON string values. JSON.parse restores
   // the original characters while the outer delimiter stays unambiguous.
-  const bodyPacket = { ...clone(packet), version: header.version };
+  const bodyPacket = { ...projectScenePacket(packet), version: header.version };
   const body = JSON.stringify(bodyPacket).replaceAll(XY_BATTLE_PACKET_CLOSE, '\\u005b\\u005b/XY_BATTLE_PACKET]]');
   return `${XY_BATTLE_PACKET_OPEN}${token}]]\n${body}\n${XY_BATTLE_PACKET_CLOSE}`;
 }
@@ -144,7 +146,15 @@ export function appendBattlePacket(source, packet, scope = {}) {
   const identity = JSON.stringify([header.branchId, header.actionId]);
   const existing = parseBattlePackets(text);
   const same = existing.find((item) => item.key === key);
-  if (same) return { text, marker: same.raw, match: same, packet: clone(same.packet), key, identity, deduplicated: true, appended: false };
+  if (same) {
+    const expected = { ...projectScenePacket(packet), version: header.version };
+    if (stableStringify(projectScenePacket(same.packet)) !== stableStringify(expected)) throw new Error('Input already contains different facts for this XY_BATTLE_PACKET');
+    if (stableStringify(same.packet) === stableStringify(expected)) return { text, marker: same.raw, match: same, packet: clone(same.packet), key, identity, deduplicated: true, appended: false };
+    // Upgrade a legacy marker already in the input, preserving surrounding user
+    // text. Cleanup must not put the old bloated marker back into the composer.
+    const marker = serializeBattlePacket(packet, scope);
+    return { text: text.slice(0, same.start) + marker + text.slice(same.end), marker, packet: expected, key, identity, deduplicated: false, appended: false, replaced: true, previousValue: text.slice(0, same.start) + text.slice(same.end) };
+  }
   const conflict = existing.find((item) => item.identity === identity);
   if (conflict) throw new Error('An XY_BATTLE_PACKET for this action and branch already has a different version');
   const marker = serializeBattlePacket(packet, scope);
@@ -230,7 +240,7 @@ export class HostInputBridge {
       return { queued: true, injected: true, deduplicated: true, key, capability: this.capability() };
     }
     this.write(element, appended.text);
-    this.active = { key, identity: appended.identity, packet: clone(packet), marker: appended.marker, element, previousValue, injectedValue: appended.text, scope: clone(scope), owns: true };
+    this.active = { key, identity: appended.identity, packet: clone(packet), marker: appended.marker, element, previousValue: appended.replaced ? appended.previousValue : previousValue, injectedValue: appended.text, scope: clone(scope), owns: true };
     return { queued: true, injected: true, deduplicated: false, key, capability: this.capability() };
   }
 

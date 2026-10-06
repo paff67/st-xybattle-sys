@@ -48,10 +48,10 @@
           class="xy-ctrl-btn btn-inject"
           :disabled="isBusy"
           @click="$emit('queue')"
-          title="注入酒馆主剧情下条提示词"
+          title="注入本轮场景包并自动发送到酒馆"
         >
           <Icons name="send" />
-          <span>注为主剧情</span>
+          <span>发送主剧情</span>
         </button>
 
         <button 
@@ -172,6 +172,7 @@ const emit = defineEmits([
   'queue',
   'skip-narrative',
   'retry-host',
+  'toggle-history',
   'update:actionLabel',
   'update:techniqueId'
 ]);

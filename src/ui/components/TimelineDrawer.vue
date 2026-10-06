@@ -32,13 +32,9 @@
                 <span>{{ item.outcome || '天道判定无明文' }}</span>
               </div>
 
-              <div class="xy-t-narrative" v-if="item.narrative">
-                <b>正文演化：</b>
-                <p>{{ item.narrative }}</p>
-              </div>
-              <div v-else class="xy-t-narrative-empty">
-                <span>裁定已确立；等待主剧情推进演化……</span>
-              </div>
+              <ul v-if="item.publicEvents?.length" class="xy-t-events">
+                <li v-for="(event, index) in item.publicEvents" :key="index">{{ event }}</li>
+              </ul>
             </article>
           </div>
 
@@ -80,6 +76,8 @@ function statusLabel(s) {
 </script>
 
 <style scoped>
+.xy-t-events { margin: 8px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.65; overflow-wrap: anywhere; }
+.xy-t-events li + li { margin-top: 4px; }
 .xy-timeline-drawer-backdrop {
   position: absolute;
   inset: 0;

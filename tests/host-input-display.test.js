@@ -33,6 +33,22 @@ test('HostInputBridge appends once, dispatches input/change, and clears only its
   bridge.dispose();
 });
 
+test('existing legacy marker is upgraded without duplicating facts or restoring stale instructions on cleanup', () => {
+  const packet = { ...makePacket(), committedFacts: ['本轮未受伤'], descriptionRequirements: ['强写创伤'], storyAiDirective: '完整旧包', playerVisibleContext: { currentState: '过时状态' } };
+  const header = encodeURIComponent(JSON.stringify({ actionId: packet.actionId, version: packet.version, branchId: packet.scope.branchId }));
+  const legacy = `[[XY_BATTLE_PACKET v1 ${header}]]\n${JSON.stringify(packet)}\n[[/XY_BATTLE_PACKET]]`;
+  const dom = new JSDOM('<textarea id="send_textarea"></textarea>');
+  const textarea = dom.window.document.querySelector('textarea'); textarea.value = `玩家前文\n${legacy}\n玩家后文`;
+  const bridge = new HostInputBridge({ documentRef: dom.window.document, windowRef: dom.window, bindPageLifecycle: false });
+  assert.equal(bridge.append(packet, { version: 3 }).queued, true);
+  assert.equal(parseBattlePackets(textarea.value).length, 1);
+  assert.doesNotMatch(textarea.value, /强写创伤|完整旧包|过时状态/);
+  assert.match(textarea.value, /本轮未受伤/);
+  bridge.clear();
+  assert.equal(textarea.value, '玩家前文\n\n玩家后文');
+  bridge.dispose(); dom.window.close();
+});
+
 test('display folding works across text nodes and br while preserving ordinary links', () => {
   const dom = new JSDOM('<div class="mes_text"></div>');
   const root = dom.window.document.querySelector('.mes_text');

@@ -260,8 +260,7 @@ const selectedTermAvailability = computed(() => {
 
 // 最新已提交记录
 const latestCommittedRecord = computed(() => {
-  const h = props.state.history || [];
-  return h.filter(r => ['committed', 'complete'].includes(r.status)).at(-1) || null;
+  return props.view.timeline?.at(-1) || null;
 });
 
 const hasBridgeQueued = computed(() => {

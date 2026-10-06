@@ -24,7 +24,7 @@
     <!-- 主工作台窗口 (The Master Daoist Workbench Dialog) -->
     <Transition name="xy-modal-fade">
       <div 
-        v-if="isOpen" 
+        v-show="isOpen"
         class="xy-modal-backdrop" 
         @click.self="close"
       >
@@ -64,10 +64,11 @@
           </Transition>
 
           <!-- 主内容区域 (按 Tab 切换) -->
-          <div class="xy-content-body xy-custom-scroll" :class="{ 'is-scrollable': currentTab !== 'workbench' || preparingCharacters }">
+          <div :key="draftScopeKey" class="xy-content-body xy-custom-scroll" :class="{ 'is-scrollable': currentTab !== 'workbench' || preparingCharacters }">
             <!-- 1. 战场对决主舞台 -->
             <CharacterConfirmationPanel
-              v-if="currentTab === 'workbench' && preparingCharacters"
+              v-if="preparingCharacters"
+              v-show="currentTab === 'workbench'"
               :preparation="characterPanel"
               :busy="characterBusy"
               @prepare="handlePrepareCharacters"
@@ -92,7 +93,7 @@
 
             <!-- 2. 独立机枢设置 -->
             <SettingsPanel 
-              v-if="currentTab === 'settings'"
+              v-show="currentTab === 'settings'"
               :settings="controller.settings"
               @save="handleSaveSettings"
               @back="currentTab = 'workbench'"
@@ -100,7 +101,7 @@
 
             <!-- 3. 演武经卷与存档 -->
             <DataPanel 
-              v-else-if="currentTab === 'data'"
+              v-show="currentTab === 'data'"
               :snapshot="currentSnapshot"
               @load-demo="handleLoadDemo"
               @export-full="handleExportFull"
@@ -110,7 +111,7 @@
               @import-save="handleImportSave"
             />
             <ContentLibraryPanel
-              v-else-if="currentTab === 'library'"
+              v-show="currentTab === 'library'"
               :store="contentStore"
               @changed="handleContentChanged"
               @export="handleContentExport"
@@ -119,7 +120,7 @@
 
             <!-- 4. 天道秘录与审计 -->
             <DeveloperPanel 
-              v-else-if="currentTab === 'developer'"
+              v-show="currentTab === 'developer'"
               :ai-context="currentAiContext"
               :logs="controller.logs || []"
               @copy-debug="handleCopyDebug"
@@ -165,7 +166,18 @@ const characterPanel = shallowRef(null);
 const view = shallowRef(props.controller.playerView());
 const state = shallowRef(props.controller.state);
 
+// Closing only hides this subtree. A different conversation/branch/session
+// remounts it, so an unfinished action cannot leak into another battle.
+const scopeKey = (value) => JSON.stringify([value.scope?.chatId, value.scope?.branchId, value.sessionId]);
+const draftScopeKey = computed(() => scopeKey(state.value));
+
 function updateViews() {
+  if (scopeKey(state.value) !== scopeKey(props.controller.state)) {
+    preparingCharacters.value = false;
+    characterPanel.value = null;
+    characterBusy.value = false;
+    notification.value = '';
+  }
   view.value = props.controller.playerView();
   state.value = props.controller.state;
 }
@@ -284,15 +296,17 @@ async function handleStart() {
 }
 
 async function handlePrepareCharacters() {
+  const preparationScope = draftScopeKey.value;
   characterBusy.value = true;
   characterPanel.value = null;
   try {
     notification.value = '';
-    characterPanel.value = await props.controller.prepareCharacters();
+    const prepared = await props.controller.prepareCharacters();
+    if (preparationScope === draftScopeKey.value) characterPanel.value = prepared;
   } catch (error) {
-    notification.value = error.message;
+    if (preparationScope === draftScopeKey.value) notification.value = error.message;
   } finally {
-    characterBusy.value = false;
+    if (preparationScope === draftScopeKey.value) characterBusy.value = false;
   }
 }
 
@@ -362,8 +376,8 @@ async function handleQueue() {
     const latest = state.value.history?.filter(r => ['committed', 'complete'].includes(r.status)).at(-1);
     if (!latest) return;
     const scope = props.hostAdapter?.scope?.() || state.value.scope;
-    await props.controller.queueMainStory(latest, scope);
-    notification.value = '场景包已交给宿主适配器；请在酒馆正常发送下一条 Prompt。';
+    const queued = await props.controller.queueMainStory(latest, scope);
+    notification.value = queued?.sendRequested ? '场景包已注入，已触发酒馆发送。' : queued?.reason || '场景包尚未发送，请检查宿主状态。';
     updateViews();
   } catch (err) {
     notification.value = err.message;

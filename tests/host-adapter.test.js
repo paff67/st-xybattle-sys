@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { BattleHostAdapter, createHostAdapter } from '../src/host-adapter.js';
 import { BattleController } from '../src/battle-controller.js';
 import { MainStoryNarrator, MockAdjudicator } from '../src/adapters.js';
+import { JSDOM } from 'jsdom';
+import { parseBattlePackets } from '../src/host-input-bridge.js';
 
 // These stubs follow the reviewed TavernHelper signatures. This suite is offline;
 // it does not verify a loaded extension, browser events, or a running ST server.
@@ -17,7 +19,7 @@ class Events {
 function rawAssistant(text = 'A', extra = { unrelated: 'keep' }) {
   return { name: 'Assistant', is_user: false, mes: text, swipe_id: 0, swipes: [text, 'B'], variables: [{ stats: { qi: 9 } }, { stats: { qi: 4 } }], extra: clone(extra), swipe_info: [clone(extra), { otherBranch: true }] };
 }
-function fixture({ noHelper = false, noSave = false } = {}) {
+function fixture({ noHelper = false, noSave = false, documentRef } = {}) {
   const events = new Events(), page = new Events(), calls = { read: [], write: [], save: 0, inject: [], uninject: 0 };
   let context = { chatId: 'chat-1', chat: [rawAssistant()], eventSource: events };
   let disk = null;
@@ -41,7 +43,7 @@ function fixture({ noHelper = false, noSave = false } = {}) {
     injectPrompts(prompts, options) { calls.inject.push([prompts, options]); let removed = false; return { uninject() { if (!removed) calls.uninject += 1; removed = true; } }; }
   };
   const windowRef = { addEventListener: (name, handler) => page.on(name, handler), removeEventListener: (name, handler) => page.off(name, handler) };
-  const options = { contextProvider: () => context, helper: noHelper ? null : helper, windowRef };
+  const options = { contextProvider: () => context, helper: noHelper ? null : helper, windowRef, documentRef };
   const adapter = new BattleHostAdapter(options);
   return { adapter, helper, events, page, calls, options, context: () => context, disk: () => disk, changeChat(chatId, chat = [rawAssistant('New')]) { context = { ...context, chatId, chat }; }, reload() { context.chat = clone(disk); }, selectSwipe(index) { const raw = context.chat[0]; raw.swipe_id = index; raw.mes = raw.swipes[index]; raw.extra = clone(raw.swipe_info[index]); } };
 }
@@ -49,6 +51,77 @@ function data(scope, version = 3, actionId = 'action-1', status = 'committed') {
   return { receipt: { schema: 'battle_v2_receipt', actionId, status, version, scope }, state: { schema: 'battle_v2', version, phase: 'committed', sessionId: 'battle-1', scope, history: [] }, packet: { type: 'BATTLE_SCENE_PACKET', actionId, version, scope, committedFacts: ['A visible event'], preserveUserPrompt: true } };
 }
 async function queue(host) { const scope = host.adapter.scope(), item = data(scope); assert.equal((await host.adapter.persistReceipt(item.receipt, item.state, scope)).confirmed, true); assert.equal((await host.adapter.injectScenePacket(item.packet, scope)).queued, true); return item; }
+
+test('committed controller action automatically sends the native composer once and tracks normal story completion', async () => {
+  const dom = new JSDOM('<textarea id="send_textarea">玩家原始文字</textarea><button id="send_but">发送</button>');
+  const host = fixture({ documentRef: dom.window.document });
+  const controller = await attachedController(host);
+  const input = dom.window.document.querySelector('textarea');
+  let clicks = 0, started;
+  dom.window.document.querySelector('button').addEventListener('click', () => {
+    clicks += 1;
+    started = (async () => {
+      await host.events.emit('GENERATION_STARTED', 'normal');
+      await host.events.emit('GENERATION_AFTER_COMMANDS', 'normal');
+      host.context().chat.push({ is_user: true, mes: input.value });
+      input.value = '';
+      await host.events.emit('USER_MESSAGE_RENDERED', host.context().chat.length - 1);
+    })();
+  });
+  try {
+    controller.start();
+    await controller.submit({ actionId: 'auto-send', label: '试探' });
+    await started;
+    assert.equal(clicks, 1);
+    assert.match(host.context().chat.at(-1).mes, /^玩家原始文字/);
+    assert.equal(parseBattlePackets(host.context().chat.at(-1).mes).length, 1);
+    assert.equal(host.calls.inject.length, 0, 'input and extension prompt must not both inject');
+    assert.equal(host.adapter.sendQueuedScenePacket(host.adapter.scope()).deduplicated, true);
+    assert.equal(clicks, 1);
+    assert.equal(controller.bridgeQueuedAction, 'auto-send');
+    host.context().chat.push(rawAssistant('<think>正文思考</think>主剧情正文'));
+    await host.events.emit('GENERATION_ENDED');
+    assert.equal(controller.bridgeQueuedAction, null);
+    assert.equal(controller.state.history.at(-1).status, 'complete');
+    assert.equal(controller.adjudicator.calls.length, 1);
+    assert.doesNotMatch(JSON.stringify(controller.playerView().timeline), /正文思考|主剧情正文/);
+  } finally { controller.dispose(); dom.window.close(); }
+});
+
+test('auto-send waits for a valid native button and refuses busy, stale or changed-scope sends', async () => {
+  const dom = new JSDOM('<textarea id="send_textarea">草稿</textarea><button id="send_but" disabled>发送</button>');
+  const host = fixture({ documentRef: dom.window.document });
+  let clicks = 0;
+  const button = dom.window.document.querySelector('button'); button.addEventListener('click', () => { clicks += 1; });
+  try {
+    const item = await queue(host);
+    assert.equal(host.adapter.sendQueuedScenePacket(item.receipt.scope).requested, false);
+    assert.match(dom.window.document.querySelector('textarea').value, /草稿/);
+    button.disabled = false;
+    await host.events.emit('GENERATION_STARTED', 'normal');
+    assert.match(host.adapter.sendQueuedScenePacket(item.receipt.scope).reason, /正在生成/);
+    await host.events.emit('GENERATION_STOPPED');
+    await queue(host);
+    const newer = data(item.receipt.scope, 4, 'newer');
+    await host.adapter.persistReceipt(newer.receipt, newer.state, item.receipt.scope);
+    assert.match(host.adapter.sendQueuedScenePacket(item.receipt.scope).reason, /过期/);
+    host.changeChat('different-chat');
+    assert.equal(host.adapter.sendQueuedScenePacket(item.receipt.scope).requested, false);
+    assert.equal(clicks, 0);
+  } finally { host.adapter.dispose(); dom.window.close(); }
+});
+
+test('extension-prompt fallback injects the same minimal facts as the input-box transport', async () => {
+  const host = fixture(), scope = host.adapter.scope(), item = data(scope);
+  item.packet = { ...item.packet, committedFacts: ['无伤试探', '无伤试探'], publicEvents: ['旧事件'], storyAiDirective: '递归旧包', playerVisibleContext: { player: { currentState: '尚未交手' } }, location: '清晨演示台', descriptionRequirements: ['剧烈冲击'] };
+  await host.adapter.persistReceipt(item.receipt, item.state, scope);
+  assert.equal((await host.adapter.injectScenePacket(item.packet, scope)).queued, true);
+  await host.events.emit('GENERATION_AFTER_COMMANDS', 'normal');
+  const content = host.calls.inject[0][0][0].content;
+  assert.deepEqual(JSON.parse(content).committedFacts, ['无伤试探']);
+  assert.doesNotMatch(content, /旧事件|递归旧包|尚未交手|清晨|剧烈冲击/);
+  host.adapter.dispose();
+});
 
 test('scope uses ST chat/message/swipe and stays anchored when generation appends floors', async () => {
   const host = fixture(), first = host.adapter.scope();

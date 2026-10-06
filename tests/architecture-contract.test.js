@@ -82,7 +82,7 @@ test('same actionId is idempotent and narrative receives a committed scene packe
   assert.equal(first.state.phase, 'awaiting_next');
   assert.equal(first.record.status, 'complete');
   assert.equal(first.record.narrativePacket.type, 'BATTLE_SCENE_PACKET');
-  assert.equal(first.record.narrativePacket.preserveUserPrompt, true);
+  assert.equal(first.record.narrativePacket.schema, 'battle_scene_v3');
   assert.equal(adjudicator.calls.length, 1);
   assert.equal(narrator.calls.length, 1);
 

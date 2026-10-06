@@ -1,4 +1,5 @@
 import { publicEnemyProfile } from './combat-profile.js';
+import { createScenePacket, projectScenePacket, publicRoundResult, validateExchange } from './scene-packet.js';
 import { clone, stableStringify, abortIfNeeded } from './common.js';
 import { TechniqueRegistry } from './battle-registry.js';
 import { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, buildAdjudicationPrompt, formatScenePacketForStoryAI } from './battle-adjudicator-prompt.js';
@@ -36,7 +37,7 @@ function positionedActor(actor, semanticState) {
   if (typeof position !== 'string') return actor;
   return { ...actor, visibleInfo: { ...(typeof actor.visibleInfo === 'object' ? actor.visibleInfo : {}), position } };
 }
-export function getPlayerView(state) { return { schema: state.schema, version: state.version, scope: clone(state.scope), phase: state.phase, round: state.round, roundId: state.roundId, scene: clone(state.scene), semanticState: publicSemantic(state.semanticState), causalState: publicCausalState(state.causalState), player: positionedActor(clone(state.actors.player), state.semanticState), enemies: state.actors.enemies.map((enemy) => positionedActor(publicEnemyProfile(enemy), state.semanticState)), timeline: state.history.filter((record) => ['committed','complete'].includes(record.status)).slice(-12).map((record) => ({ actionId: record.actionId, roundId: record.roundId, label: record.action?.label, outcome: record.adjudication?.summary, narrative: record.narrative?.text, status: record.status })) }; }
+export function getPlayerView(state) { return { schema: state.schema, version: state.version, scope: clone(state.scope), phase: state.phase, round: state.round, roundId: state.roundId, scene: clone(state.scene), semanticState: publicSemantic(state.semanticState), causalState: publicCausalState(state.causalState), player: positionedActor(clone(state.actors.player), state.semanticState), enemies: state.actors.enemies.map((enemy) => positionedActor(publicEnemyProfile(enemy), state.semanticState)), timeline: state.history.filter((record) => ['committed','complete'].includes(record.status)).slice(-12).map(publicRoundResult) }; }
 export function getAiReadContext(state) { const actors = clone(state.actors); if (state.characterPreparation && state.characterPreparation.status !== 'confirmed') actors.enemies = []; return { session: { id: state.sessionId, version: state.version, round: state.round, phase: state.phase, scope: clone(state.scope) }, scene: clone(state.scene), actors, semanticState: clone(state.semanticState), causalState: clone(state.causalState), resourceRules: clone(state.resourceRules), registry: clone(state.registrySnapshot), priorCommittedFacts: state.history.filter((r) => ['committed','complete'].includes(r.status)).map((r) => clone(r.adjudication)) }; }
 export function buildAdjudicationRequest(state, action, settings = {}) {
   assertPhase(state, ['awaiting_player']); if (!action || typeof action.label !== 'string' || !action.label.trim()) throw new Error('行动需要非空 label');
@@ -47,7 +48,7 @@ export function buildAdjudicationRequest(state, action, settings = {}) {
   return { type: 'BATTLE_ADJUDICATION_REQUEST', actionId: action.actionId || `${state.sessionId}-a${state.actionSeq + 1}`, roundId: state.roundId, version: state.version, scope: clone(state.scope), settings: { model: config.model || '', temperature: config.temperature ?? 0.2, maxOutput: config.maxOutput ?? 1600, repairAttempts: config.repairAttempts ?? 2 }, action: { label: action.label.trim(), techniqueId: action.techniqueId || null, intent: action.intent || '' }, context, playerVisibleContext: getPlayerView(state), systemPrompt: settings.adjudicationPrompt || config.adjudicationPrompt || HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, prompt: buildAdjudicationPrompt(context, action) };
 }
 function hiddenLeaves(value) { if (!value || typeof value !== 'object') return typeof value === 'string' && value.length > 3 ? [value] : []; return Object.values(value).flatMap(hiddenLeaves); }
-export function validateAdjudication(result, state, { allowMock = false } = {}) {
+export function validateAdjudication(result, state, { allowMock = false, requireExchange = false } = {}) {
   if (!result || typeof result !== 'object' || Array.isArray(result)) throw new Error('裁定响应不是对象');
   for (const key of ['summary','before','after','reason','ruleRefs','publicEvents']) if (!(key in result)) throw new Error(`裁定缺少字段 ${key}`);
   if (typeof result.summary !== 'string' || !result.summary.trim() || typeof result.reason !== 'string' || !result.reason.trim() || !Array.isArray(result.ruleRefs) || !result.ruleRefs.length || !Array.isArray(result.publicEvents)) throw new Error('裁定字段类型或非空约束错误');
@@ -73,16 +74,15 @@ export function validateAdjudication(result, state, { allowMock = false } = {}) 
     if (change.after < (rule.min ?? -Infinity) || change.after > (rule.max ?? Infinity)) throw new Error('资源变化超出世界规则边界');
     if (typeof change.reason !== 'string' || !change.reason.trim() || !Array.isArray(change.ruleRefs) || !change.ruleRefs.length || !change.ruleRefs.some((ref) => rule.ruleRefs.includes(ref)) || change.ruleRefs.some((ref) => !known.has(ref))) throw new Error('资源变化缺少权威reason/ruleRefs');
   }
-  const publiclyVisible = JSON.stringify({ summary: result.summary, publicEvents: result.publicEvents, after: publicSemantic(result.after) }); for (const leaf of state.actors.enemies.flatMap((enemy) => hiddenLeaves(enemy.hidden))) if (publiclyVisible.includes(leaf)) throw new Error('裁定公开结果包含敌方隐藏信息，拒绝发布');
+  const exchange = validateExchange(result.exchange, state, { required: requireExchange });
+  const publiclyVisible = JSON.stringify({ exchange, summary: result.summary, publicEvents: result.publicEvents, after: publicSemantic(result.after) }); for (const leaf of state.actors.enemies.flatMap((enemy) => hiddenLeaves(enemy.hidden))) if (publiclyVisible.includes(leaf)) throw new Error('裁定公开结果包含敌方隐藏信息，拒绝发布');
   const causalChanges = result.causalChanges === undefined ? [] : result.causalChanges;
   if (!Array.isArray(causalChanges) || causalChanges.some((change) => !change || typeof change !== 'object' || Array.isArray(change) || !(change.operation || change.type))) throw new Error('causalChanges 必须是带 operation/type 的对象数组');
   if (causalChanges.some((change) => change.scope && (String(change.scope.chatId) !== String(state.scope.chatId) || String(change.scope.branchId) !== String(state.scope.branchId)))) throw new Error('因果变更作用域不匹配');
-  return { summary: result.summary, before: clone(result.before), after: clone(result.after), reason: result.reason, ruleRefs: clone(result.ruleRefs), publicEvents: result.publicEvents.map(String), ...(result.resourceChanges === undefined ? {} : {resourceChanges: clone(resourceChanges)}), ...(result.causalChanges === undefined ? {} : {causalChanges: clone(causalChanges)}), confidence: Number.isFinite(result.confidence) ? result.confidence : null };
+  return { ...(exchange ? { exchange } : {}), summary: result.summary, before: clone(result.before), after: clone(result.after), reason: result.reason, ruleRefs: clone(result.ruleRefs), publicEvents: result.publicEvents.map(String), ...(result.resourceChanges === undefined ? {} : {resourceChanges: clone(resourceChanges)}), ...(result.causalChanges === undefined ? {} : {causalChanges: clone(causalChanges)}), confidence: Number.isFinite(result.confidence) ? result.confidence : null };
 }
 export function buildNarrativePacket(state, record, request) {
-  const packet = { type: 'BATTLE_SCENE_PACKET', schema: 'battle_v2', scope: clone(state.scope), sessionId: state.sessionId, roundId: record.roundId, actionId: record.actionId, preserveUserPrompt: true, committedFacts: [record.adjudication.summary,...record.adjudication.publicEvents], location: state.scene.location, time: state.scene.time, publicEvents: clone(state.scene.publicEvents), descriptionRequirements: ['细致描写本轮交锋对敌手造成的物理与灵力实质创伤/制约','生动描写本轮交锋对周围地形与天地气象造成的剧烈冲击','保持修者境界与功法机理特色，严守敌我可见信息边界'], prohibitions: ['禁止复判本轮行动胜负','禁止新增未提交数值结算','禁止泄露隐藏敌情'], nextDecisionPoint: '等待玩家选择下一步行动', playerVisibleContext: getPlayerView(state), originalAction: clone(request.action) };
-  packet.storyAiDirective = formatScenePacketForStoryAI(packet);
-  return packet;
+  return createScenePacket(state, record, request.action);
 }
 function normalizeNarrative(value) { return typeof value === 'string' ? { text: value } : { text: String(value?.text || ''), pending: value?.pending === true, metadata: clone(value?.metadata || {}) }; }
 export async function judgeAndCommit(state, action, { adjudicator, narrator, settings = {}, signal, save = () => {}, logger = () => {}, onCommit = () => {} } = {}) {
@@ -94,7 +94,7 @@ export async function judgeAndCommit(state, action, { adjudicator, narrator, set
   let raw, adjudication; const repairLimit = request.settings.repairAttempts;
   try {
     for (let attemptIndex = 0; ; attemptIndex += 1) {
-      try { raw = attemptIndex === 0 ? await adjudicator.judge(request, { signal, logger }) : await adjudicator.repair(request, raw, adjudication, { signal, logger }); abortIfNeeded(signal); logger({ kind: 'ai_raw_response', actionId: request.actionId, rawResponse: clone(raw), repairAttempt: attemptIndex }); adjudication = validateAdjudication(raw, state, { allowMock, actionId: request.actionId, roundId: request.roundId }); logger({ kind: 'program_validation', actionId: request.actionId, validation: { valid: true, repairAttempt: attemptIndex } }); break; }
+      try { raw = attemptIndex === 0 ? await adjudicator.judge(request, { signal, logger }) : await adjudicator.repair(request, raw, adjudication, { signal, logger }); abortIfNeeded(signal); logger({ kind: 'ai_raw_response', actionId: request.actionId, rawResponse: clone(raw), repairAttempt: attemptIndex }); adjudication = validateAdjudication(raw, state, { allowMock, requireExchange: !allowMock }); logger({ kind: 'program_validation', actionId: request.actionId, validation: { valid: true, repairAttempt: attemptIndex } }); break; }
       catch (error) { abortIfNeeded(signal); logger({ kind: 'program_validation', actionId: request.actionId, validation: { valid: false, error: error.message, repairAttempt: attemptIndex } }); raw = error.rawContent ?? raw; if (attemptIndex >= repairLimit || typeof adjudicator.repair !== 'function' || raw === undefined) throw error; adjudication = error; }
     }
   } catch (error) { next = transition(next, 'awaiting_player', { pending: null, lastError: error.message, history: next.history.map((item) => item.actionId === request.actionId ? { ...item, status: error.name === 'AbortError' ? 'interrupted' : 'rejected', error: error.message } : item) }); if (!signal?.aborted) await save(next); throw error; }
@@ -126,6 +126,6 @@ export async function judgeAndCommit(state, action, { adjudicator, narrator, set
 export async function rewriteNarrative(state,actionId,narrator,{signal,save=()=>{},logger=()=>{},originalPrompt=''}={}) {
   assertPhase(state,['awaiting_next','committed','ended']); const record=state.history.find((item)=>item.actionId===actionId&&['committed','complete'].includes(item.status)); if(!record?.narrativePacket)throw new Error('找不到可重写的已提交行动');
   let next=transition(state,'rewrite',{pending:{actionId,roundId:record.roundId}}); await save(next); let narrative;
-  try {narrative=normalizeNarrative(await narrator.rewrite(record.narrativePacket,record.narrative,{signal,logger,originalPrompt}));abortIfNeeded(signal);}catch(error){if(!signal?.aborted)await save(transition(next,'awaiting_next',{pending:null,lastError:error.message}));throw error;}
+  try {narrative=normalizeNarrative(await narrator.rewrite(projectScenePacket(record.narrativePacket),record.narrative,{signal,logger,originalPrompt}));abortIfNeeded(signal);}catch(error){if(!signal?.aborted)await save(transition(next,'awaiting_next',{pending:null,lastError:error.message}));throw error;}
   const final={...record,narrative,status:narrative.pending?'committed':'complete',rewrittenAt:new Date().toISOString()}; const result=transition(next,'awaiting_next',{history:next.history.map((item)=>item.actionId===actionId?final:item),pending:null,lastError:null});await save(result);logger({kind:'rewrite',actionId,packet:record.narrativePacket,narrative});return{state:result,record:clone(final)};
 }

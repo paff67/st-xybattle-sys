@@ -1,3 +1,4 @@
+import { projectScenePacket } from './scene-packet.js';
 // Contract evidence: docs/host-contract-review.md. Fixtures are not live-host acceptance.
 import { HostInputBridge } from './host-input-bridge.js';
 import { HostDisplayFolding } from './host-display-folding.js';
@@ -36,7 +37,7 @@ export class BattleHostAdapter {
     Object.assign(this, { contextProvider, helperDependency: helper, eventEmitterDependency: eventEmitter, eventTypesDependency: eventTypes, windowRef, documentRef, extensionName });
     this.anchor = null; this.currentScope = null; this.epoch = 0; this.messageUids = new WeakMap();
     this.scopeListeners = new Set(); this.narrativeListeners = new Set(); this.disposers = []; this.boundEmitter = null;
-    this.packet = null; this.activePacket = null; this.injected = false; this.lastInjection = null;
+    this.packet = null; this.activePacket = null; this.injected = false; this.lastInjection = null; this.generationBusy = false;
     this.inputBridge = inputBridge || new HostInputBridge({ contextProvider, documentRef, windowRef, bindPageLifecycle: false, getInputElement: (_context, doc) => doc?.querySelector?.('#send_textarea, textarea#send_textarea, textarea[data-testid="send-textarea"]') || null });
     this.displayFolding = displayFolding || new HostDisplayFolding({ documentRef });
     this.writeQueue = Promise.resolve(); this.uncertainScopes = new Set(); this.disposed = false; this.start();
@@ -221,11 +222,36 @@ export class BattleHostAdapter {
       if (!key) throw new Error('Scene packet identity is incomplete');
       if (this.packet?.key === key || this.activePacket?.key === key) return { queued: true, injected: !!this.activePacket, deduplicated: true, scope, capability: this.capability() };
       this.clearScenePacket();
+      packet = projectScenePacket(packet);
       const inputResult = this.inputBridge?.append?.(packet, { ...scope, version: store.version });
       if (inputResult?.conflict) throw new Error(inputResult.reason || 'Input contains a conflicting XY_BATTLE_PACKET');
       this.packet = { ...clone(packet), packet: clone(packet), scope, version: store.version, key, transportCandidate: inputResult?.queued ? 'input-box' : null, inputResult };
       return { queued: true, injected: false, scope, transport: inputResult?.queued ? 'input-box' : 'extension-prompt', pendingVerification: !!inputResult?.queued, capability: this.capability() };
     } catch (error) { this.clearScenePacket(); return { queued: false, injected: false, reason: error.message, stale: true, capability: this.capability() }; }
+  }
+  sendQueuedScenePacket(expectedScope = this.packet?.scope || this.activePacket?.scope) {
+    const pending = this.packet || this.activePacket;
+    if (!pending) return { requested: false, reason: '没有待发送的场景包' };
+    try {
+      const scope = this.validateScope(expectedScope, { writable: true });
+      const store = this.readMessageSync(scope.messageId)?.swipes_info?.[scope.swipeId]?.battle_v2;
+      if (store?.version !== pending.version || !store.receipts?.[pending.packet.actionId]) throw new Error('场景包已过期，请重新注入本轮裁定');
+      if (pending.sendRequested || this.activePacket) return { requested: true, deduplicated: true };
+      if (this.generationBusy) throw new Error('酒馆正在生成，请结束当前生成后点击“发送主剧情”重试');
+      const button = this.documentRef?.querySelector?.('#send_but');
+      const input = this.documentRef?.querySelector?.('#send_textarea, textarea[data-testid="send-textarea"]');
+      const style = button && (this.documentRef?.defaultView || this.windowRef)?.getComputedStyle?.(button);
+      if (!button || typeof button.click !== 'function' || button.disabled || button.hidden || button.getAttribute('aria-disabled') === 'true' || button.classList.contains('disabled') || style?.display === 'none' || style?.visibility === 'hidden' || input?.disabled) throw new Error('酒馆发送按钮当前不可用，场景包已保留，可点击“发送主剧情”重试');
+      // Send through the native composer to preserve normal presets, worldbook
+      // recall, user-message creation and all existing generation hooks.
+      if (pending.transportCandidate !== 'input-box' || !this.inputBridge?.verify?.(pending.packet, { ...scope, version: pending.version })?.valid) throw new Error('输入框场景包校验失败，未自动发送');
+      pending.sendRequested = true; // Set before click: host hooks may run synchronously.
+      button.click();
+      return { requested: true, transport: 'native-send-button' };
+    } catch (error) {
+      pending.sendRequested = false;
+      return { requested: false, reason: error.message };
+    }
   }
   beforeGeneration(...args) {
     if (!this.packet || this.activePacket) return;
@@ -253,6 +279,7 @@ export class BattleHostAdapter {
     } catch (error) { this.clearScenePacket(); this.lastInjection = { injected: false, reason: error.message }; }
   }
   async finishGeneration(status) {
+    this.generationBusy = false;
     const active = this.activePacket; this.clearScenePacket(); if (!active) return;
     if (active.transport === 'input-box' && active.inputVerified !== true) this.lastInjection = { ...this.lastInjection, transport: 'input-box', verified: false, pendingVerification: false, reason: 'The rendered user message was not observed with an exact XY_BATTLE_PACKET' };
     try {
@@ -305,6 +332,9 @@ export class BattleHostAdapter {
     const on = (name, handler) => { if (!emitter?.on) return; emitter.on(name, handler); this.disposers.push(() => (emitter.off || emitter.removeListener)?.call(emitter, name, handler)); };
     if (emitter?.on) {
       this.boundEmitter = emitter;
+      on(events.GENERATION_STARTED || 'GENERATION_STARTED', (...args) => {
+        if (!args.some((arg) => arg === true || arg?.dryRun === true || arg?.dry_run === true)) this.generationBusy = true;
+      });
       on(events.GENERATION_AFTER_COMMANDS || 'GENERATION_AFTER_COMMANDS', (...args) => this.beforeGeneration(...args));
       on(events.GENERATION_ENDED || 'GENERATION_ENDED', () => this.finishGeneration('complete'));
       on(events.GENERATION_STOPPED || 'GENERATION_STOPPED', () => this.finishGeneration('stopped'));

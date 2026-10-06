@@ -121,26 +121,23 @@
             </div>
           </div>
 
-          <!-- 最新裁定批词 / 战史推演 (Latest Committed Narrative Record) -->
+          <!-- 最新裁定批词 / 战史推演 (Latest Committed Adjudication) -->
           <div class="xy-verdict-card">
             <div class="xy-verdict-header">
               <span class="xy-verdict-title">天道裁定战状判词</span>
-              <span v-if="latestRecord" class="xy-verdict-round">第 {{ latestRecord.round }} 回合</span>
+              <span v-if="latestRecord" class="xy-verdict-round">第 {{ round }} 回合</span>
             </div>
 
             <div v-if="latestRecord" class="xy-verdict-body">
               <p class="xy-verdict-action">
-                <b>行止动作:</b> {{ latestRecord.actionLabel || latestRecord.techniqueId || '自由出招' }}
+                <b>行止动作:</b> {{ latestRecord.label || '自由出招' }}
               </p>
-              <div v-if="latestRecord.narrative?.text" class="xy-verdict-prose">
-                <p>{{ latestRecord.narrative.text }}</p>
-              </div>
-              <p v-else-if="latestRecord.outcomeSummary" class="xy-verdict-summary">
-                <b>战局变化:</b> {{ latestRecord.outcomeSummary }}
+              <p v-if="latestRecord.outcome" class="xy-verdict-summary">
+                <b>战局变化：</b>{{ latestRecord.outcome }}
               </p>
-              <p v-else class="xy-verdict-await">
-                裁定已落，正文撰刻中……
-              </p>
+              <ul v-if="latestRecord.publicEvents?.length" class="xy-verdict-events">
+                <li v-for="(event, index) in latestRecord.publicEvents" :key="index">{{ event }}</li>
+              </ul>
             </div>
             <div v-else class="xy-verdict-empty">
               <span>战局未启 · 请修士在下方输入心念行止并提交裁定</span>
@@ -658,10 +655,12 @@ const footerStatusText = computed(() => {
   color: var(--xy-cyan-200);
 }
 
-.xy-verdict-prose p {
-  margin: 0;
-  color: #e2e8f0;
+.xy-verdict-events {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  overflow-wrap: anywhere;
 }
+.xy-verdict-events li + li { margin-top: 4px; }
 
 .xy-verdict-summary {
   margin: 0;

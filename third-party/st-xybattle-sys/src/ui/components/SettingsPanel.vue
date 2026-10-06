@@ -142,7 +142,7 @@
       <div class="xy-toggle-row">
         <label class="xy-checkbox-label">
           <input type="checkbox" v-model="form.autoNarrative" class="xy-checkbox" />
-          <span>裁定提交后，自动备好正文场景包向宿主注入</span>
+          <span>裁定提交后自动生成正文（主剧情模式：注入场景包并自动发送）</span>
         </label>
       </div>
 

@@ -16,9 +16,9 @@ import { ALL_CANONICAL_REGISTRIES } from '../src/canonical-techniques.js';
 
 test('HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT contains essential combat adjudication boundaries', () => {
   assert.ok(HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT.includes('天道推演玄枢 · 独立功法战斗裁定核心'));
-  assert.ok(HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT.includes('对敌人的实质影响'));
-  assert.ok(HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT.includes('对战场环境的天地剧变'));
-  assert.ok(HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT.includes('在面向玩家公开的 summary 和 publicEvents 中明文泄露尚未暴露的隐藏底牌'));
+  assert.ok(HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT.includes('对敌人的实际影响'));
+  assert.ok(HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT.includes('对战场环境的实际影响'));
+  assert.ok(HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT.includes('在面向玩家公开的 summary、publicEvents 和 exchange 中明文泄露尚未暴露的隐藏底牌'));
   assert.ok(HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT.includes('只返回符合天道规范的结构化裁定数据 JSON'));
 });
 
@@ -66,11 +66,11 @@ test('buildAdjudicationPrompt formats actors, techniques, and confidentiality bo
   assert.ok(prompt.includes('厉沧海'));
   assert.ok(prompt.includes('暗藏腐血煞针'));
   assert.ok(prompt.includes('【天道私密情报·仅供内部因果裁定·严禁公开泄密】'));
-  assert.ok(prompt.includes('对敌人的实质影响'));
-  assert.ok(prompt.includes('对战场环境的天地剧变'));
+  assert.ok(prompt.includes('对敌人的实际影响'));
+  assert.ok(prompt.includes('对战场环境的实际影响'));
 });
 
-test('formatScenePacketForStoryAI formats directives cleanly for Story AI', () => {
+test('formatScenePacketForStoryAI strips legacy prose instructions and keeps only round facts', () => {
   const packet = {
     type: 'BATTLE_SCENE_PACKET',
     roundId: 1,
@@ -92,11 +92,10 @@ test('formatScenePacketForStoryAI formats directives cleanly for Story AI', () =
   };
 
   const directive = formatScenePacketForStoryAI(packet, '继续描写');
-  assert.ok(directive.includes('【天道战局裁定已确立 · 主剧情战斗正文描写指令】'));
+  assert.equal(JSON.parse(directive).schema, 'battle_scene_v3');
   assert.ok(directive.includes('【对敌影响】水网缠裹敌手重靴下盘'));
   assert.ok(directive.includes('【环境剧变】水汽撕裂凝聚成网'));
-  assert.ok(directive.includes('禁止复判本轮行动胜负'));
-  assert.ok(directive.includes('BATTLE_SCENE_PACKET_JSON:'));
+  assert.doesNotMatch(directive, /descriptionRequirements|prohibitions|破晓|禁止复判|BATTLE_SCENE_PACKET_JSON|继续描写/);
 });
 
 test('buildAdjudicationRequest and judgeAndCommit use dedicated system prompt and generate structured facts', async () => {
@@ -129,5 +128,7 @@ test('buildAdjudicationRequest and judgeAndCommit use dedicated system prompt an
   assert.ok(result.record.adjudication.summary.includes('【环境剧变】'));
   assert.ok(result.record.adjudication.publicEvents.some(e => e.includes('【对敌影响】')));
   assert.ok(result.record.adjudication.publicEvents.some(e => e.includes('【环境剧变】')));
-  assert.ok(result.record.narrativePacket.storyAiDirective.includes('【天道战局裁定已确立 · 主剧情战斗正文描写指令】'));
+  assert.equal(result.record.narrativePacket.storyAiDirective, undefined);
+  assert.equal(result.record.narrativePacket.playerAction.technique, '弦势');
+  assert.equal(result.record.narrativePacket.exchange.opponents[0].name, '厉沧海');
 });

@@ -28,6 +28,7 @@ function validResult(request, changes = {}, ruleRefs = [knownRule]) {
     reason: '依据已注册功法规则和本轮站位。',
     ruleRefs,
     publicEvents: ['水面潮线改变'],
+    exchange: { playerResult: '形成潮线', opponents: (request.context.actors?.enemies || []).map((e) => ({ actorId: e.id, response: '保持守势', techniques: [], result: '未受伤' })), environmentResult: '水面潮线改变', boundaries: ['未造成伤害'] },
     confidence: 0.9
   };
 }
@@ -282,7 +283,7 @@ test('scene import installs scene, actors, semantic state and registry as an iso
 test('independent adjudicator and narrator HTTP settings control both model requests', async () => {
   let controller;
   await withHttpFixture((request) => request.path === '/judge'
-    ? { choices: [{ message: { content: JSON.stringify(validResult({ context: { semanticState: controller.state.semanticState } })) } }] }
+    ? { choices: [{ message: { content: JSON.stringify(validResult({ context: { semanticState: controller.state.semanticState, actors: controller.state.actors } })) } }] }
     : { choices: [{ message: { content: '独立正文配置已生效。' } }] }, async ({ baseUrl, requests }) => {
     controller = configuredController();
     controller.setSettings({
@@ -333,7 +334,7 @@ test('debug logs retain exact model input and output while credentials never ent
   let controller;
   await withHttpFixture((request) => {
     const payload = request.path === '/judge'
-      ? { model: 'fixture-judge-response', choices: [{ message: { content: JSON.stringify({ ...validResult({ context: { semanticState: controller.state.semanticState } }), reason: `内部因果参考：${hidden}` }) } }], usage: { total_tokens: 17 } }
+      ? { model: 'fixture-judge-response', choices: [{ message: { content: JSON.stringify({ ...validResult({ context: { semanticState: controller.state.semanticState, actors: controller.state.actors } }), reason: `内部因果参考：${hidden}` }) } }], usage: { total_tokens: 17 } }
       : { model: 'fixture-story-response', choices: [{ message: { content: '公开正文只描写潮线。' } }], usage: { total_tokens: 11 } };
     wireResponses.push(JSON.stringify(payload));
     return payload;

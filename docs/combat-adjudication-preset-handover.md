@@ -1,5 +1,8 @@
 # 战斗裁定系统独立预设与双阶段解耦架构交接文档
 
+> **历史文档（已被新方案部分取代）**：下文描述 2026-10-05 的实现，不再作为当前场景包契约。2026-10-06 已移除固定创伤/天地剧变要求、`descriptionRequirements`、`storyAiDirective`、档案及重复 JSON；写作指令与禁令由后续主预设负责。现行代码、负载和测试以 [场景包设计](scene-packet-design.md) 和 [main 交接](main-branch-handover.md) 为准。
+
+
 > **版本**：v0.2.1  
 > **分支**：`feature/independent-combat-adjudicator`  
 > **提交**：`59985bb`  

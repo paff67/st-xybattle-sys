@@ -1,3 +1,4 @@
+import { LEGACY_ADJUDICATOR_SYSTEM_PROMPT } from './legacy-adjudicator-prompt.js';
 import { clone, abortIfNeeded, normalizeChatCompletionsEndpoint } from './common.js';
 import { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, formatScenePacketForStoryAI } from './battle-adjudicator-prompt.js';
 import { normalizeCharacterCompletionPrompt, normalizePrompt } from './character-prompts.js';
@@ -15,7 +16,7 @@ export function normalizeSettings(input = {}) {
     config.temperature = Number(config.temperature); config.maxOutput = Number(config.maxOutput); config.repairAttempts = Number(config.repairAttempts); config.timeoutMs = Number(config.timeoutMs);
     if (!Number.isFinite(config.temperature) || config.temperature < 0 || config.temperature > 2 || !Number.isInteger(config.maxOutput) || config.maxOutput < 1 || !Number.isInteger(config.repairAttempts) || config.repairAttempts < 0 || config.repairAttempts > 3 || !Number.isFinite(config.timeoutMs) || config.timeoutMs < 100) throw new Error('模型参数无效（温度0~2；修复0~3）');
   }
-  return { adjudicator, narrator, autoNarrative: input.autoNarrative !== false, originalPrompt: input.originalPrompt || '', characterMaxOutput, characterCompletionPrompt: normalizeCharacterCompletionPrompt(input.characterCompletionPrompt), adjudicationPrompt: normalizePrompt(input.adjudicationPrompt, HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT), developerLogs: input.developerLogs !== false };
+  return { adjudicator, narrator, autoNarrative: input.autoNarrative !== false, originalPrompt: input.originalPrompt || '', characterMaxOutput, characterCompletionPrompt: normalizeCharacterCompletionPrompt(input.characterCompletionPrompt), adjudicationPrompt: input.adjudicationPrompt?.trim() === LEGACY_ADJUDICATOR_SYSTEM_PROMPT.trim() ? HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT : normalizePrompt(input.adjudicationPrompt, HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT), developerLogs: input.developerLogs !== false };
 }
 export function extractJson(content) {
   if (content && typeof content === 'object') return clone(content);
@@ -55,6 +56,11 @@ export class MockAdjudicator {
       reason: '独立裁定预设推演：功法起手与机理契合水域环境，达成对敌实质牵制与天地水势共鸣。',
       ruleRefs: ['mock.semantic.1'],
       publicEvents: [rhythmImpact, enemyImpact, envImpact],
+      exchange: {
+        playerResult: rhythmImpact,
+        opponents: request.context.actors.enemies.map((enemy) => ({ actorId: enemy.id, response: '离线演示：采取防御应对', techniques: [], result: enemyImpact })),
+        environmentResult: envImpact, boundaries: []
+      },
       confidence: 0.95
     };
     return result;
@@ -62,8 +68,8 @@ export class MockAdjudicator {
 }
 export class MockNarrator {
   constructor() { this.calls = []; this.mode = 'mock'; }
-  async generate(packet) { this.calls.push(packet); return { text: `【离线正文演示】${packet.originalAction.label}使${packet.location}的节奏发生变化。下一决策点：${packet.nextDecisionPoint}` }; }
-  async rewrite(packet) { this.calls.push({ rewrite: true, packet }); return { text: `【离线重写】保留已提交事实：${packet.committedFacts.join('；')}。` }; }
+  async generate(packet) { this.calls.push(packet); return { text: `【离线正文演示】${packet.playerAction?.action || "自由行动"}。${packet.exchange?.playerResult || (packet.committedFacts || []).join("；")}` }; }
+  async rewrite(packet) { this.calls.push({ rewrite: true, packet }); return { text: `【离线重写】保留已提交事实：${packet.exchange?.playerResult || (packet.committedFacts || []).join('；')}。` }; }
 }
 async function chatCompletion(config, messages, options = {}) {
   if (!config.endpoint || !config.model) throw new Error('HTTP 适配器缺少 endpoint 或 model');
@@ -98,9 +104,9 @@ export class HttpJsonNarrator {
   constructor(config = {}) { this.config = { timeoutMs: 60000, ...config }; this.mode = 'http'; }
   async generate(packet, options = {}) { return this.generateFromBattlePacket(options.originalPrompt ?? this.config.originalPrompt ?? '', packet, options); }
   async generateFromBattlePacket(originalPrompt, packet, options = {}) {
-    const formatted = formatScenePacketForStoryAI(packet, originalPrompt);
-    const messages = [{ role: 'system', content: `依据已提交战斗场景描写，禁止复判；禁止新增未提交结算。\n${formatted}` }, { role: 'user', content: originalPrompt || '继续描写这一已提交战斗场景。' }];
+    const formatted = formatScenePacketForStoryAI(packet);
+    const messages = [{ role: 'system', content: formatted }, { role: 'user', content: originalPrompt || '继续描写这一已提交战斗场景。' }];
     const response = await chatCompletion(this.config, messages, options); return { text: typeof response.content === 'string' ? response.content : JSON.stringify(response.content), metadata: response.metadata };
   }
-  async rewrite(packet, prior, options = {}) { return this.generateFromBattlePacket(`${options.originalPrompt ?? this.config.originalPrompt ?? ''}\n重写正文，保持提交事实：${prior?.text || ''}`, packet, options); }
+  async rewrite(packet, prior, options = {}) { return this.generateFromBattlePacket(`${options.originalPrompt ?? this.config.originalPrompt ?? ''}\n重写本轮正文。`, packet, options); }
 }

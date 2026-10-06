@@ -49,7 +49,7 @@ test('profile resource settlement uses registered references and persists curren
   const initialMoves = structuredClone(state.actors.enemies[0].techniques);
   const enemyRule = state.resourceRules.find((rule) => rule.actorId === 'enemy-1');
   const result = await judgeAndCommit(state, { label: '试探', actionId: 'profile-action' }, {
-    adjudicator: { judge: async (request) => ({ summary: '双方交锋', before: request.context.semanticState, after: { ...request.context.semanticState, positions: { player: '台边', 'enemy-1': '后撤两步' } }, reason: '依据固定剑招消耗', ruleRefs: enemyRule.ruleRefs, publicEvents: ['敌手退后'], resourceChanges: [{ actorId: 'enemy-1', resource: 'qi', before: 80, after: 70, reason: '施展平川断澜', ruleRefs: enemyRule.ruleRefs }] }) },
+    adjudicator: { judge: async (request) => ({ summary: '双方交锋', before: request.context.semanticState, after: { ...request.context.semanticState, positions: { player: '台边', 'enemy-1': '后撤两步' } }, reason: '依据固定剑招消耗', ruleRefs: enemyRule.ruleRefs, publicEvents: ['敌手退后'], exchange: { playerResult: '位于台边', opponents: [{ actorId: 'enemy-1', response: '横斩截流', techniques: [{ techniqueId: initialMoves[0].id, manifestation: '剑气横斩', interaction: '截断正面来袭气流' }], result: '后撤两步' }], environmentResult: '未改变地形', boundaries: [] }, resourceChanges: [{ actorId: 'enemy-1', resource: 'qi', before: 80, after: 70, reason: '施展平川断澜', ruleRefs: enemyRule.ruleRefs }] }) },
     settings: { autoNarrative: false }, save: async (next) => { state = next; }
   });
   assert.equal(result.state.actors.enemies[0].resources.qi, 70);
