@@ -1,4 +1,4 @@
-import { clone, abortIfNeeded } from './common.js';
+import { clone, abortIfNeeded, normalizeChatCompletionsEndpoint } from './common.js';
 import { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, formatScenePacketForStoryAI } from './battle-adjudicator-prompt.js';
 export function normalizeSettings(input = {}) {
   const defaultConfig = { mode: 'unconfigured', endpoint: '', model: '', maxOutput: 1600, temperature: 0.2, repairAttempts: 2, timeoutMs: 60000 };
@@ -70,7 +70,7 @@ async function chatCompletion(config, messages, options = {}) {
   if (options.jsonMode && config.jsonMode === true) body.response_format = { type: 'json_object' };
   options.logger?.({ kind: 'model_request', requestMetadata: { model: config.model, temperature: body.temperature, maxOutput: body.max_tokens }, body: clone(body) });
   try {
-    const response = await fetch(config.endpoint, { method: 'POST', headers, signal: controller.signal, body: JSON.stringify(body) });
+    const response = await fetch(normalizeChatCompletionsEndpoint(config.endpoint), { method: 'POST', headers, signal: controller.signal, body: JSON.stringify(body) });
     const raw = await response.text(); options.logger?.({ kind: 'model_response', metadata: { status: response.status, requestId: response.headers.get('x-request-id'), model: config.model }, rawResponse: raw });
     if (!response.ok) throw new Error(`模型 API ${response.status}（详情见开发者日志）`);
     const payload = JSON.parse(raw); const content = payload.result ?? payload.choices?.[0]?.message?.content ?? payload.output_text ?? payload.text ?? payload;

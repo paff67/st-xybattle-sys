@@ -4650,15 +4650,19 @@ var q = (e, t) => {
 	}
 }, [["__scopeId", "data-v-3e5a6368"]]), Y = (e) => e === void 0 ? void 0 : JSON.parse(JSON.stringify(e));
 function gd(e) {
-	return Array.isArray(e) ? `[${e.map(gd).join(",")}]` : e && typeof e == "object" ? `{${Object.keys(e).sort().map((t) => `${JSON.stringify(t)}:${gd(e[t])}`).join(",")}}` : JSON.stringify(e);
+	let t = String(e || "").trim().replace(/\/+$/, "");
+	return !t || /\/chat\/completions$/i.test(t) ? t : /\/v1$/i.test(t) ? `${t}/chat/completions` : t;
 }
 function _d(e) {
+	return Array.isArray(e) ? `[${e.map(_d).join(",")}]` : e && typeof e == "object" ? `{${Object.keys(e).sort().map((t) => `${JSON.stringify(t)}:${_d(e[t])}`).join(",")}}` : JSON.stringify(e);
+}
+function vd(e) {
 	if (e?.aborted) throw new DOMException("操作已停止或聊天作用域已变化", "AbortError");
 }
 function X(e, t = []) {
 	return typeof e == "string" ? t.filter(Boolean).reduce((e, t) => e.split(t).join("[REDACTED]"), e) : Array.isArray(e) ? e.map((e) => X(e, t)) : !e || typeof e != "object" ? e : Object.fromEntries(Object.entries(e).filter(([e]) => !/^(api[-_]?key|authorization|access[-_]?token|password|credential|secret)$/i.test(e)).map(([e, n]) => [e, X(n, t)]));
 }
-function vd(e) {
+function yd(e) {
 	return X({
 		kind: e.kind,
 		at: e.at,
@@ -4676,12 +4680,12 @@ function vd(e) {
 }
 //#endregion
 //#region src/battle-context.js
-var yd = /* @__PURE__ */ new Set([
+var bd = /* @__PURE__ */ new Set([
 	"hidden",
 	"internal",
 	"gm",
 	"secret"
-]), bd = [
+]), xd = [
 	"techniques",
 	"abilities",
 	"skills",
@@ -4690,16 +4694,16 @@ var yd = /* @__PURE__ */ new Set([
 	"功法",
 	"招式"
 ];
-function xd(e) {
+function Sd(e) {
 	return typeof e == "string" ? e.trim() : e == null ? "" : String(e);
 }
-function Sd(e) {
+function Cd(e) {
 	return Array.isArray(e) ? e : e && typeof e == "object" ? Object.entries(e).map(([e, t]) => ({
 		name: e,
 		description: t
 	})) : [];
 }
-function Cd(e, t, n = "known") {
+function wd(e, t, n = "known") {
 	if (typeof e == "string") return {
 		id: `enemy-${e}`,
 		name: e,
@@ -4709,35 +4713,35 @@ function Cd(e, t, n = "known") {
 		visibility: "public"
 	};
 	if (!e || typeof e != "object") return null;
-	let r = xd(e.visibility || e.exposure || "public").toLowerCase();
-	if (yd.has(r)) return null;
-	let i = xd(e.name || e.label || e.title || e.id);
+	let r = Sd(e.visibility || e.exposure || "public").toLowerCase();
+	if (bd.has(r)) return null;
+	let i = Sd(e.name || e.label || e.title || e.id);
 	return i ? {
-		id: xd(e.id || `enemy-${i}`),
+		id: Sd(e.id || `enemy-${i}`),
 		name: i,
-		description: xd(e.description || e.originalDefinition || e.definition || e.summary || "已识别名称；完整效果尚未公开。"),
+		description: Sd(e.description || e.originalDefinition || e.definition || e.summary || "已识别名称；完整效果尚未公开。"),
 		mechanics: Array.isArray(e.mechanics) ? Y(e.mechanics) : [],
-		status: xd(e.status || n) || n,
+		status: Sd(e.status || n) || n,
 		source: t,
 		visibility: "public",
 		confidence: e.confidence ?? (n === "known" ? "high" : "medium")
 	} : null;
 }
-function wd(e = {}, t = {}) {
+function Td(e = {}, t = {}) {
 	let n = [], r = /* @__PURE__ */ new Set(), i = (e, t, i) => {
-		let a = Cd(e, t, i);
+		let a = wd(e, t, i);
 		a && !r.has(a.id) && (r.add(a.id), n.push(a));
 	};
-	for (let t of bd) {
+	for (let t of xd) {
 		let n = e[t] ?? e.visibleInfo?.[t], r = e.visibleInfo && Object.hasOwn(e.visibleInfo, t);
-		for (let e of Sd(n)) (t !== "techniques" || r || !e || typeof e != "object" || e.exposed === !0 || ["public", "player"].includes(xd(e.visibility).toLowerCase())) && i(e, `敌方公开资料 · ${t}`, e?.status || (t === "techniques" ? "known" : "inferred"));
+		for (let e of Cd(n)) (t !== "techniques" || r || !e || typeof e != "object" || e.exposed === !0 || ["public", "player"].includes(Sd(e.visibility).toLowerCase())) && i(e, `敌方公开资料 · ${t}`, e?.status || (t === "techniques" ? "known" : "inferred"));
 	}
 	let a = e.visibleInfo?.observedTechniques || e.visibleInfo?.observedAbilities || e.visibleInfo?.可观察招式;
-	for (let e of Sd(a)) i(e, "本轮公开观察", "inferred");
+	for (let e of Cd(a)) i(e, "本轮公开观察", "inferred");
 	if (n.length) return n;
-	let o = t.scene?.publicEvents || [], s = xd(e.name);
+	let o = t.scene?.publicEvents || [], s = Sd(e.name);
 	for (let e of o) {
-		let t = xd(e);
+		let t = Sd(e);
 		if (!t || s && !t.includes(s)) continue;
 		let n = t.match(/(?:施展|使用|祭出|发动|招式|术式)[：:\s]*([^，。；,.;]+)/);
 		n?.[1] && i({
@@ -4756,7 +4760,7 @@ function wd(e = {}, t = {}) {
 		confidence: "none"
 	}), n;
 }
-function Td(e) {
+function Ed(e) {
 	if (typeof e == "string") return {
 		id: e,
 		label: e,
@@ -4770,21 +4774,21 @@ function Td(e) {
 	return {
 		...Y(e),
 		lane: n,
-		label: xd(e?.label || e?.id || "未命名效果")
+		label: Sd(e?.label || e?.id || "未命名效果")
 	};
 }
-function Ed(e = []) {
+function Dd(e = []) {
 	let t = {
 		player: [],
 		enemy: [],
 		field: []
 	};
-	for (let n of e) t[Td(n).lane].push(Td(n));
+	for (let n of e) t[Ed(n).lane].push(Ed(n));
 	return t;
 }
 //#endregion
 //#region src/ui/components/BattleStage.vue
-var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { class: "xy-arena-columns" }, Ad = /*#__PURE__*/ q({
+var Od = { class: "xy-battle-stage" }, kd = { class: "xy-stage-arena" }, Ad = { class: "xy-arena-columns" }, jd = /*#__PURE__*/ q({
 	__name: "BattleStage",
 	props: {
 		view: {
@@ -4815,7 +4819,7 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 			"judging",
 			"narrating",
 			"rewrite"
-		].includes(n.view.phase)), d = G(() => n.view.player || {}), f = G(() => n.view.semanticState || {}), p = G(() => f.value.effects || []), m = G(() => Ed(p.value)), h = G(() => m.value.player || []), g = G(() => m.value.enemy || []), _ = G(() => n.state.actors?.enemies || n.view.enemies || []), v = G(() => {
+		].includes(n.view.phase)), d = G(() => n.view.player || {}), f = G(() => n.view.semanticState || {}), p = G(() => f.value.effects || []), m = G(() => Dd(p.value)), h = G(() => m.value.player || []), g = G(() => m.value.enemy || []), _ = G(() => n.state.actors?.enemies || n.view.enemies || []), v = G(() => {
 			if (!_.value.length) return null;
 			if (s.value) {
 				let e = _.value.find((e) => e.id === s.value);
@@ -4840,7 +4844,7 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 					status: r
 				};
 			}));
-		}), x = G(() => v.value ? wd(v.value, n.state) : []), S = G(() => b.value.map((e) => ({
+		}), x = G(() => v.value ? Td(v.value, n.state) : []), S = G(() => b.value.map((e) => ({
 			id: e.id,
 			name: e.name,
 			available: e.status?.available ?? !0
@@ -4864,9 +4868,9 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 			available: !0,
 			reason: ""
 		}), ie = G(() => (n.state.history || []).filter((e) => ["committed", "complete"].includes(e.status)).at(-1) || null), ae = G(() => !!n.controller?.bridgeQueuedAction), D = G(() => n.controller?.state?.hostSync?.status === "pending");
-		return (t, n) => (B(), V("div", Dd, [
+		return (t, n) => (B(), V("div", Od, [
 			U(Xs),
-			H("div", Od, [H("div", kd, [
+			H("div", kd, [H("div", Ad, [
 				U(ll, {
 					side: "player",
 					actor: d.value,
@@ -4989,7 +4993,7 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 			])
 		]));
 	}
-}, [["__scopeId", "data-v-b29b2b87"]]), jd = { class: "xy-settings-panel xy-custom-scroll" }, Md = { class: "xy-config-card" }, Nd = { class: "xy-form-grid" }, Pd = { class: "xy-form-field" }, Fd = { class: "xy-form-field" }, Id = { class: "xy-form-field xy-col-span-2" }, Ld = { class: "xy-form-field xy-col-span-2" }, Rd = { class: "xy-password-wrap" }, zd = ["type"], Bd = { class: "xy-form-field" }, Vd = { class: "xy-form-field" }, Hd = { class: "xy-form-field" }, Ud = { class: "xy-form-field" }, Wd = { class: "xy-config-card" }, Gd = { class: "xy-form-grid" }, Kd = { class: "xy-form-field" }, qd = { class: "xy-form-field" }, Jd = { class: "xy-form-field xy-col-span-2" }, Yd = { class: "xy-form-field xy-col-span-2" }, Xd = { class: "xy-password-wrap" }, Zd = ["type"], Qd = { class: "xy-form-field" }, $d = { class: "xy-form-field" }, ef = { class: "xy-config-card" }, tf = { class: "xy-toggle-row" }, nf = { class: "xy-checkbox-label" }, rf = { class: "xy-form-field xy-mt-3" }, af = { class: "xy-settings-footer" }, of = /*#__PURE__*/ q({
+}, [["__scopeId", "data-v-b29b2b87"]]), Md = { class: "xy-settings-panel xy-custom-scroll" }, Nd = { class: "xy-config-card" }, Pd = { class: "xy-form-grid" }, Fd = { class: "xy-form-field" }, Id = { class: "xy-form-field" }, Ld = { class: "xy-form-field xy-col-span-2" }, Rd = { class: "xy-form-field xy-col-span-2" }, zd = { class: "xy-password-wrap" }, Bd = ["type"], Vd = { class: "xy-form-field" }, Hd = { class: "xy-form-field" }, Ud = { class: "xy-form-field" }, Wd = { class: "xy-form-field" }, Gd = { class: "xy-config-card" }, Kd = { class: "xy-form-grid" }, qd = { class: "xy-form-field" }, Jd = { class: "xy-form-field" }, Yd = { class: "xy-form-field xy-col-span-2" }, Xd = { class: "xy-form-field xy-col-span-2" }, Zd = { class: "xy-password-wrap" }, Qd = ["type"], $d = { class: "xy-form-field" }, ef = { class: "xy-form-field" }, tf = { class: "xy-config-card" }, nf = { class: "xy-toggle-row" }, rf = { class: "xy-checkbox-label" }, af = { class: "xy-form-field xy-mt-3" }, of = { class: "xy-settings-footer" }, sf = /*#__PURE__*/ q({
 	__name: "SettingsPanel",
 	props: { settings: {
 		type: Object,
@@ -5035,10 +5039,10 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 				originalPrompt: o.originalPrompt
 			});
 		}
-		return (e, t) => (B(), V("div", jd, [
+		return (e, t) => (B(), V("div", Md, [
 			t[42] ||= H("div", { class: "xy-panel-header" }, [H("div", null, [H("span", { class: "xy-panel-kicker" }, "INDEPENDENT ADAPTER CONFIGURATION"), H("h2", { class: "xy-panel-title" }, "独立机枢 · 模型与演算法")]), H("p", { class: "xy-panel-desc" }, " 裁定 AI 与正文生成可分别调配独立接入点与参数；敏感秘钥仅驻留内存，绝不落盘或混入战报存档。 ")], -1),
-			H("fieldset", Md, [t[28] ||= H("legend", { class: "xy-card-legend" }, [H("span", { class: "xy-legend-icon" }, "⚖"), H("span", null, "战斗裁定 AI (Adjudicator)")], -1), H("div", Nd, [
-				H("label", Pd, [t[20] ||= H("span", { class: "xy-field-label" }, "推理模式", -1), L(H("select", {
+			H("fieldset", Nd, [t[28] ||= H("legend", { class: "xy-card-legend" }, [H("span", { class: "xy-legend-icon" }, "⚖"), H("span", null, "战斗裁定 AI (Adjudicator)")], -1), H("div", Pd, [
+				H("label", Fd, [t[20] ||= H("span", { class: "xy-field-label" }, "推理模式", -1), L(H("select", {
 					"onUpdate:modelValue": t[0] ||= (e) => o.judge.mode = e,
 					class: "xy-input-select"
 				}, [...t[19] ||= [
@@ -5046,28 +5050,28 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 					H("option", { value: "mock" }, "离线 Mock 演示 (免 API Key 极速验算)", -1),
 					H("option", { value: "http" }, "真实 OpenAI-Compatible 接口", -1)
 				]], 512), [[Yo, o.judge.mode]])]),
-				H("label", Fd, [t[21] ||= H("span", { class: "xy-field-label" }, "模型标识 (Model)", -1), L(H("input", {
+				H("label", Id, [t[21] ||= H("span", { class: "xy-field-label" }, "模型标识 (Model)", -1), L(H("input", {
 					"onUpdate:modelValue": t[1] ||= (e) => o.judge.model = e,
 					placeholder: "例如: gpt-4o, claude-3-5-sonnet...",
 					class: "xy-input-text"
 				}, null, 512), [[K, o.judge.model]])]),
-				H("label", Id, [t[22] ||= H("span", { class: "xy-field-label" }, "服务接入点 (Endpoint)", -1), L(H("input", {
+				H("label", Ld, [t[22] ||= H("span", { class: "xy-field-label" }, "服务接入点 (Endpoint)", -1), L(H("input", {
 					"onUpdate:modelValue": t[2] ||= (e) => o.judge.endpoint = e,
 					placeholder: "https://api.openai.com/v1/chat/completions",
 					class: "xy-input-text"
 				}, null, 512), [[K, o.judge.endpoint]])]),
-				H("label", Ld, [t[23] ||= H("span", { class: "xy-field-label" }, [H("span", null, "API Key (仅驻留内存)"), H("small", { class: "xy-field-hint" }, "刷新页面需重填，绝不进入持久化文件")], -1), H("div", Rd, [L(H("input", {
+				H("label", Rd, [t[23] ||= H("span", { class: "xy-field-label" }, [H("span", null, "API Key (仅驻留内存)"), H("small", { class: "xy-field-hint" }, "刷新页面需重填，绝不进入持久化文件")], -1), H("div", zd, [L(H("input", {
 					"onUpdate:modelValue": t[3] ||= (e) => o.judge.apiKey = e,
 					type: i.value ? "text" : "password",
 					placeholder: "sk-...",
 					autocomplete: "off",
 					class: "xy-input-text"
-				}, null, 8, zd), [[es, o.judge.apiKey]]), H("button", {
+				}, null, 8, Bd), [[es, o.judge.apiKey]]), H("button", {
 					type: "button",
 					class: "xy-pwd-toggle",
 					onClick: t[4] ||= (e) => i.value = !i.value
 				}, [U(J, { name: i.value ? "eye-off" : "eye" }, null, 8, ["name"])])])]),
-				H("label", Bd, [t[24] ||= H("span", { class: "xy-field-label" }, "最大输出 (Max Tokens)", -1), L(H("input", {
+				H("label", Vd, [t[24] ||= H("span", { class: "xy-field-label" }, "最大输出 (Max Tokens)", -1), L(H("input", {
 					"onUpdate:modelValue": t[5] ||= (e) => o.judge.maxOutput = e,
 					type: "number",
 					min: "10",
@@ -5078,7 +5082,7 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 					void 0,
 					{ number: !0 }
 				]])]),
-				H("label", Vd, [t[25] ||= H("span", { class: "xy-field-label" }, "发散温度 (Temperature)", -1), L(H("input", {
+				H("label", Hd, [t[25] ||= H("span", { class: "xy-field-label" }, "发散温度 (Temperature)", -1), L(H("input", {
 					"onUpdate:modelValue": t[6] ||= (e) => o.judge.temperature = e,
 					type: "number",
 					min: "0",
@@ -5091,7 +5095,7 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 					void 0,
 					{ number: !0 }
 				]])]),
-				H("label", Hd, [t[26] ||= H("span", { class: "xy-field-label" }, "结构容错修复次数", -1), L(H("input", {
+				H("label", Ud, [t[26] ||= H("span", { class: "xy-field-label" }, "结构容错修复次数", -1), L(H("input", {
 					"onUpdate:modelValue": t[7] ||= (e) => o.judge.repairAttempts = e,
 					type: "number",
 					min: "0",
@@ -5103,7 +5107,7 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 					void 0,
 					{ number: !0 }
 				]])]),
-				H("label", Ud, [t[27] ||= H("span", { class: "xy-field-label" }, "请求超时 (毫秒)", -1), L(H("input", {
+				H("label", Wd, [t[27] ||= H("span", { class: "xy-field-label" }, "请求超时 (毫秒)", -1), L(H("input", {
 					"onUpdate:modelValue": t[8] ||= (e) => o.judge.timeoutMs = e,
 					type: "number",
 					min: "1000",
@@ -5116,33 +5120,33 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 					{ number: !0 }
 				]])])
 			])]),
-			H("fieldset", Wd, [t[36] ||= H("legend", { class: "xy-card-legend" }, [H("span", { class: "xy-legend-icon" }, "📜"), H("span", null, "正文演化与主剧情桥接 (Narrator)")], -1), H("div", Gd, [
-				H("label", Kd, [t[30] ||= H("span", { class: "xy-field-label" }, "桥接模式", -1), L(H("select", {
+			H("fieldset", Gd, [t[36] ||= H("legend", { class: "xy-card-legend" }, [H("span", { class: "xy-legend-icon" }, "📜"), H("span", null, "正文演化与主剧情桥接 (Narrator)")], -1), H("div", Kd, [
+				H("label", qd, [t[30] ||= H("span", { class: "xy-field-label" }, "桥接模式", -1), L(H("select", {
 					"onUpdate:modelValue": t[9] ||= (e) => o.narrator.mode = e,
 					class: "xy-input-select"
 				}, [...t[29] ||= [oa("<option value=\"main_story\" data-v-b8b80bd6>酒馆主剧情注入 (推荐，沿用酒馆设定)</option><option value=\"packet\" data-v-b8b80bd6>仅生成场景包 (供剪贴板与第三方调用)</option><option value=\"http\" data-v-b8b80bd6>独立 OpenAI-Compatible 正文模型</option><option value=\"mock\" data-v-b8b80bd6>离线 Mock 演进</option><option value=\"unconfigured\" data-v-b8b80bd6>未配置</option>", 5)]], 512), [[Yo, o.narrator.mode]])]),
-				H("label", qd, [t[31] ||= H("span", { class: "xy-field-label" }, "模型标识 (Model)", -1), L(H("input", {
+				H("label", Jd, [t[31] ||= H("span", { class: "xy-field-label" }, "模型标识 (Model)", -1), L(H("input", {
 					"onUpdate:modelValue": t[10] ||= (e) => o.narrator.model = e,
 					placeholder: "正文生成模型名...",
 					class: "xy-input-text"
 				}, null, 512), [[K, o.narrator.model]])]),
-				H("label", Jd, [t[32] ||= H("span", { class: "xy-field-label" }, "独立接入点 (Endpoint)", -1), L(H("input", {
+				H("label", Yd, [t[32] ||= H("span", { class: "xy-field-label" }, "独立接入点 (Endpoint)", -1), L(H("input", {
 					"onUpdate:modelValue": t[11] ||= (e) => o.narrator.endpoint = e,
 					placeholder: "https://...",
 					class: "xy-input-text"
 				}, null, 512), [[K, o.narrator.endpoint]])]),
-				H("label", Yd, [t[33] ||= H("span", { class: "xy-field-label" }, "API Key (仅驻留内存)", -1), H("div", Xd, [L(H("input", {
+				H("label", Xd, [t[33] ||= H("span", { class: "xy-field-label" }, "API Key (仅驻留内存)", -1), H("div", Zd, [L(H("input", {
 					"onUpdate:modelValue": t[12] ||= (e) => o.narrator.apiKey = e,
 					type: a.value ? "text" : "password",
 					placeholder: "sk-...",
 					autocomplete: "off",
 					class: "xy-input-text"
-				}, null, 8, Zd), [[es, o.narrator.apiKey]]), H("button", {
+				}, null, 8, Qd), [[es, o.narrator.apiKey]]), H("button", {
 					type: "button",
 					class: "xy-pwd-toggle",
 					onClick: t[13] ||= (e) => a.value = !a.value
 				}, [U(J, { name: a.value ? "eye-off" : "eye" }, null, 8, ["name"])])])]),
-				H("label", Qd, [t[34] ||= H("span", { class: "xy-field-label" }, "最大输出 (Max Tokens)", -1), L(H("input", {
+				H("label", $d, [t[34] ||= H("span", { class: "xy-field-label" }, "最大输出 (Max Tokens)", -1), L(H("input", {
 					"onUpdate:modelValue": t[14] ||= (e) => o.narrator.maxOutput = e,
 					type: "number",
 					min: "50",
@@ -5153,7 +5157,7 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 					void 0,
 					{ number: !0 }
 				]])]),
-				H("label", $d, [t[35] ||= H("span", { class: "xy-field-label" }, "发散温度 (Temperature)", -1), L(H("input", {
+				H("label", ef, [t[35] ||= H("span", { class: "xy-field-label" }, "发散温度 (Temperature)", -1), L(H("input", {
 					"onUpdate:modelValue": t[15] ||= (e) => o.narrator.temperature = e,
 					type: "number",
 					min: "0",
@@ -5167,21 +5171,21 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 					{ number: !0 }
 				]])])
 			])]),
-			H("div", ef, [
+			H("div", tf, [
 				t[39] ||= H("h3", { class: "xy-card-title" }, "宿主桥接与输入契约", -1),
-				H("div", tf, [H("label", nf, [L(H("input", {
+				H("div", nf, [H("label", rf, [L(H("input", {
 					type: "checkbox",
 					"onUpdate:modelValue": t[16] ||= (e) => o.autoNarrative = e,
 					class: "xy-checkbox"
 				}, null, 512), [[Ko, o.autoNarrative]]), t[37] ||= H("span", null, "裁定提交后，自动备好正文场景包向宿主注入", -1)])]),
-				H("label", rf, [t[38] ||= H("span", { class: "xy-field-label" }, "独立 HTTP 模式下的原始 Prompt（主剧情模式自动保留宿主日常输入）", -1), L(H("textarea", {
+				H("label", af, [t[38] ||= H("span", { class: "xy-field-label" }, "独立 HTTP 模式下的原始 Prompt（主剧情模式自动保留宿主日常输入）", -1), L(H("textarea", {
 					"onUpdate:modelValue": t[17] ||= (e) => o.originalPrompt = e,
 					rows: "2",
 					class: "xy-input-textarea",
 					placeholder: "我抬起弦弓，观察水面与对手的节奏。"
 				}, null, 512), [[K, o.originalPrompt]])])
 			]),
-			H("div", af, [H("button", {
+			H("div", of, [H("button", {
 				class: "xy-save-btn",
 				onClick: s
 			}, [U(J, { name: "check" }), t[40] ||= H("span", null, "保存机枢设定", -1)]), H("button", {
@@ -5190,7 +5194,7 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 			}, [...t[41] ||= [H("span", null, "返回战场", -1)]])])
 		]));
 	}
-}, [["__scopeId", "data-v-b8b80bd6"]]), sf = { class: "xy-data-panel xy-custom-scroll" }, cf = { class: "xy-quick-actions-bar" }, lf = { class: "xy-import-console" }, uf = { class: "xy-console-header" }, df = { class: "xy-file-upload-btn" }, ff = { class: "xy-import-btns" }, pf = ["disabled"], mf = ["disabled"], hf = ["disabled"], gf = { class: "xy-snapshot-details" }, _f = { class: "xy-snapshot-pre xy-custom-scroll" }, vf = /*#__PURE__*/ q({
+}, [["__scopeId", "data-v-b8b80bd6"]]), cf = { class: "xy-data-panel xy-custom-scroll" }, lf = { class: "xy-quick-actions-bar" }, uf = { class: "xy-import-console" }, df = { class: "xy-console-header" }, ff = { class: "xy-file-upload-btn" }, pf = { class: "xy-import-btns" }, mf = ["disabled"], hf = ["disabled"], gf = ["disabled"], _f = { class: "xy-snapshot-details" }, vf = { class: "xy-snapshot-pre xy-custom-scroll" }, yf = /*#__PURE__*/ q({
 	__name: "DataPanel",
 	props: { snapshot: {
 		type: Object,
@@ -5210,9 +5214,9 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 			let t = e.target.files?.[0];
 			t && (r.value = await t.text());
 		}
-		return (e, t) => (B(), V("div", sf, [
+		return (e, t) => (B(), V("div", cf, [
 			t[16] ||= H("div", { class: "xy-panel-header" }, [H("div", null, [H("span", { class: "xy-panel-kicker" }, "SCENE & PRESET MANAGEMENT"), H("h2", { class: "xy-panel-title" }, "演武经卷 · 场景与道藏存档")]), H("p", { class: "xy-panel-desc" }, " 可导入特定世界观战场、角色卡快照与功法 Registry；支持当前分支存档无损导入导出。 ")], -1),
-			H("div", cf, [
+			H("div", lf, [
 				H("button", {
 					class: "xy-action-btn btn-demo",
 					onClick: t[0] ||= (t) => e.$emit("load-demo")
@@ -5226,8 +5230,8 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 					onClick: t[2] ||= (t) => e.$emit("export-public")
 				}, [U(J, { name: "scroll" }), t[9] ||= H("span", null, "导出公开战报摘要", -1)])
 			]),
-			H("div", lf, [
-				H("div", uf, [t[11] ||= H("span", { class: "xy-console-title" }, "经卷解析与录入 (JSON)", -1), H("label", df, [t[10] ||= H("span", null, "选择本地 JSON 文件", -1), H("input", {
+			H("div", uf, [
+				H("div", df, [t[11] ||= H("span", { class: "xy-console-title" }, "经卷解析与录入 (JSON)", -1), H("label", ff, [t[10] ||= H("span", null, "选择本地 JSON 文件", -1), H("input", {
 					type: "file",
 					accept: "application/json,.json",
 					onChange: a,
@@ -5239,40 +5243,40 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 					rows: "10",
 					placeholder: "粘贴 battle_v2_scene、battle_v2_export 或 registry JSON 文本……"
 				}, null, 512), [[K, r.value]]),
-				H("div", ff, [
+				H("div", pf, [
 					H("button", {
 						class: "xy-imp-btn",
 						disabled: !r.value.trim(),
 						onClick: t[4] ||= (t) => e.$emit("import-scene", r.value)
-					}, [...t[12] ||= [H("span", null, "导入为新场景", -1)]], 8, pf),
+					}, [...t[12] ||= [H("span", null, "导入为新场景", -1)]], 8, mf),
 					H("button", {
 						class: "xy-imp-btn",
 						disabled: !r.value.trim(),
 						onClick: t[5] ||= (t) => e.$emit("import-registry", r.value)
-					}, [...t[13] ||= [H("span", null, "导入功法 Registry", -1)]], 8, mf),
+					}, [...t[13] ||= [H("span", null, "导入功法 Registry", -1)]], 8, hf),
 					H("button", {
 						class: "xy-imp-btn btn-danger",
 						disabled: !r.value.trim(),
 						onClick: t[6] ||= (t) => e.$emit("import-save", r.value)
-					}, [...t[14] ||= [H("span", null, "恢复分支存档", -1)]], 8, hf)
+					}, [...t[14] ||= [H("span", null, "恢复分支存档", -1)]], 8, gf)
 				])
 			]),
-			H("details", gf, [t[15] ||= H("summary", { class: "xy-snapshot-summary" }, [H("span", null, "当前环境与角色快照 (包含内部状态与裁定器上下文)")], -1), H("pre", _f, A(i.value), 1)])
+			H("details", _f, [t[15] ||= H("summary", { class: "xy-snapshot-summary" }, [H("span", null, "当前环境与角色快照 (包含内部状态与裁定器上下文)")], -1), H("pre", vf, A(i.value), 1)])
 		]));
 	}
-}, [["__scopeId", "data-v-8887c668"]]), yf = { class: "xy-dev-panel xy-custom-scroll" }, bf = { class: "xy-dev-actions" }, xf = {
+}, [["__scopeId", "data-v-8887c668"]]), bf = { class: "xy-dev-panel xy-custom-scroll" }, xf = { class: "xy-dev-actions" }, Sf = {
 	class: "xy-log-section",
 	open: ""
-}, Sf = { class: "xy-log-pre xy-custom-scroll" }, Cf = { class: "xy-log-list-container" }, wf = { class: "xy-list-title" }, Tf = {
+}, Cf = { class: "xy-log-pre xy-custom-scroll" }, wf = { class: "xy-log-list-container" }, Tf = { class: "xy-list-title" }, Ef = {
 	key: 0,
 	class: "xy-log-items"
-}, Ef = { class: "xy-item-summary" }, Df = {
+}, Df = { class: "xy-item-summary" }, Of = {
 	key: 0,
 	class: "xy-item-action"
-}, Of = { class: "xy-item-time" }, kf = { class: "xy-item-pre xy-custom-scroll" }, Af = {
+}, kf = { class: "xy-item-time" }, Af = { class: "xy-item-pre xy-custom-scroll" }, jf = {
 	key: 1,
 	class: "xy-empty-logs"
-}, jf = /*#__PURE__*/ q({
+}, Mf = /*#__PURE__*/ q({
 	__name: "DeveloperPanel",
 	props: {
 		aiContext: {
@@ -5294,9 +5298,9 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 		function i(e) {
 			return JSON.stringify(e, null, 2);
 		}
-		return (t, a) => (B(), V("div", yf, [
+		return (t, a) => (B(), V("div", bf, [
 			a[8] ||= H("div", { class: "xy-panel-header" }, [H("div", null, [H("span", { class: "xy-panel-kicker" }, "TIANDAO AUDIT & MODEL PROMPTS"), H("h2", { class: "xy-panel-title" }, "天道秘录 · 裁定审计与日志")]), H("p", { class: "xy-panel-desc" }, " 完整记录裁定模型接收的结构化上下文、原始输入输出、规则校验及宿主契约收据。敏感凭据已自动脱敏。 ")], -1),
-			H("div", bf, [
+			H("div", xf, [
 				H("button", {
 					class: "xy-dev-btn",
 					onClick: a[0] ||= (e) => t.$emit("copy-debug")
@@ -5310,18 +5314,18 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 					onClick: a[2] ||= (e) => t.$emit("export-public")
 				}, [U(J, { name: "eye" }), a[5] ||= H("span", null, "导出公开脱敏战报", -1)])
 			]),
-			H("details", xf, [a[6] ||= H("summary", { class: "xy-sec-summary" }, [H("span", { class: "xy-sec-tag" }, "AI READ CONTEXT"), H("span", null, "当前裁定器实际读取的完整结构化上下文 (含敌方 Hidden 信息)")], -1), H("pre", Sf, A(n.value), 1)]),
-			H("div", Cf, [H("h3", wf, "模型与程序事件流水 (" + A(e.logs.length) + ")", 1), e.logs.length ? (B(), V("div", Tf, [(B(!0), V(z, null, R(r.value, (e, t) => (B(), V("details", {
+			H("details", Sf, [a[6] ||= H("summary", { class: "xy-sec-summary" }, [H("span", { class: "xy-sec-tag" }, "AI READ CONTEXT"), H("span", null, "当前裁定器实际读取的完整结构化上下文 (含敌方 Hidden 信息)")], -1), H("pre", Cf, A(n.value), 1)]),
+			H("div", wf, [H("h3", Tf, "模型与程序事件流水 (" + A(e.logs.length) + ")", 1), e.logs.length ? (B(), V("div", Ef, [(B(!0), V(z, null, R(r.value, (e, t) => (B(), V("details", {
 				key: t,
 				class: "xy-log-detail-item"
-			}, [H("summary", Ef, [
+			}, [H("summary", Df, [
 				H("span", { class: k(["xy-item-kind", "kind-" + e.kind]) }, A(e.kind), 3),
-				e.actionId ? (B(), V("span", Df, "#" + A(e.actionId.slice(-6)), 1)) : W("", !0),
-				H("span", Of, A(e.at), 1)
-			]), H("pre", kf, A(i(e)), 1)]))), 128))])) : (B(), V("div", Af, [...a[7] ||= [H("span", null, "尚无调用日志。进行裁定、正文生成或宿主同步后将自动记述于此。", -1)]]))])
+				e.actionId ? (B(), V("span", Of, "#" + A(e.actionId.slice(-6)), 1)) : W("", !0),
+				H("span", kf, A(e.at), 1)
+			]), H("pre", Af, A(i(e)), 1)]))), 128))])) : (B(), V("div", jf, [...a[7] ||= [H("span", null, "尚无调用日志。进行裁定、正文生成或宿主同步后将自动记述于此。", -1)]]))])
 		]));
 	}
-}, [["__scopeId", "data-v-78f0b392"]]), Mf = {
+}, [["__scopeId", "data-v-78f0b392"]]), Nf = {
 	id: "gongfa.dielang-xuanchaojue",
 	name: "叠浪玄潮诀",
 	rank: "演示摘录（非权威全本）",
@@ -5457,29 +5461,29 @@ var Dd = { class: "xy-battle-stage" }, Od = { class: "xy-stage-arena" }, kd = { 
 		kind: "demonstration",
 		note: "仅验证 registry/UI；原始功法全文应以经用户确认的世界书来源导入。"
 	}
-}, Nf = [
+}, Pf = [
 	"mechanics",
 	"techniques",
 	"synergies",
 	"narrativeGuidance",
 	"ruleRefs"
-], Pf = /* @__PURE__ */ new Set([
+], Ff = /* @__PURE__ */ new Set([
 	"public",
 	"player",
 	"gm",
 	"internal"
 ]);
-function Ff(e, t) {
+function If(e, t) {
 	if (typeof e != "string" || !e.trim()) throw Error(`${t} 必须是非空文字`);
 }
-function If(e) {
+function Lf(e) {
 	let t = [
 		"id",
 		"name",
 		"rank",
 		"element",
 		"corePrinciple",
-		...Nf,
+		...Pf,
 		"version",
 		"visibility"
 	].filter((t) => !(t in (e || {})));
@@ -5491,9 +5495,9 @@ function If(e) {
 		"element",
 		"corePrinciple",
 		"version"
-	]) Ff(e[t], t);
-	if (!Pf.has(e.visibility)) throw Error("visibility 无效");
-	for (let t of Nf) if (!Array.isArray(e[t])) throw Error(`${t} 必须是数组`);
+	]) If(e[t], t);
+	if (!Ff.has(e.visibility)) throw Error("visibility 无效");
+	for (let t of Pf) if (!Array.isArray(e[t])) throw Error(`${t} 必须是数组`);
 	let n = /* @__PURE__ */ new Set();
 	for (let t of e.techniques) {
 		for (let e of [
@@ -5510,9 +5514,9 @@ function If(e) {
 			"id",
 			"name",
 			"originalDefinition"
-		]) Ff(t[e], e);
+		]) If(t[e], e);
 		if (n.has(t.id)) throw Error(`词条 id 重复：${t.id}`);
-		if (n.add(t.id), !Array.isArray(t.mechanics) || !Array.isArray(t.triggeredState) || !Array.isArray(t.ruleRefs) || !t.ruleRefs.length || !Pf.has(t.visibility)) throw Error(`词条 ${t.id} 结构无效`);
+		if (n.add(t.id), !Array.isArray(t.mechanics) || !Array.isArray(t.triggeredState) || !Array.isArray(t.ruleRefs) || !t.ruleRefs.length || !Ff.has(t.visibility)) throw Error(`词条 ${t.id} 结构无效`);
 		if (![
 			"available",
 			"conditional",
@@ -5522,19 +5526,19 @@ function If(e) {
 	if (!e.ruleRefs.length || e.ruleRefs.some((e) => typeof e != "string" || !e.trim())) throw Error("ruleRefs 不得为空");
 	return !0;
 }
-function Lf(e, t) {
+function Rf(e, t) {
 	return String(t).split(".").reduce((e, t) => e?.[t], e);
 }
-function Rf(e, t) {
-	let n = Lf(e, t.path);
+function zf(e, t) {
+	let n = Rf(e, t.path);
 	return t.op === "includes" ? Array.isArray(n) && n.includes(t.value) : t.op === "truthy" ? !!n : t.op === "equals" ? n === t.value : t.op === "not" && n !== t.value;
 }
-var zf = class {
-	constructor(e = [Mf]) {
+var Bf = class {
+	constructor(e = [Nf]) {
 		this.entries = /* @__PURE__ */ new Map(), e.forEach((e) => this.register(e));
 	}
 	register(e) {
-		if (If(e), this.entries.has(e.id)) throw Error(`功法已存在：${e.id}`);
+		if (Lf(e), this.entries.has(e.id)) throw Error(`功法已存在：${e.id}`);
 		return this.entries.set(e.id, Y(e)), this;
 	}
 	get(e) {
@@ -5566,7 +5570,7 @@ var zf = class {
 			reason: "词条不存在",
 			triggered: !1
 		};
-		let i = r.availability.requires || [], a = r.availability.default !== "unavailable" && (i.length ? i.every((e) => Rf(n, e)) : r.availability.default === "available"), o = (n.statuses || []).some((e) => e === `${t}:triggered`) || (n.effects || []).some((e) => typeof e == "string" ? e.startsWith(`${t}`) : e.techniqueId === t);
+		let i = r.availability.requires || [], a = r.availability.default !== "unavailable" && (i.length ? i.every((e) => zf(n, e)) : r.availability.default === "available"), o = (n.statuses || []).some((e) => e === `${t}:triggered`) || (n.effects || []).some((e) => typeof e == "string" ? e.startsWith(`${t}`) : e.techniqueId === t);
 		return {
 			available: a,
 			state: a ? "available" : "conditional",
@@ -5574,13 +5578,13 @@ var zf = class {
 			triggered: o
 		};
 	}
-}, Bf = "xybattle-content-v1", Vf = Object.freeze(["technique", "treasure"]), Hf = "xybattle-content-export-v1", Uf = /* @__PURE__ */ new Set([
+}, Vf = "xybattle-content-v1", Hf = Object.freeze(["technique", "treasure"]), Uf = "xybattle-content-export-v1", Wf = /* @__PURE__ */ new Set([
 	"public",
 	"player",
 	"gm",
 	"internal"
 ]);
-function Wf(e) {
+function Gf(e) {
 	if (typeof e == "string") try {
 		return JSON.parse(e);
 	} catch (e) {
@@ -5589,21 +5593,21 @@ function Wf(e) {
 	if (!e || typeof e != "object") throw Error("内容必须是 JSON 对象或数组");
 	return Y(e);
 }
-function Gf(e, t) {
+function Kf(e, t) {
 	let n = t ?? e?.contentType ?? e?.kind ?? e?.type;
 	return n === "功法" || n === "gongfa" || n === "technique" ? "technique" : n === "法宝" || n === "fabao" || n === "treasure" || typeof e?.id == "string" && e.id.startsWith("fabao.") ? "treasure" : n != null && n !== "" ? null : "technique";
 }
-function Kf(e) {
-	let t = Wf(e);
+function qf(e) {
+	let t = Gf(e);
 	if (t.schema && t.schema !== "xybattle-content-export-v1" && t.schema !== "xybattle-content-v1") throw Error(`内容 schema 不受支持：${t.schema}`);
 	return t.schema === "xybattle-content-export-v1" && Array.isArray(t.items) ? t.items : Array.isArray(t) ? t : Array.isArray(t.registry) ? t.registry : t.entry && typeof t.entry == "object" ? t.entry : t.content && typeof t.content == "object" ? t.content : t;
 }
-function qf(e, t = {}) {
-	let n = Wf(e);
+function Jf(e, t = {}) {
+	let n = Gf(e);
 	if (n.schema && !["xybattle-content-v1", "xybattle-content-export-v1"].includes(n.schema) && !n.entry && !n.content) throw Error(`内容 schema 不受支持：${n.schema}`);
-	let r = n.entry && typeof n.entry == "object" ? n.entry : n.content && typeof n.content == "object" ? n.content : n, i = Gf(r, t.contentType ?? n.contentType ?? n.kind ?? (n.entry ? void 0 : n.type));
-	if (!Vf.includes(i)) throw Error(`内容类型无效：${i}`);
-	if (If(r), !/^(gongfa|fabao)\.[a-z0-9._-]+$/i.test(r.id)) throw Error("内容 id 必须使用 gongfa. 或 fabao. 前缀");
+	let r = n.entry && typeof n.entry == "object" ? n.entry : n.content && typeof n.content == "object" ? n.content : n, i = Kf(r, t.contentType ?? n.contentType ?? n.kind ?? (n.entry ? void 0 : n.type));
+	if (!Hf.includes(i)) throw Error(`内容类型无效：${i}`);
+	if (Lf(r), !/^(gongfa|fabao)\.[a-z0-9._-]+$/i.test(r.id)) throw Error("内容 id 必须使用 gongfa. 或 fabao. 前缀");
 	for (let e of [
 		"mechanics",
 		"synergies",
@@ -5627,21 +5631,21 @@ function qf(e, t = {}) {
 	if (t.requirePrefix !== !1 && !/^(gongfa|fabao)\.[a-z0-9._-]+$/i.test(r.id)) throw Error("内容 id 必须使用 gongfa. 或 fabao. 前缀");
 	return Y(r);
 }
-function Jf(e, t = {}) {
-	let n = Kf(e), r = Array.isArray(n) ? n : [n], i = /* @__PURE__ */ new Set();
+function Yf(e, t = {}) {
+	let n = qf(e), r = Array.isArray(n) ? n : [n], i = /* @__PURE__ */ new Set();
 	return r.map((e) => {
-		let n = qf(e, t);
+		let n = Jf(e, t);
 		if (i.has(n.id)) throw Error(`内容 id 重复：${n.id}`);
 		return i.add(n.id), n;
 	});
 }
-function Yf(e, t = {}) {
-	let n = qf(e, t), r = t.now || (/* @__PURE__ */ new Date()).toISOString(), i = t.createdAt || r, a = t.updatedAt || r;
+function Xf(e, t = {}) {
+	let n = Jf(e, t), r = t.now || (/* @__PURE__ */ new Date()).toISOString(), i = t.createdAt || r, a = t.updatedAt || r;
 	return {
-		schema: Bf,
+		schema: Vf,
 		protocolVersion: 1,
 		id: n.id,
-		contentType: Gf(n, t.contentType),
+		contentType: Kf(n, t.contentType),
 		name: n.name,
 		version: n.version,
 		createdAt: i,
@@ -5649,21 +5653,21 @@ function Yf(e, t = {}) {
 		entry: n
 	};
 }
-function Xf(e, t = {}) {
-	let n = (Array.isArray(e) ? e : [e]).map((e) => e?.entry ? Yf(e.entry, e) : Yf(e, t));
+function Zf(e, t = {}) {
+	let n = (Array.isArray(e) ? e : [e]).map((e) => e?.entry ? Xf(e.entry, e) : Xf(e, t));
 	return {
-		schema: Hf,
+		schema: Uf,
 		protocolVersion: 1,
 		exportedAt: t.exportedAt || (/* @__PURE__ */ new Date()).toISOString(),
 		items: n
 	};
 }
-function Zf(e, t = {}) {
-	let n = Wf(e);
+function Qf(e, t = {}) {
+	let n = Gf(e);
 	if (n.schema === "xybattle-content-export-v1") {
 		if (n.protocolVersion !== 1) throw Error(`内容协议版本不支持：${n.protocolVersion}`);
 		if (!Array.isArray(n.items)) throw Error("内容导出文件缺少 items 数组");
-		let e = n.items.map((e) => Yf(e.entry || e.content || e, {
+		let e = n.items.map((e) => Xf(e.entry || e.content || e, {
 			...t,
 			contentType: e.contentType,
 			createdAt: e.createdAt,
@@ -5675,18 +5679,18 @@ function Zf(e, t = {}) {
 		}
 		return e;
 	}
-	return Jf(n, t).map((e) => Yf(e, t));
+	return Yf(n, t).map((e) => Xf(e, t));
 }
-function Qf(e) {
+function $f(e) {
 	if (e && !e.entry && e.id && !Array.isArray(e.techniques)) return {
 		id: e.id,
-		contentType: e.contentType || Gf(e, e.contentType),
+		contentType: e.contentType || Kf(e, e.contentType),
 		name: e.name || e.id,
 		version: e.version || "",
 		createdAt: e.createdAt,
 		updatedAt: e.updatedAt
 	};
-	let t = e?.entry ? e : Yf(e);
+	let t = e?.entry ? e : Xf(e);
 	return {
 		id: t.id,
 		contentType: t.contentType,
@@ -5696,24 +5700,24 @@ function Qf(e) {
 		updatedAt: t.updatedAt
 	};
 }
-function $f(e) {
+function ep(e) {
 	if (!e || e.schema !== "xybattle-content-v1" || e.protocolVersion !== 1) throw Error("不是有效的 xybattle 内容记录");
 	if (!e.id || !e.entry || e.id !== e.entry.id) throw Error("内容记录 id 与 entry 不一致");
-	if (!Uf.has(e.entry.visibility)) throw Error("visibility 无效");
-	let t = qf(e.entry, { contentType: e.contentType });
+	if (!Wf.has(e.entry.visibility)) throw Error("visibility 无效");
+	let t = Jf(e.entry, { contentType: e.contentType });
 	if (e.name !== t.name || e.version !== t.version) throw Error("内容记录元数据与 entry 不一致");
 	return !0;
 }
 //#endregion
 //#region src/content-importer.js
-function ep(e, t = {}) {
-	let n = Zf(e, t), r = /* @__PURE__ */ new Set(), i = [];
+function tp(e, t = {}) {
+	let n = Qf(e, t), r = /* @__PURE__ */ new Set(), i = [];
 	for (let e of n) {
 		if (r.has(e.id)) throw Error(`内容 id 重复：${e.id}`);
 		r.add(e.id);
 	}
 	return {
-		schema: Hf,
+		schema: Uf,
 		protocolVersion: 1,
 		valid: !0,
 		count: n.length,
@@ -5722,7 +5726,7 @@ function ep(e, t = {}) {
 		conflicts: i
 	};
 }
-async function tp(e, t, { mode: n = "reject" } = {}) {
+async function np(e, t, { mode: n = "reject" } = {}) {
 	if (!e?.valid || !Array.isArray(e.records)) throw Error("无效的内容导入预览");
 	if (!t?.getRecord) return [];
 	let r = [];
@@ -5732,10 +5736,10 @@ async function tp(e, t, { mode: n = "reject" } = {}) {
 	});
 	return r;
 }
-async function np(e, { store: t, mode: n = "reject", ...r } = {}) {
+async function rp(e, { store: t, mode: n = "reject", ...r } = {}) {
 	if (!t) throw Error("导入内容需要 ContentStore");
 	if (!["reject", "replace"].includes(n)) throw Error(`不支持的导入模式：${n}`);
-	let i = ep(e, r), a = await tp(i, t, { mode: n });
+	let i = tp(e, r), a = await np(i, t, { mode: n });
 	if (n === "reject" && a.length) throw Error(`内容已存在：${a.map((e) => e.id).join("、")}`);
 	if (typeof t.putMany == "function") await t.putMany(i.records, { overwrite: n === "replace" });
 	else if (typeof t.importRecords == "function") await t.importRecords(i.records, { overwrite: n === "replace" });
@@ -5746,32 +5750,32 @@ async function np(e, { store: t, mode: n = "reject", ...r } = {}) {
 		imported: i.records.map((e) => e.id)
 	};
 }
-async function rp(e, t, n = {}) {
+async function ip(e, t, n = {}) {
 	if (!e?.exportContents) throw Error("导出内容需要 ContentStore");
 	return e.exportContents(t, n);
 }
-async function ip(e, t, n = {}) {
-	let r = await rp(e, t, n);
+async function ap(e, t, n = {}) {
+	let r = await ip(e, t, n);
 	return JSON.stringify(r, null, n.pretty === !1 ? 0 : 2);
 }
 //#endregion
 //#region src/ui/components/ContentLibraryPanel.vue
-var ap = {
+var op = {
 	class: "xy-content-library xy-custom-scroll",
 	"aria-label": "功法与法宝内容库"
-}, op = { class: "xy-library-header" }, sp = { class: "xy-library-actions" }, cp = { class: "xy-upload-button" }, lp = ["disabled"], up = ["disabled"], dp = { class: "xy-library-grid" }, fp = {
+}, sp = { class: "xy-library-header" }, cp = { class: "xy-library-actions" }, lp = { class: "xy-upload-button" }, up = ["disabled"], dp = ["disabled"], fp = { class: "xy-library-grid" }, pp = {
 	class: "xy-library-list",
 	"aria-label": "内容列表"
-}, pp = { class: "xy-library-toolbar" }, mp = ["onClick"], hp = {
+}, mp = { class: "xy-library-toolbar" }, hp = ["onClick"], gp = {
 	key: 0,
 	class: "xy-library-empty"
-}, gp = { class: "xy-library-editor" }, _p = {
+}, _p = { class: "xy-library-editor" }, vp = {
 	key: 0,
 	class: "xy-library-preview"
-}, vp = {
+}, yp = {
 	key: 0,
 	class: "warning"
-}, yp = { class: "xy-library-buttons" }, bp = ["disabled"], xp = ["disabled"], Sp = ["disabled"], Cp = ["disabled"], wp = ["disabled"], Tp = ["disabled"], Ep = /*#__PURE__*/ q({
+}, bp = { class: "xy-library-buttons" }, xp = ["disabled"], Sp = ["disabled"], Cp = ["disabled"], wp = ["disabled"], Tp = ["disabled"], Ep = ["disabled"], Dp = /*#__PURE__*/ q({
 	__name: "ContentLibraryPanel",
 	props: { store: {
 		type: Object,
@@ -5832,7 +5836,7 @@ var ap = {
 		}
 		async function S() {
 			if (!d.value) try {
-				let e = ep(s.value);
+				let e = tp(s.value);
 				e.conflicts = [];
 				for (let t of e.records) await r.store.getRecord(t.id) && e.conflicts.push({ id: t.id });
 				u.value = e, g(`校验通过：${e.count} 条内容`);
@@ -5851,7 +5855,7 @@ var ap = {
 			let t = s.value;
 			d.value = !0;
 			try {
-				let n = await np(t, {
+				let n = await rp(t, {
 					store: r.store,
 					mode: e
 				});
@@ -5900,7 +5904,7 @@ var ap = {
 		}
 		async function E() {
 			try {
-				let e = await ip(r.store, o.value);
+				let e = await ap(r.store, o.value);
 				i("export", e), g("已生成选中内容导出 JSON");
 			} catch (e) {
 				g(e.message, "error"), i("error", e);
@@ -5908,7 +5912,7 @@ var ap = {
 		}
 		async function ie() {
 			try {
-				let e = await ip(r.store);
+				let e = await ap(r.store);
 				i("export", e), g("已生成全部内容导出 JSON");
 			} catch (e) {
 				g(e.message, "error"), i("error", e);
@@ -5919,12 +5923,12 @@ var ap = {
 			previewImport: S,
 			commitImport: C,
 			replaceImport: w
-		}), (e, t) => (B(), V("section", ap, [
-			H("header", op, [t[6] ||= H("div", null, [
+		}), (e, t) => (B(), V("section", op, [
+			H("header", sp, [t[6] ||= H("div", null, [
 				H("span", { class: "xy-panel-kicker" }, "TECHNIQUE & TREASURE LIBRARY"),
 				H("h2", { class: "xy-panel-title" }, "功法与法宝 · 内容库"),
 				H("p", { class: "xy-panel-desc" }, "标准 JSON 先预览后写入浏览器内容库。编辑内容库不会改动已开始战斗的 registry snapshot。")
-			], -1), H("div", sp, [
+			], -1), H("div", cp, [
 				H("button", {
 					type: "button",
 					onClick: b
@@ -5937,7 +5941,7 @@ var ap = {
 					type: "button",
 					onClick: t[1] ||= (e) => v("treasure")
 				}, "新建法宝模板"),
-				H("label", cp, [t[5] ||= aa("上传 JSON", -1), H("input", {
+				H("label", lp, [t[5] ||= aa("上传 JSON", -1), H("input", {
 					type: "file",
 					accept: "application/json,.json",
 					onChange: y
@@ -5946,19 +5950,19 @@ var ap = {
 					type: "button",
 					disabled: !m.value,
 					onClick: E
-				}, "导出选中", 8, lp),
+				}, "导出选中", 8, up),
 				H("button", {
 					type: "button",
 					disabled: !a.value.length,
 					onClick: ie
-				}, "导出全部", 8, up)
+				}, "导出全部", 8, dp)
 			])]),
 			f.value ? (B(), V("div", {
 				key: 0,
 				class: k(["xy-library-notice", { error: p.value === "error" }])
 			}, A(f.value), 3)) : W("", !0),
-			H("div", dp, [H("aside", fp, [
-				H("div", pp, [L(H("input", {
+			H("div", fp, [H("aside", pp, [
+				H("div", mp, [L(H("input", {
 					"onUpdate:modelValue": t[2] ||= (e) => c.value = e,
 					type: "search",
 					placeholder: "搜索名称或 ID"
@@ -5972,21 +5976,21 @@ var ap = {
 					type: "button",
 					class: k(["xy-library-item", { active: o.value === e.id }]),
 					onClick: (t) => x(e.id)
-				}, [H("strong", null, A(e.name), 1), H("small", null, A(e.contentType === "treasure" ? "法宝" : "功法") + " · " + A(e.id), 1)], 10, mp))), 128)),
-				h.value.length ? W("", !0) : (B(), V("p", hp, "内容库暂无匹配条目"))
-			]), H("div", gp, [
+				}, [H("strong", null, A(e.name), 1), H("small", null, A(e.contentType === "treasure" ? "法宝" : "功法") + " · " + A(e.id), 1)], 10, hp))), 128)),
+				h.value.length ? W("", !0) : (B(), V("p", gp, "内容库暂无匹配条目"))
+			]), H("div", _p, [
 				L(H("textarea", {
 					"onUpdate:modelValue": t[4] ||= (e) => s.value = e,
 					rows: "18",
 					spellcheck: "false",
 					placeholder: "粘贴单条、数组或 xybattle-content-export-v1 JSON"
 				}, null, 512), [[K, s.value]]),
-				u.value ? (B(), V("div", _p, [
+				u.value ? (B(), V("div", vp, [
 					t[8] ||= H("strong", null, "导入预览", -1),
 					H("span", null, A(u.value.count) + " 条 · " + A(u.value.ids.join("、")), 1),
-					u.value.conflicts?.length ? (B(), V("span", vp, "已有同 ID：" + A(u.value.conflicts.map((e) => e.id).join("、")), 1)) : W("", !0)
+					u.value.conflicts?.length ? (B(), V("span", yp, "已有同 ID：" + A(u.value.conflicts.map((e) => e.id).join("、")), 1)) : W("", !0)
 				])) : W("", !0),
-				H("div", yp, [
+				H("div", bp, [
 					H("button", {
 						type: "button",
 						onClick: S
@@ -5995,75 +5999,75 @@ var ap = {
 						type: "button",
 						disabled: !u.value,
 						onClick: C
-					}, "新增导入", 8, bp),
+					}, "新增导入", 8, xp),
 					H("button", {
 						type: "button",
 						disabled: !u.value,
 						onClick: w
-					}, "覆盖导入", 8, xp),
+					}, "覆盖导入", 8, Sp),
 					H("button", {
 						type: "button",
 						disabled: !m.value,
 						onClick: te
-					}, "保存编辑", 8, Sp),
+					}, "保存编辑", 8, Cp),
 					H("button", {
 						type: "button",
 						disabled: !m.value,
 						onClick: T
-					}, "复制", 8, Cp),
+					}, "复制", 8, wp),
 					H("button", {
 						type: "button",
 						class: "danger",
 						disabled: !m.value,
 						onClick: re
-					}, "删除", 8, wp),
+					}, "删除", 8, Tp),
 					H("button", {
 						type: "button",
 						disabled: !m.value,
 						onClick: ne
-					}, "应用到本场", 8, Tp)
+					}, "应用到本场", 8, Ep)
 				])
 			])])
 		]));
 	}
-}, [["__scopeId", "data-v-c7aecbcf"]]), Dp = {
+}, [["__scopeId", "data-v-c7aecbcf"]]), Op = {
 	class: "xy-character-confirmation",
 	"data-testid": "character-confirmation-panel",
 	"aria-labelledby": "character-confirmation-title"
-}, Op = { class: "xy-character-confirmation__header" }, kp = ["data-status"], Ap = {
+}, kp = { class: "xy-character-confirmation__header" }, Ap = ["data-status"], jp = {
 	key: 0,
 	class: "xy-character-confirmation__busy",
 	role: "status",
 	"aria-live": "polite"
-}, jp = {
+}, Mp = {
 	key: 1,
 	class: "xy-character-confirmation__empty"
-}, Mp = ["disabled"], Np = {
+}, Np = ["disabled"], Pp = {
 	class: "xy-character-confirmation__sources",
 	"aria-label": "资料来源状态"
-}, Pp = ["data-source-status"], Fp = {
+}, Fp = ["data-source-status"], Ip = {
 	key: 0,
 	class: "xy-character-confirmation__empty"
-}, Ip = ["data-candidate-id"], Lp = { class: "xy-character-candidate__header" }, Rp = { class: "xy-character-candidate__id" }, zp = [
+}, Lp = ["data-candidate-id"], Rp = { class: "xy-character-candidate__header" }, zp = { class: "xy-character-candidate__id" }, Bp = [
 	"disabled",
 	"data-action",
 	"onClick"
-], Bp = { class: "xy-character-candidate__json" }, Vp = [
+], Vp = { class: "xy-character-candidate__json" }, Hp = [
 	"value",
 	"disabled",
 	"data-candidate-json",
 	"onInput"
-], Hp = {
+], Up = {
 	key: 0,
 	class: "xy-character-candidate__error",
 	role: "alert"
-}, Up = {
+}, Wp = {
 	class: "xy-character-candidate__fields",
 	"aria-label": "字段来源与冲突"
-}, Wp = ["data-field-path"], Gp = { class: "xy-character-field__path" }, Kp = { class: "xy-character-field__value" }, qp = { class: "xy-character-field__source" }, Jp = ["data-conflict-path"], Yp = { class: "xy-character-confirmation__actions" }, Xp = ["disabled"], Zp = ["disabled"], Qp = ["disabled"], $p = {
+}, Gp = ["data-field-path"], Kp = { class: "xy-character-field__path" }, qp = { class: "xy-character-field__value" }, Jp = { class: "xy-character-field__source" }, Yp = ["data-conflict-path"], Xp = { class: "xy-character-confirmation__actions" }, Zp = ["disabled"], Qp = ["disabled"], $p = ["disabled"], em = {
 	key: 1,
 	class: "xy-character-confirmation__notice"
-}, em = /*#__PURE__*/ q({
+}, tm = /*#__PURE__*/ q({
 	__name: "CharacterConfirmationPanel",
 	props: {
 		preparation: {
@@ -6208,52 +6212,52 @@ var ap = {
 				removeIds: [...o]
 			});
 		}
-		return (t, n) => (B(), V("section", Dp, [
-			H("header", Op, [n[3] ||= H("div", null, [
+		return (t, n) => (B(), V("section", Op, [
+			H("header", kp, [n[3] ||= H("div", null, [
 				H("span", { class: "xy-character-confirmation__eyebrow" }, "BATTLE PREPARATION"),
 				H("h3", { id: "character-confirmation-title" }, "战前敌方人物确认"),
 				H("p", { class: "xy-character-confirmation__hint" }, " 资料只会在确认后写入战斗状态，并进入裁定器上下文。 ")
 			], -1), H("span", {
 				class: "xy-character-confirmation__state",
 				"data-status": e.preparation?.status || "idle"
-			}, A(l.value), 9, kp)]),
-			e.busy ? (B(), V("div", Ap, " 正在读取人物资料；确认操作暂不可用。 ")) : W("", !0),
+			}, A(l.value), 9, Ap)]),
+			e.busy ? (B(), V("div", jp, " 正在读取人物资料；确认操作暂不可用。 ")) : W("", !0),
 			e.preparation ? (B(), V(z, { key: 2 }, [
-				H("div", Np, [(B(!0), V(z, null, R(p.value, (e) => (B(), V("span", {
+				H("div", Pp, [(B(!0), V(z, null, R(p.value, (e) => (B(), V("span", {
 					key: e.key,
 					class: k(["xy-source-status", `is-${e.tone}`]),
 					"data-source-status": e.key
-				}, [H("b", null, A(e.label), 1), aa("：" + A(e.text), 1)], 10, Pp))), 128))]),
-				e.preparation.candidates?.length ? W("", !0) : (B(), V("div", Fp, [...n[5] ||= [H("p", null, "没有可审核的敌方人物候选。", -1)]])),
+				}, [H("b", null, A(e.label), 1), aa("：" + A(e.text), 1)], 10, Fp))), 128))]),
+				e.preparation.candidates?.length ? W("", !0) : (B(), V("div", Ip, [...n[5] ||= [H("p", null, "没有可审核的敌方人物候选。", -1)]])),
 				(B(!0), V(z, null, R(e.preparation.candidates, (t) => (B(), V("article", {
 					key: t.id,
 					class: k(["xy-character-candidate", { "is-removed": o.has(t.id) }]),
 					"data-candidate-id": t.id
 				}, [
-					H("header", Lp, [H("div", null, [H("span", Rp, A(t.id), 1), H("h4", null, A(t.name || t.id), 1)]), H("button", {
+					H("header", Rp, [H("div", null, [H("span", zp, A(t.id), 1), H("h4", null, A(t.name || t.id), 1)]), H("button", {
 						type: "button",
 						class: "xy-character-candidate__remove",
 						disabled: e.busy || e.preparation.status === "confirmed",
 						"data-action": o.has(t.id) ? "restore" : "remove",
 						onClick: (e) => g(t.id)
-					}, A(o.has(t.id) ? "恢复候选" : "删除候选"), 9, zp)]),
-					H("label", Bp, [n[6] ||= H("span", null, "候选资料 JSON（可编辑）", -1), H("textarea", {
+					}, A(o.has(t.id) ? "恢复候选" : "删除候选"), 9, Bp)]),
+					H("label", Vp, [n[6] ||= H("span", null, "候选资料 JSON（可编辑）", -1), H("textarea", {
 						value: i[t.id],
 						rows: "6",
 						disabled: e.busy || e.preparation.status === "confirmed" || o.has(t.id),
 						"data-candidate-json": t.id,
 						onInput: (e) => h(t.id, e.target.value)
-					}, null, 40, Vp)]),
-					a[t.id] ? (B(), V("p", Hp, A(a[t.id]), 1)) : W("", !0),
-					H("div", Up, [(B(!0), V(z, null, R(m(t), (e) => (B(), V("div", {
+					}, null, 40, Hp)]),
+					a[t.id] ? (B(), V("p", Up, A(a[t.id]), 1)) : W("", !0),
+					H("div", Wp, [(B(!0), V(z, null, R(m(t), (e) => (B(), V("div", {
 						key: e.path,
 						class: "xy-character-field",
 						"data-field-path": e.path
 					}, [
-						H("span", Gp, A(e.path), 1),
-						H("code", Kp, A(d(e.value)), 1),
-						H("span", qp, "来源：" + A(u(e.source)), 1)
-					], 8, Wp))), 128)), (B(!0), V(z, null, R(t.conflicts || [], (e) => (B(), V("div", {
+						H("span", Kp, A(e.path), 1),
+						H("code", qp, A(d(e.value)), 1),
+						H("span", Jp, "来源：" + A(u(e.source)), 1)
+					], 8, Gp))), 128)), (B(!0), V(z, null, R(t.conflicts || [], (e) => (B(), V("div", {
 						key: `${t.id}:${e.path}:${e.ignored}`,
 						class: "xy-character-conflict",
 						"data-conflict-path": e.path
@@ -6261,50 +6265,50 @@ var ap = {
 						H("b", null, "冲突 · " + A(e.path), 1),
 						H("span", null, [aa("采用（" + A(u(e.kept)) + "）：", 1), H("code", null, A(d(e.keptValue)), 1)]),
 						H("span", null, [aa("未采用（" + A(u(e.ignored)) + "）：", 1), H("code", null, A(d(e.ignoredValue)), 1)])
-					], 8, Jp))), 128))])
-				], 10, Ip))), 128)),
-				H("footer", Yp, [
+					], 8, Yp))), 128))])
+				], 10, Lp))), 128)),
+				H("footer", Xp, [
 					H("button", {
 						type: "button",
 						"data-action": "cancel",
 						disabled: e.busy,
 						onClick: n[1] ||= (e) => t.$emit("cancel")
-					}, "取消", 8, Xp),
+					}, "取消", 8, Zp),
 					H("button", {
 						type: "button",
 						"data-action": "retry",
 						disabled: e.busy,
 						onClick: n[2] ||= (e) => t.$emit("retry")
-					}, "重新读取", 8, Zp),
+					}, "重新读取", 8, Qp),
 					H("button", {
 						type: "button",
 						class: "is-primary",
 						"data-action": "confirm",
 						disabled: _.value,
 						onClick: v
-					}, A(e.preparation.status === "confirmed" ? "已确认" : "确认人物资料"), 9, Qp)
+					}, A(e.preparation.status === "confirmed" ? "已确认" : "确认人物资料"), 9, $p)
 				]),
-				e.preparation.status === "confirmed" ? W("", !0) : (B(), V("p", $p, " 未点击“确认人物资料”的候选不会进入战斗裁定。 "))
-			], 64)) : (B(), V("div", jp, [n[4] ||= H("p", null, "尚未生成候选人物。先从当前上下文、MVU 和人物资料库读取候选。", -1), H("button", {
+				e.preparation.status === "confirmed" ? W("", !0) : (B(), V("p", em, " 未点击“确认人物资料”的候选不会进入战斗裁定。 "))
+			], 64)) : (B(), V("div", Mp, [n[4] ||= H("p", null, "尚未生成候选人物。先从当前上下文、MVU 和人物资料库读取候选。", -1), H("button", {
 				type: "button",
 				"data-action": "prepare",
 				disabled: e.busy,
 				onClick: n[0] ||= (e) => t.$emit("prepare")
-			}, "读取候选人物", 8, Mp)]))
+			}, "读取候选人物", 8, Np)]))
 		]));
 	}
 }, [["__scopeId", "data-v-d55ef351"]]);
 //#endregion
 //#region src/utils.js
-function tm(e, t) {
+function nm(e, t) {
 	if (typeof document > "u") return !1;
 	let n = new Blob([t], { type: "application/json;charset=utf-8" }), r = URL.createObjectURL(n), i = document.createElement("a");
 	return i.href = r, i.download = e, i.click(), setTimeout(() => URL.revokeObjectURL(r), 0), !0;
 }
 //#endregion
 //#region src/battle-adjudicator-prompt.js
-var nm = "你是修仙战斗系统专属的【天道推演玄枢 · 独立功法战斗裁定核心】（Heavenly Combat Adjudicator）。\n你的唯一职责是：纯粹、严密、客观地对本轮攻防交锋进行功法机理推演与规则裁定。\n你完全独立于宿主聊天主预设、角色卡背景和世俗剧情，禁止进行小说文学创作，禁止输出剧情正文，只返回符合天道规范的结构化裁定数据 JSON。\n\n【核心裁定职责与分析原则】\n1. 功法招式机理推演（Technique Mechanics）：\n   - 深入分析主角所施展招式的起手运劲、真元流转、引动法则（如音波织网、叠浪贯通、潮汐共鸣）与出招心念意图。\n   - 深入分析敌方当前姿态、防御手段、已知功法与境界压制（如重剑开合、体魄罡气、真元厚度）。\n   - 内部因果考量（含暗藏私密底牌）：你拥有探知敌方隐藏底牌、暗疾与暗中算计（hidden）的天道神念。必须依据敌我真实情况裁定深层因果，但【严禁】在面向玩家公开的 summary 和 publicEvents 中明文泄露尚未暴露的隐藏底牌！\n\n2. 给出对敌人的实质影响（Target Impact）：\n   - 严谨判定招式对敌手造成的物理与灵力效果：\n     * 受制部位（如双足被水网缠裹、重剑挥击受阻、重心失衡向前倾跌）；\n     * 灵力与经脉反应（如真元运行滞涩、护体罡罩受震碎裂、逆流反噬）；\n     * 战术姿态改变（如硬直后退、招架露出破绽、狂攻冲锋被迫中断）；\n     * 资源损耗（若规则定义了气血/真元/架势消耗）。\n\n3. 给出对战场环境的天地剧变（Environmental Impact）：\n   - 严谨判定打斗对周围天地气象、灵气分布与地形造成的剧烈冲击：\n     * 地形形貌破坏（如青玄石板碎裂飞溅、深坑沟壑、碎石四溅）；\n     * 灵气与气象变化（如水汽撕裂凝聚成网、狂暴重浪屏风横推、煞气黑烟被冲散或压缩、狂风呼啸）；\n     * 天地灵压与声学变化（如音波炸裂、龙吟长啸、水平如镜被打破）。\n\n4. 确立战局走向与确凿事实（Committed Facts）：\n   - 判定节奏归属（谁取得节奏、谁被压制、站位变动）；\n   - 更新持续语义效果（如生效余势剩余回合、新激活状态）；\n   - 输出明确的公开事实列表（publicEvents），将对敌效果与对环境效果封装确立；\n   - 本裁定一经落定即为天道定数，后续正文 AI 必须严格遵守，禁止复判或推翻。\n\n【严格输出格式（JSON）】\n只返回合法 JSON 对象，严禁包裹任何 markdown 解释，结构如下：\n{\n  \"summary\": \"简练概括本轮核心攻防战况与裁定结果（包含对敌与对环境的核心定论）\",\n  \"before\": { /* 完整的原 semanticState 对象，必须原样保持 */ },\n  \"after\": {\n    /* 更新后的完整 semanticState 对象，保留原有所有字段，更新 statuses, effects, 站位, 压制, 破绽等 */\n  },\n  \"reason\": \"天道裁定因果推演阐述（阐述功法机理如何克制或受挫，可引用内部因果与敌我暗藏底牌）\",\n  \"ruleRefs\": [ \"引用的权威功法规则或词条ID，如 gongfa.dielang-xuanchaojue.xianshi\" ],\n  \"publicEvents\": [\n    \"【对敌影响】具体受制部位、姿态破坏与灵力震荡事实（无剧透）\",\n    \"【环境剧变】具体地形破坏与天地气象冲击事实\",\n    \"【局势转移】站位距离与攻守节奏归属事实\"\n  ],\n  \"confidence\": 0.95,\n  \"resourceChanges\": [\n    /* 可选资源变动：[{ \"actorId\": \"player\", \"resource\": \"qi\", \"before\": 120, \"after\": 105, \"reason\": \"消耗真元\", \"ruleRefs\": [...] }] */\n  ]\n}";
-function rm(e, t) {
+var rm = "你是修仙战斗系统专属的【天道推演玄枢 · 独立功法战斗裁定核心】（Heavenly Combat Adjudicator）。\n你的唯一职责是：纯粹、严密、客观地对本轮攻防交锋进行功法机理推演与规则裁定。\n你完全独立于宿主聊天主预设、角色卡背景和世俗剧情，禁止进行小说文学创作，禁止输出剧情正文，只返回符合天道规范的结构化裁定数据 JSON。\n\n【核心裁定职责与分析原则】\n1. 功法招式机理推演（Technique Mechanics）：\n   - 深入分析主角所施展招式的起手运劲、真元流转、引动法则（如音波织网、叠浪贯通、潮汐共鸣）与出招心念意图。\n   - 深入分析敌方当前姿态、防御手段、已知功法与境界压制（如重剑开合、体魄罡气、真元厚度）。\n   - 内部因果考量（含暗藏私密底牌）：你拥有探知敌方隐藏底牌、暗疾与暗中算计（hidden）的天道神念。必须依据敌我真实情况裁定深层因果，但【严禁】在面向玩家公开的 summary 和 publicEvents 中明文泄露尚未暴露的隐藏底牌！\n\n2. 给出对敌人的实质影响（Target Impact）：\n   - 严谨判定招式对敌手造成的物理与灵力效果：\n     * 受制部位（如双足被水网缠裹、重剑挥击受阻、重心失衡向前倾跌）；\n     * 灵力与经脉反应（如真元运行滞涩、护体罡罩受震碎裂、逆流反噬）；\n     * 战术姿态改变（如硬直后退、招架露出破绽、狂攻冲锋被迫中断）；\n     * 资源损耗（若规则定义了气血/真元/架势消耗）。\n\n3. 给出对战场环境的天地剧变（Environmental Impact）：\n   - 严谨判定打斗对周围天地气象、灵气分布与地形造成的剧烈冲击：\n     * 地形形貌破坏（如青玄石板碎裂飞溅、深坑沟壑、碎石四溅）；\n     * 灵气与气象变化（如水汽撕裂凝聚成网、狂暴重浪屏风横推、煞气黑烟被冲散或压缩、狂风呼啸）；\n     * 天地灵压与声学变化（如音波炸裂、龙吟长啸、水平如镜被打破）。\n\n4. 确立战局走向与确凿事实（Committed Facts）：\n   - 判定节奏归属（谁取得节奏、谁被压制、站位变动）；\n   - 更新持续语义效果（如生效余势剩余回合、新激活状态）；\n   - 输出明确的公开事实列表（publicEvents），将对敌效果与对环境效果封装确立；\n   - 本裁定一经落定即为天道定数，后续正文 AI 必须严格遵守，禁止复判或推翻。\n\n【严格输出格式（JSON）】\n只返回合法 JSON 对象，严禁包裹任何 markdown 解释，结构如下：\n{\n  \"summary\": \"简练概括本轮核心攻防战况与裁定结果（包含对敌与对环境的核心定论）\",\n  \"before\": { /* 完整的原 semanticState 对象，必须原样保持 */ },\n  \"after\": {\n    /* 更新后的完整 semanticState 对象，保留原有所有字段，更新 statuses, effects, 站位, 压制, 破绽等 */\n  },\n  \"reason\": \"天道裁定因果推演阐述（阐述功法机理如何克制或受挫，可引用内部因果与敌我暗藏底牌）\",\n  \"ruleRefs\": [ \"引用的权威功法规则或词条ID，如 gongfa.dielang-xuanchaojue.xianshi\" ],\n  \"publicEvents\": [\n    \"【对敌影响】具体受制部位、姿态破坏与灵力震荡事实（无剧透）\",\n    \"【环境剧变】具体地形破坏与天地气象冲击事实\",\n    \"【局势转移】站位距离与攻守节奏归属事实\"\n  ],\n  \"confidence\": 0.95,\n  \"resourceChanges\": [\n    /* 可选资源变动：[{ \"actorId\": \"player\", \"resource\": \"qi\", \"before\": 120, \"after\": 105, \"reason\": \"消耗真元\", \"ruleRefs\": [...] }] */\n  ]\n}";
+function im(e, t) {
 	let n = e.actors?.player || {}, r = e.actors?.enemies || [], i = e.scene || {}, a = e.semanticState || {};
 	return [
 		"=== 天道功法裁定请求 (ADJUDICATION REQUEST) ===",
@@ -6353,7 +6357,7 @@ function rm(e, t) {
 		"5. 输出标准 JSON，字段包含 summary, before, after, reason, ruleRefs, publicEvents, confidence；如因果状态改变，增加 causalChanges 数组，每个操作必须有 operationId、scope、ruleRefs（仅引用权威规则），不得直接回写 causalState。"
 	].join("\n");
 }
-function im(e, t = "") {
+function am(e, t = "") {
 	let n = Array.isArray(e.committedFacts) ? e.committedFacts : [], r = Array.isArray(e.descriptionRequirements) ? e.descriptionRequirements : [], i = Array.isArray(e.prohibitions) ? e.prohibitions : [];
 	return [
 		"【天道战局裁定已确立 · 主剧情战斗正文描写指令】",
@@ -6379,13 +6383,13 @@ function im(e, t = "") {
 }
 //#endregion
 //#region src/causal-state.js
-var am = "battle_v2_causal", om = Object.freeze([
+var om = "battle_v2_causal", sm = Object.freeze([
 	"branch",
 	"actor",
 	"relation",
 	"scene",
 	"global"
-]), sm = Object.freeze({
+]), cm = Object.freeze({
 	cooldown15d: Object.freeze({
 		unit: "story_days",
 		value: 15,
@@ -6406,16 +6410,16 @@ var am = "battle_v2_causal", om = Object.freeze([
 	if (!n) throw Error(`${t} 不能为空`);
 	if (n.length > 256) throw Error(`${t} 过长`);
 	return n;
-}, cm = (e, t) => String(e?.chatId) === String(t?.chatId) && String(e?.branchId) === String(t?.branchId), lm = (e) => e && typeof e == "object" && !Array.isArray(e) ? Y(e) : {}, um = (e) => Array.isArray(e) ? Y(e) : [], dm = (e = {}) => ({
+}, lm = (e, t) => String(e?.chatId) === String(t?.chatId) && String(e?.branchId) === String(t?.branchId), um = (e) => e && typeof e == "object" && !Array.isArray(e) ? Y(e) : {}, dm = (e) => Array.isArray(e) ? Y(e) : [], fm = (e = {}) => ({
 	day: Number.isFinite(e.day) ? Math.max(0, Number(e.day)) : 0,
 	hour: Number.isFinite(e.hour) ? Math.max(0, Number(e.hour)) : 0,
 	minute: Number.isFinite(e.minute) ? Math.max(0, Number(e.minute)) : 0,
 	totalStoryHours: Number.isFinite(e.totalStoryHours) ? Math.max(0, Number(e.totalStoryHours)) : Math.max(0, Number(e.day || 0) * 24 + Number(e.hour || 0) + Number(e.minute || 0) / 60)
 });
-function fm(e) {
+function pm(e) {
 	if (e == null) return null;
-	if (typeof e == "string" && sm[e]) return {
-		...Y(sm[e]),
+	if (typeof e == "string" && cm[e]) return {
+		...Y(cm[e]),
 		key: e
 	};
 	if (typeof e == "number" && Number.isFinite(e) && e >= 0) return {
@@ -6441,9 +6445,9 @@ function fm(e) {
 		storyHours: n * r
 	};
 }
-function pm(e) {
+function mm(e) {
 	if (!e || typeof e != "object" || Array.isArray(e)) return e;
-	let t = fm(e.duration ?? e.storyDuration);
+	let t = pm(e.duration ?? e.storyDuration);
 	if (!t) return Y(e);
 	let n = {
 		...Y(e),
@@ -6452,83 +6456,83 @@ function pm(e) {
 	};
 	return delete n.storyDuration, n;
 }
-function mm(e = {}) {
+function hm(e = {}) {
 	let t = {
 		chatId: Z(e.chatId ?? "default-chat", "因果 scope.chatId"),
 		branchId: Z(e.branchId ?? "main", "因果 scope.branchId")
 	};
 	if (e.kind !== void 0) {
-		if (!om.includes(e.kind)) throw Error(`未知因果作用范围：${e.kind}`);
+		if (!sm.includes(e.kind)) throw Error(`未知因果作用范围：${e.kind}`);
 		t.kind = e.kind;
 	} else t.kind = "branch";
 	return e.id !== void 0 && e.id !== null && (t.id = Z(e.id, "因果 scope.id")), t;
 }
-function hm({ scope: e, chatId: t = "default-chat", branchId: n = "main", anchors: r = [], relations: i = [], debts: a = [], cooldowns: o = {}, ledger: s = [], appliedActions: c = {}, clock: l, version: u = 1 } = {}) {
-	let d = mm(e || {
+function gm({ scope: e, chatId: t = "default-chat", branchId: n = "main", anchors: r = [], relations: i = [], debts: a = [], cooldowns: o = {}, ledger: s = [], appliedActions: c = {}, clock: l, version: u = 1 } = {}) {
+	let d = hm(e || {
 		chatId: t,
 		branchId: n
 	});
-	return _m({
-		schema: am,
+	return vm({
+		schema: om,
 		version: Number.isInteger(u) && u > 0 ? u : 1,
 		scope: d,
-		clock: dm(l),
-		anchors: um(r).map(pm),
-		relations: um(i).map(pm),
-		debts: um(a).map(pm),
-		cooldowns: Object.fromEntries(Object.entries(lm(o)).map(([e, t]) => [e, pm(t)])),
-		ledger: um(s),
-		appliedActions: lm(c),
+		clock: fm(l),
+		anchors: dm(r).map(mm),
+		relations: dm(i).map(mm),
+		debts: dm(a).map(mm),
+		cooldowns: Object.fromEntries(Object.entries(um(o)).map(([e, t]) => [e, mm(t)])),
+		ledger: dm(s),
+		appliedActions: um(c),
 		updatedAt: (/* @__PURE__ */ new Date()).toISOString()
 	}, { scope: d });
 }
-function gm(e, t, n) {
+function _m(e, t, n) {
 	let r = /* @__PURE__ */ new Set();
 	for (let i of e) {
 		if (!i || typeof i != "object" || Array.isArray(i)) throw Error(`因果 ${t} 条目无效`);
 		let e = Z(i.id, `因果 ${t}.id`);
 		if (r.has(e)) throw Error(`因果 ${t} id 重复：${e}`);
-		if (r.add(e), i.scope !== void 0 && n && !cm(mm(i.scope), n)) throw Error(`因果 ${t} 作用域不匹配`);
+		if (r.add(e), i.scope !== void 0 && n && !lm(hm(i.scope), n)) throw Error(`因果 ${t} 作用域不匹配`);
 	}
 }
-function _m(e, { scope: t } = {}) {
+function vm(e, { scope: t } = {}) {
 	if (!e || typeof e != "object" || Array.isArray(e)) throw Error("因果状态不是对象");
 	if (e.schema !== "battle_v2_causal") throw Error("因果状态 schema 不匹配");
 	if (!Number.isInteger(e.version) || e.version < 1) throw Error("因果状态 version 无效");
-	let n = mm(e.scope);
-	if (t && !cm(n, mm(t))) throw Error("因果状态作用域不匹配");
+	let n = hm(e.scope);
+	if (t && !lm(n, hm(t))) throw Error("因果状态作用域不匹配");
 	for (let t of [
 		"anchors",
 		"relations",
 		"debts",
 		"ledger"
 	]) if (!Array.isArray(e[t])) throw Error(`因果状态 ${t} 必须是数组`);
-	if (e.clock !== void 0 && dm(e.clock), !e.cooldowns || typeof e.cooldowns != "object" || Array.isArray(e.cooldowns)) throw Error("因果状态 cooldowns 必须是对象");
+	if (e.clock !== void 0 && fm(e.clock), !e.cooldowns || typeof e.cooldowns != "object" || Array.isArray(e.cooldowns)) throw Error("因果状态 cooldowns 必须是对象");
 	if (!e.appliedActions || typeof e.appliedActions != "object" || Array.isArray(e.appliedActions)) throw Error("因果状态 appliedActions 必须是对象");
 	for (let [t, r] of Object.entries(e.cooldowns)) {
 		if (!r || typeof r != "object" || Array.isArray(r)) throw Error(`因果 cooldown 无效：${t}`);
-		if (r.scope !== void 0 && !cm(mm(r.scope), n)) throw Error("因果 cooldown 作用域不匹配");
+		if (r.scope !== void 0 && !lm(hm(r.scope), n)) throw Error("因果 cooldown 作用域不匹配");
 		if (r.remainingStoryHours !== void 0 && (!Number.isFinite(r.remainingStoryHours) || r.remainingStoryHours < 0)) throw Error("因果 cooldown.remainingStoryHours 无效");
 		if (r.remainingRounds !== void 0 && (!Number.isInteger(r.remainingRounds) || r.remainingRounds < 0)) throw Error("因果 cooldown.remainingRounds 无效");
 	}
-	gm(e.anchors, "anchor", n), gm(e.relations, "relation", n), gm(e.debts, "debt", n);
+	_m(e.anchors, "anchor", n), _m(e.relations, "relation", n), _m(e.debts, "debt", n);
 	for (let t of e.ledger) {
 		if (!t || typeof t != "object" || Array.isArray(t)) throw Error("因果 ledger 条目无效");
-		if (Z(t.entryId, "因果 ledger.entryId"), Z(t.actionId, "因果 ledger.actionId"), t.scope && !cm(n, mm(t.scope))) throw Error("因果 ledger 作用域不匹配");
+		if (Z(t.entryId, "因果 ledger.entryId"), Z(t.actionId, "因果 ledger.actionId"), t.scope && !lm(n, hm(t.scope))) throw Error("因果 ledger 作用域不匹配");
 	}
 	for (let [t, n] of Object.entries(e.appliedActions)) if (Z(t, "因果 appliedActions.actionId"), !n || typeof n != "object" || typeof n.hash != "string" || !Array.isArray(n.entryIds)) throw Error("因果幂等收据无效");
 	return Y({
 		...e,
 		scope: n,
-		clock: dm(e.clock)
+		clock: fm(e.clock)
 	});
 }
-function vm(e, { scope: t, chatId: n = "default-chat", branchId: r = "main" } = {}) {
-	return e == null ? hm({
+function ym(e, { scope: t, chatId: n = "default-chat", branchId: r = "main" } = {}) {
+	return e == null ? gm({
 		scope: t,
 		chatId: n,
 		branchId: r
-	}) : _m({
+	}) : vm({
 		schema: e.schema || "battle_v2_causal",
 		version: e.version || 1,
 		scope: e.scope || t || {
@@ -6545,24 +6549,24 @@ function vm(e, { scope: t, chatId: n = "default-chat", branchId: r = "main" } = 
 		updatedAt: e.updatedAt || (/* @__PURE__ */ new Date()).toISOString()
 	}, { scope: t });
 }
-function ym(e, t) {
-	let n = mm(e.scope || t);
-	if (!cm(n, t)) throw Error("因果变更作用域与当前分支不匹配");
+function bm(e, t) {
+	let n = hm(e.scope || t);
+	if (!lm(n, t)) throw Error("因果变更作用域与当前分支不匹配");
 	return n;
 }
-function bm(e, t) {
+function xm(e, t) {
 	return e.findIndex((e) => e.id === t);
 }
-function xm(e, t, n) {
-	let r = bm(e, Z(t.id, `因果 ${n}.id`)), i = pm(t);
+function Sm(e, t, n) {
+	let r = xm(e, Z(t.id, `因果 ${n}.id`)), i = mm(t);
 	if (r < 0) return [...e, Y(i)];
 	let a = e.slice();
 	return a[r] = Y(i), a;
 }
-function Sm(e, t) {
+function Cm(e, t) {
 	return e.filter((e) => e.id !== t);
 }
-function Cm(e, t) {
+function wm(e, t) {
 	if (!e || typeof e != "object" || Array.isArray(e)) throw Error(`因果变更 ${t + 1} 无效`);
 	let n = String(e.operation || e.type || "").trim();
 	if (!n) throw Error(`因果变更 ${t + 1} 缺少 operation`);
@@ -6574,7 +6578,7 @@ function Cm(e, t) {
 		operationId: r
 	};
 }
-function wm(e, t, n, r) {
+function Tm(e, t, n, r) {
 	return {
 		entryId: `${t}:${e.operationId}`,
 		actionId: t,
@@ -6587,15 +6591,15 @@ function wm(e, t, n, r) {
 		at: (/* @__PURE__ */ new Date()).toISOString()
 	};
 }
-function Tm(e, t = [], { actionId: n, roundId: r = null, scope: i, version: a, knownRuleRefs: o = [], allowMock: s = !1, requireRuleRefs: c = !1, authority: l = "adjudicator" } = {}) {
-	let u = vm(e, { scope: i || e?.scope }), d = Z(n, "因果 actionId");
+function Em(e, t = [], { actionId: n, roundId: r = null, scope: i, version: a, knownRuleRefs: o = [], allowMock: s = !1, requireRuleRefs: c = !1, authority: l = "adjudicator" } = {}) {
+	let u = ym(e, { scope: i || e?.scope }), d = Z(n, "因果 actionId");
 	if (!Array.isArray(t)) throw Error("causalChanges 必须是数组");
-	if (!cm(mm(i || u.scope), u.scope)) throw Error("因果提交作用域不匹配");
-	let f = t.map(Cm).map((e) => ({
+	if (!lm(hm(i || u.scope), u.scope)) throw Error("因果提交作用域不匹配");
+	let f = t.map(wm).map((e) => ({
 		...e,
 		roundId: e.roundId || r,
-		scope: ym(e, u.scope)
-	})), p = gd(f), m = u.appliedActions[d];
+		scope: bm(e, u.scope)
+	})), p = _d(f), m = u.appliedActions[d];
 	if (m) {
 		if (m.hash !== p) throw Error(`因果 actionId 重复但内容不一致：${d}`);
 		return {
@@ -6613,7 +6617,7 @@ function Tm(e, t = [], { actionId: n, roundId: r = null, scope: i, version: a, k
 		let n = Array.isArray(e.ruleRefs) ? e.ruleRefs : [];
 		if (c && !s && n.length === 0) throw Error("因果变更缺少权威 ruleRefs");
 		if (n.some((e) => typeof e != "string" || !o.includes(e) && !(s && e.startsWith("mock.")))) throw Error("因果变更引用未知规则");
-		let r = wm(e, d, e.scope, (a ?? u.version) + 1);
+		let r = Tm(e, d, e.scope, (a ?? u.version) + 1);
 		if (g.ledger.some((e) => e.entryId === r.entryId)) throw Error(`因果 ledger entry 已存在：${r.entryId}`);
 		let i = e.operation.toLowerCase(), f = e.value || e.entity || e.data || e;
 		if ([
@@ -6621,7 +6625,7 @@ function Tm(e, t = [], { actionId: n, roundId: r = null, scope: i, version: a, k
 			"anchor.add",
 			"upsertanchor",
 			"addanchor"
-		].includes(i)) g.anchors = xm(g.anchors, {
+		].includes(i)) g.anchors = Sm(g.anchors, {
 			...Y(f),
 			id: Z(f.id, "因果 anchor.id"),
 			scope: Y(e.scope)
@@ -6631,13 +6635,13 @@ function Tm(e, t = [], { actionId: n, roundId: r = null, scope: i, version: a, k
 			"anchor.delete",
 			"removeanchor",
 			"deleteanchor"
-		].includes(i)) g.anchors = Sm(g.anchors, Z(e.id || f.id, "因果 anchor.id"));
+		].includes(i)) g.anchors = Cm(g.anchors, Z(e.id || f.id, "因果 anchor.id"));
 		else if ([
 			"relation.upsert",
 			"relation.add",
 			"upsertrelation",
 			"addrelation"
-		].includes(i)) g.relations = xm(g.relations, {
+		].includes(i)) g.relations = Sm(g.relations, {
 			...Y(f),
 			id: Z(f.id, "因果 relation.id"),
 			scope: Y(e.scope)
@@ -6647,14 +6651,14 @@ function Tm(e, t = [], { actionId: n, roundId: r = null, scope: i, version: a, k
 			"relation.delete",
 			"removerelation",
 			"deleterelation"
-		].includes(i)) g.relations = Sm(g.relations, Z(e.id || f.id, "因果 relation.id"));
+		].includes(i)) g.relations = Cm(g.relations, Z(e.id || f.id, "因果 relation.id"));
 		else if ([
 			"debt.open",
 			"debt.upsert",
 			"debt.add",
 			"opendebt",
 			"upsertdebt"
-		].includes(i)) g.debts = xm(g.debts, {
+		].includes(i)) g.debts = Sm(g.debts, {
 			status: "open",
 			...Y(f),
 			id: Z(f.id, "因果 debt.id"),
@@ -6666,10 +6670,10 @@ function Tm(e, t = [], { actionId: n, roundId: r = null, scope: i, version: a, k
 			"updatedebt",
 			"settledebt"
 		].includes(i)) {
-			let t = Z(e.id || f.id, "因果 debt.id"), n = bm(g.debts, t);
+			let t = Z(e.id || f.id, "因果 debt.id"), n = xm(g.debts, t);
 			if (n < 0) throw Error(`因果 debt 不存在：${t}`);
 			let r = g.debts[n];
-			g.debts = xm(g.debts, {
+			g.debts = Sm(g.debts, {
 				...r,
 				...Y(f),
 				id: t,
@@ -6703,15 +6707,15 @@ function Tm(e, t = [], { actionId: n, roundId: r = null, scope: i, version: a, k
 		entryIds: _.map((e) => e.entryId),
 		version: v
 	}, g.updatedAt = (/* @__PURE__ */ new Date()).toISOString(), {
-		state: _m(g, { scope: u.scope }),
+		state: vm(g, { scope: u.scope }),
 		deduplicated: !1,
 		entries: Y(_)
 	};
 }
-function Em(e, { roundId: t = null, scope: n, elapsedStoryHours: r = 0, storyTime: i, advanceId: a } = {}) {
-	let o = vm(e, { scope: n || e?.scope }), s = a || t ? `clock:${a || t}` : null;
+function Dm(e, { roundId: t = null, scope: n, elapsedStoryHours: r = 0, storyTime: i, advanceId: a } = {}) {
+	let o = ym(e, { scope: n || e?.scope }), s = a || t ? `clock:${a || t}` : null;
 	if (s && o.appliedActions[s]) return o;
-	let c = i ? dm(i) : {
+	let c = i ? fm(i) : {
 		...o.clock,
 		totalStoryHours: o.clock.totalStoryHours + (Number.isFinite(r) && r > 0 ? r : 0)
 	};
@@ -6783,16 +6787,16 @@ function Em(e, { roundId: t = null, scope: n, elapsedStoryHours: r = 0, storyTim
 		updatedAt: (/* @__PURE__ */ new Date()).toISOString()
 	};
 	return s && (m.appliedActions[s] = {
-		hash: gd({
+		hash: _d({
 			elapsedStoryHours: l,
 			storyTime: c
 		}),
 		entryIds: d.map((e) => e.entryId),
 		version: p
-	}), _m(m, { scope: o.scope });
+	}), vm(m, { scope: o.scope });
 }
-function Dm(e) {
-	let t = vm(e, { scope: e?.scope }), n = (e) => ![
+function Om(e) {
+	let t = ym(e, { scope: e?.scope }), n = (e) => ![
 		"hidden",
 		"private",
 		"gm",
@@ -6825,7 +6829,7 @@ function Dm(e) {
 }
 //#endregion
 //#region src/battle-state.js
-var Om = Object.freeze([
+var km = Object.freeze([
 	"idle",
 	"active",
 	"awaiting_player",
@@ -6835,13 +6839,13 @@ var Om = Object.freeze([
 	"awaiting_next",
 	"ended",
 	"rewrite"
-]), km = [
+]), Am = [
 	"statuses",
 	"effects",
 	"positions",
 	"control"
 ];
-function Am({ sessionId: e = `battle-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, chatId: t = "default-chat", branchId: n = "main", location: r = "未设定地点", time: i = "未设定时间", player: a, enemies: o = [], registrySnapshot: s = [], semanticState: c, resourceRules: l = [], scene: u = {}, causalState: d } = {}) {
+function jm({ sessionId: e = `battle-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, chatId: t = "default-chat", branchId: n = "main", location: r = "未设定地点", time: i = "未设定时间", player: a, enemies: o = [], registrySnapshot: s = [], semanticState: c, resourceRules: l = [], scene: u = {}, causalState: d } = {}) {
 	let f = {
 		chatId: String(t),
 		branchId: String(n)
@@ -6885,7 +6889,7 @@ function Am({ sessionId: e = `battle-${Date.now()}-${Math.random().toString(36).
 			control: "均势",
 			...Y(c || {})
 		},
-		causalState: d ? vm(d, { scope: f }) : hm({ scope: f }),
+		causalState: d ? ym(d, { scope: f }) : gm({ scope: f }),
 		resourceRules: Y(l),
 		registrySnapshot: Y(s),
 		history: [],
@@ -6894,7 +6898,7 @@ function Am({ sessionId: e = `battle-${Date.now()}-${Math.random().toString(36).
 		updatedAt: (/* @__PURE__ */ new Date()).toISOString()
 	};
 }
-function jm(e, t, n = {}) {
+function Mm(e, t, n = {}) {
 	return {
 		...e,
 		...n,
@@ -6903,11 +6907,11 @@ function jm(e, t, n = {}) {
 		updatedAt: (/* @__PURE__ */ new Date()).toISOString()
 	};
 }
-function Mm(e, t) {
+function Nm(e, t) {
 	if (!t.includes(e.phase)) throw Error(`当前状态 ${e.phase} 不允许此操作，需要 ${t.join("/")}`);
 }
-function Nm(e) {
-	return Mm(e, ["idle", "ended"]), jm(e, "awaiting_player", {
+function Pm(e) {
+	return Nm(e, ["idle", "ended"]), Mm(e, "awaiting_player", {
 		round: e.round + 1,
 		roundId: `${e.sessionId}-r${e.round + 1}`,
 		scene: {
@@ -6918,13 +6922,13 @@ function Nm(e) {
 		lastError: null
 	});
 }
-function Pm(e, t = "用户停止") {
-	return jm(e, "ended", { lastError: t });
+function Fm(e, t = "用户停止") {
+	return Mm(e, "ended", { lastError: t });
 }
-function Fm(e) {
-	if (!e || e.schema !== "battle_v2" || !Om.includes(e.phase) || !e.scope || !e.actors || !e.semanticState || !Array.isArray(e.history) || !Array.isArray(e.registrySnapshot)) throw Error("无法恢复：不是有效 battle_v2 会话");
+function Im(e) {
+	if (!e || e.schema !== "battle_v2" || !km.includes(e.phase) || !e.scope || !e.actors || !e.semanticState || !Array.isArray(e.history) || !Array.isArray(e.registrySnapshot)) throw Error("无法恢复：不是有效 battle_v2 会话");
 	let t = Y(e);
-	if (new zf(t.registrySnapshot), t.resourceRules ||= [], t.causalState = vm(t.causalState, { scope: t.scope }), t.characterPreparation && t.characterPreparation.status !== "confirmed" && (t.characterPreparation = Y(t.characterPreparation)), [
+	if (new Bf(t.registrySnapshot), t.resourceRules ||= [], t.causalState = ym(t.causalState, { scope: t.scope }), t.characterPreparation && t.characterPreparation.status !== "confirmed" && (t.characterPreparation = Y(t.characterPreparation)), [
 		"judging",
 		"narrating",
 		"rewrite",
@@ -6940,31 +6944,31 @@ function Fm(e) {
 	}
 	return t;
 }
-function Im(e = []) {
+function Lm(e = []) {
 	return e.flatMap((e) => typeof e == "string" || !Number.isInteger(e.remainingRounds) ? [e] : e.remainingRounds > 1 ? [{
 		...e,
 		remainingRounds: e.remainingRounds - 1
 	}] : []);
 }
-function Lm(e, { elapsedStoryHours: t = 0, storyTime: n } = {}) {
-	Mm(e, ["awaiting_next", "committed"]);
+function Rm(e, { elapsedStoryHours: t = 0, storyTime: n } = {}) {
+	Nm(e, ["awaiting_next", "committed"]);
 	let r = {
 		...e.semanticState,
-		effects: Im(e.semanticState.effects)
-	}, i = Em(e.causalState, {
+		effects: Lm(e.semanticState.effects)
+	}, i = Dm(e.causalState, {
 		roundId: e.roundId,
 		scope: e.scope,
 		elapsedStoryHours: t,
 		storyTime: n
 	});
-	return Nm({
+	return Pm({
 		...e,
 		phase: "ended",
 		semanticState: r,
 		causalState: i
 	});
 }
-function Rm(e) {
+function zm(e) {
 	return {
 		...Y(e),
 		effects: (e.effects || []).filter((e) => typeof e == "string" || [
@@ -6974,7 +6978,7 @@ function Rm(e) {
 		].includes(e.visibility))
 	};
 }
-function zm(e) {
+function Bm(e) {
 	return {
 		schema: e.schema,
 		version: e.version,
@@ -6983,8 +6987,8 @@ function zm(e) {
 		round: e.round,
 		roundId: e.roundId,
 		scene: Y(e.scene),
-		semanticState: Rm(e.semanticState),
-		causalState: Dm(e.causalState),
+		semanticState: zm(e.semanticState),
+		causalState: Om(e.causalState),
 		player: Y(e.actors.player),
 		enemies: e.actors.enemies.map((e) => ({
 			id: e.id,
@@ -7001,7 +7005,7 @@ function zm(e) {
 		}))
 	};
 }
-function Bm(e) {
+function Vm(e) {
 	let t = Y(e.actors);
 	return e.characterPreparation && e.characterPreparation.status !== "confirmed" && (t.enemies = []), {
 		session: {
@@ -7020,12 +7024,12 @@ function Bm(e) {
 		priorCommittedFacts: e.history.filter((e) => ["committed", "complete"].includes(e.status)).map((e) => Y(e.adjudication))
 	};
 }
-function Vm(e, t, n = {}) {
-	if (Mm(e, ["awaiting_player"]), !t || typeof t.label != "string" || !t.label.trim()) throw Error("行动需要非空 label");
+function Hm(e, t, n = {}) {
+	if (Nm(e, ["awaiting_player"]), !t || typeof t.label != "string" || !t.label.trim()) throw Error("行动需要非空 label");
 	if (e.characterPreparation && e.characterPreparation.status !== "confirmed") throw Error("敌方人物资料尚未确认，禁止进入裁定器");
-	let r = Bm(e);
+	let r = Vm(e);
 	if (t.techniqueId) {
-		let n = new zf(e.registrySnapshot), r = n.findTechnique(t.techniqueId);
+		let n = new Bf(e.registrySnapshot), r = n.findTechnique(t.techniqueId);
 		if (!r) throw Error("行动功法未注册");
 		if (!(e.actors.player.techniques || []).some((e) => e.registryId === r.entry.id && e.techniqueIds?.includes(t.techniqueId))) throw Error("主角未拥有该词条");
 		let i = n.availability(r.entry.id, t.techniqueId, e.semanticState);
@@ -7050,15 +7054,15 @@ function Vm(e, t, n = {}) {
 			intent: t.intent || ""
 		},
 		context: r,
-		playerVisibleContext: zm(e),
-		systemPrompt: nm,
-		prompt: rm(r, t)
+		playerVisibleContext: Bm(e),
+		systemPrompt: rm,
+		prompt: im(r, t)
 	};
 }
-function Hm(e) {
-	return !e || typeof e != "object" ? typeof e == "string" && e.length > 3 ? [e] : [] : Object.values(e).flatMap(Hm);
+function Um(e) {
+	return !e || typeof e != "object" ? typeof e == "string" && e.length > 3 ? [e] : [] : Object.values(e).flatMap(Um);
 }
-function Um(e, t, { allowMock: n = !1 } = {}) {
+function Wm(e, t, { allowMock: n = !1 } = {}) {
 	if (!e || typeof e != "object" || Array.isArray(e)) throw Error("裁定响应不是对象");
 	for (let t of [
 		"summary",
@@ -7069,11 +7073,11 @@ function Um(e, t, { allowMock: n = !1 } = {}) {
 		"publicEvents"
 	]) if (!(t in e)) throw Error(`裁定缺少字段 ${t}`);
 	if (typeof e.summary != "string" || !e.summary.trim() || typeof e.reason != "string" || !e.reason.trim() || !Array.isArray(e.ruleRefs) || !e.ruleRefs.length || !Array.isArray(e.publicEvents)) throw Error("裁定字段类型或非空约束错误");
-	if (gd(e.before) !== gd(t.semanticState)) throw Error("裁定 before 与当前状态不一致");
+	if (_d(e.before) !== _d(t.semanticState)) throw Error("裁定 before 与当前状态不一致");
 	if (!e.after || Array.isArray(e.after) || typeof e.after != "object") throw Error("after 必须是完整对象");
 	let r = Object.keys(t.semanticState);
 	for (let t of r) if (!(t in e.after)) throw Error(`after 缺少 ${t}`);
-	let i = /* @__PURE__ */ new Set([...km, ...r]);
+	let i = /* @__PURE__ */ new Set([...Am, ...r]);
 	for (let t of Object.keys(e.after)) if (!i.has(t)) throw Error(`裁定越权修改字段 ${t}`);
 	for (let [n, r] of Object.entries(t.semanticState)) {
 		let i = e.after[n];
@@ -7109,9 +7113,9 @@ function Um(e, t, { allowMock: n = !1 } = {}) {
 	let c = JSON.stringify({
 		summary: e.summary,
 		publicEvents: e.publicEvents,
-		after: Rm(e.after)
+		after: zm(e.after)
 	});
-	for (let e of t.actors.enemies.flatMap((e) => Hm(e.hidden))) if (c.includes(e)) throw Error("裁定公开结果包含敌方隐藏信息，拒绝发布");
+	for (let e of t.actors.enemies.flatMap((e) => Um(e.hidden))) if (c.includes(e)) throw Error("裁定公开结果包含敌方隐藏信息，拒绝发布");
 	let l = e.causalChanges === void 0 ? [] : e.causalChanges;
 	if (!Array.isArray(l) || l.some((e) => !e || typeof e != "object" || Array.isArray(e) || !(e.operation || e.type))) throw Error("causalChanges 必须是带 operation/type 的对象数组");
 	if (l.some((e) => e.scope && (String(e.scope.chatId) !== String(t.scope.chatId) || String(e.scope.branchId) !== String(t.scope.branchId)))) throw Error("因果变更作用域不匹配");
@@ -7127,7 +7131,7 @@ function Um(e, t, { allowMock: n = !1 } = {}) {
 		confidence: Number.isFinite(e.confidence) ? e.confidence : null
 	};
 }
-function Wm(e, t, n) {
+function Gm(e, t, n) {
 	let r = {
 		type: "BATTLE_SCENE_PACKET",
 		schema: "battle_v2",
@@ -7151,26 +7155,26 @@ function Wm(e, t, n) {
 			"禁止泄露隐藏敌情"
 		],
 		nextDecisionPoint: "等待玩家选择下一步行动",
-		playerVisibleContext: zm(e),
+		playerVisibleContext: Bm(e),
 		originalAction: Y(n.action)
 	};
-	return r.storyAiDirective = im(r), r;
+	return r.storyAiDirective = am(r), r;
 }
-function Gm(e) {
+function Km(e) {
 	return typeof e == "string" ? { text: e } : {
 		text: String(e?.text || ""),
 		pending: e?.pending === !0,
 		metadata: Y(e?.metadata || {})
 	};
 }
-async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal: a, save: o = () => {}, logger: s = () => {}, onCommit: c = () => {} } = {}) {
+async function qm(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal: a, save: o = () => {}, logger: s = () => {}, onCommit: c = () => {} } = {}) {
 	let l = t?.actionId ? e.history.find((e) => e.actionId === t.actionId) : null;
 	if (l) return {
 		state: e,
 		record: Y(l),
 		deduplicated: !0
 	};
-	let u = Vm(e, t, i), d = n?.isMock === !0 || (i.adjudicator?.mode || i.mode) === "mock", f = {
+	let u = Hm(e, t, i), d = n?.isMock === !0 || (i.adjudicator?.mode || i.mode) === "mock", f = {
 		actionId: u.actionId,
 		roundId: u.roundId,
 		action: Y(u.action),
@@ -7178,7 +7182,7 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		version: e.version,
 		before: Y(e.semanticState),
 		causalBefore: Y(e.causalState)
-	}, p = jm(e, "judging", {
+	}, p = Mm(e, "judging", {
 		actionSeq: e.actionSeq + 1,
 		pending: {
 			actionId: u.actionId,
@@ -7210,12 +7214,12 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 			}) : await n.repair(u, m, h, {
 				signal: a,
 				logger: s
-			}), _d(a), s({
+			}), vd(a), s({
 				kind: "ai_raw_response",
 				actionId: u.actionId,
 				rawResponse: Y(m),
 				repairAttempt: t
-			}), h = Um(m, e, {
+			}), h = Wm(m, e, {
 				allowMock: d,
 				actionId: u.actionId,
 				roundId: u.roundId
@@ -7229,7 +7233,7 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 			});
 			break;
 		} catch (e) {
-			if (_d(a), s({
+			if (vd(a), s({
 				kind: "program_validation",
 				actionId: u.actionId,
 				validation: {
@@ -7241,7 +7245,7 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 			h = e;
 		}
 	} catch (e) {
-		throw p = jm(p, "awaiting_player", {
+		throw p = Mm(p, "awaiting_player", {
 			pending: null,
 			lastError: e.message,
 			history: p.history.map((t) => t.actionId === u.actionId ? {
@@ -7260,7 +7264,7 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 	try {
 		if ((h.causalChanges || []).length) {
 			let t = e.registrySnapshot.flatMap((e) => [...e.ruleRefs, ...e.techniques.flatMap((e) => e.ruleRefs)]).concat((e.resourceRules || []).flatMap((e) => e.ruleRefs || []));
-			v = Tm(v, h.causalChanges, {
+			v = Em(v, h.causalChanges, {
 				actionId: u.actionId,
 				roundId: u.roundId,
 				scope: e.scope,
@@ -7271,7 +7275,7 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 			}).state;
 		}
 	} catch (e) {
-		throw p = jm(p, "awaiting_player", {
+		throw p = Mm(p, "awaiting_player", {
 			pending: null,
 			lastError: e.message,
 			history: p.history.map((t) => t.actionId === u.actionId ? {
@@ -7281,7 +7285,7 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 			} : t)
 		}), await o(p), e;
 	}
-	p = jm(p, "committed", {
+	p = Mm(p, "committed", {
 		actors: _,
 		semanticState: Y(h.after),
 		causalState: v,
@@ -7301,13 +7305,13 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		causalAfter: Y(p.causalState),
 		createdAt: (/* @__PURE__ */ new Date()).toISOString()
 	};
-	y.narrativePacket = Wm(p, y, u), p = {
+	y.narrativePacket = Gm(p, y, u), p = {
 		...p,
 		history: p.history.map((e) => e.actionId === y.actionId ? y : e)
-	}, _d(a), await o(p), s({
+	}, vd(a), await o(p), s({
 		kind: "commit",
 		actionId: y.actionId,
-		playerVisible: zm(p),
+		playerVisible: Bm(p),
 		record: Y(y),
 		internal: {
 			programValidation: { valid: !0 },
@@ -7315,7 +7319,7 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		}
 	});
 	let b = await c(Y(y), p);
-	if (_d(a), b?.allowed === !1) return p = jm(p, "awaiting_next", {
+	if (vd(a), b?.allowed === !1) return p = Mm(p, "awaiting_next", {
 		lastError: b.reason || "宿主保存待确认；裁定已保留，不重裁",
 		history: p.history.map((e) => e.actionId === y.actionId ? {
 			...y,
@@ -7327,7 +7331,7 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		request: u,
 		deduplicated: !1
 	};
-	if (i.autoNarrative === !1) return p = jm(p, "awaiting_next"), await o(p), s({
+	if (i.autoNarrative === !1) return p = Mm(p, "awaiting_next"), await o(p), s({
 		kind: "narrative_packet",
 		actionId: y.actionId,
 		packet: y.narrativePacket
@@ -7337,19 +7341,19 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		request: u,
 		deduplicated: !1
 	};
-	p = jm(p, "narrating", { pending: {
+	p = Mm(p, "narrating", { pending: {
 		actionId: y.actionId,
 		roundId: y.roundId
 	} }), await o(p);
 	let x;
 	try {
-		x = Gm(await r.generate(y.narrativePacket, {
+		x = Km(await r.generate(y.narrativePacket, {
 			signal: a,
 			logger: s,
 			originalPrompt: i.originalPrompt || ""
-		})), _d(a);
+		})), vd(a);
 	} catch (e) {
-		throw p = jm(p, "awaiting_next", {
+		throw p = Mm(p, "awaiting_next", {
 			pending: null,
 			lastError: e.message,
 			history: p.history.map((t) => t.actionId === y.actionId ? {
@@ -7363,7 +7367,7 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		narrative: x,
 		status: x.pending ? "committed" : "complete"
 	};
-	return p = jm(p, "awaiting_next", {
+	return p = Mm(p, "awaiting_next", {
 		history: p.history.map((e) => e.actionId === y.actionId ? S : e),
 		pending: null,
 		lastError: null
@@ -7379,28 +7383,28 @@ async function Km(e, t, { adjudicator: n, narrator: r, settings: i = {}, signal:
 		deduplicated: !1
 	};
 }
-async function qm(e, t, n, { signal: r, save: i = () => {}, logger: a = () => {}, originalPrompt: o = "" } = {}) {
-	Mm(e, [
+async function Jm(e, t, n, { signal: r, save: i = () => {}, logger: a = () => {}, originalPrompt: o = "" } = {}) {
+	Nm(e, [
 		"awaiting_next",
 		"committed",
 		"ended"
 	]);
 	let s = e.history.find((e) => e.actionId === t && ["committed", "complete"].includes(e.status));
 	if (!s?.narrativePacket) throw Error("找不到可重写的已提交行动");
-	let c = jm(e, "rewrite", { pending: {
+	let c = Mm(e, "rewrite", { pending: {
 		actionId: t,
 		roundId: s.roundId
 	} });
 	await i(c);
 	let l;
 	try {
-		l = Gm(await n.rewrite(s.narrativePacket, s.narrative, {
+		l = Km(await n.rewrite(s.narrativePacket, s.narrative, {
 			signal: r,
 			logger: a,
 			originalPrompt: o
-		})), _d(r);
+		})), vd(r);
 	} catch (e) {
-		throw r?.aborted || await i(jm(c, "awaiting_next", {
+		throw r?.aborted || await i(Mm(c, "awaiting_next", {
 			pending: null,
 			lastError: e.message
 		})), e;
@@ -7410,7 +7414,7 @@ async function qm(e, t, n, { signal: r, save: i = () => {}, logger: a = () => {}
 		narrative: l,
 		status: l.pending ? "committed" : "complete",
 		rewrittenAt: (/* @__PURE__ */ new Date()).toISOString()
-	}, d = jm(c, "awaiting_next", {
+	}, d = Mm(c, "awaiting_next", {
 		history: c.history.map((e) => e.actionId === t ? u : e),
 		pending: null,
 		lastError: null
@@ -7425,7 +7429,7 @@ async function qm(e, t, n, { signal: r, save: i = () => {}, logger: a = () => {}
 		record: Y(u)
 	};
 }
-var Jm = {
+var Ym = {
 	schema: "battle_v2_scene",
 	scene: {
 		location: "离线演示·临水练武台",
@@ -7621,15 +7625,15 @@ var Jm = {
 			note: "仅验证 registry/UI；原始功法全文应以经用户确认的世界书来源导入。"
 		}
 	}]
-}, Ym = "st-xybattle-content", Xm = "contents", Zm = "xybattle.content.index", Qm = "xybattle.content.settings", $m = /* @__PURE__ */ new Map();
-function eh(e, t) {
+}, Xm = "st-xybattle-content", Zm = "contents", Qm = "xybattle.content.index", $m = "xybattle.content.settings", eh = /* @__PURE__ */ new Map();
+function th(e, t) {
 	let n = `${e}::${t}`;
-	return $m.has(n) || $m.set(n, /* @__PURE__ */ new Map()), $m.get(n);
+	return eh.has(n) || eh.set(n, /* @__PURE__ */ new Map()), eh.get(n);
 }
-function th() {
+function nh() {
 	return Math.random().toString(36).slice(2, 8);
 }
-function nh(e, t) {
+function rh(e, t) {
 	if (e == null || e === "") return Y(t);
 	try {
 		return JSON.parse(e);
@@ -7637,28 +7641,28 @@ function nh(e, t) {
 		return Y(t);
 	}
 }
-function rh(e) {
+function ih(e) {
 	return e && typeof e.getItem == "function" && typeof e.setItem == "function";
 }
-function ih(e) {
+function ah(e) {
 	return new Promise((t, n) => {
 		e.onsuccess = () => t(e.result), e.onerror = () => n(e.error || /* @__PURE__ */ Error("IndexedDB 请求失败"));
 	});
 }
-function ah(e) {
+function oh(e) {
 	return new Promise((t, n) => {
 		e.oncomplete = () => t(), e.onerror = () => n(e.error || /* @__PURE__ */ Error("IndexedDB 事务失败")), e.onabort = () => n(e.error || /* @__PURE__ */ Error("IndexedDB 事务已中止"));
 	});
 }
-function oh(e, t) {
+function sh(e, t) {
 	e.__xyError = t;
 	try {
 		e.abort();
 	} catch {}
 }
-var sh = class {
-	constructor({ dbName: e = Ym, dbVersion: t = 1, storeName: n = Xm, indexedDB: r = globalThis.indexedDB, localStorage: i = globalThis.localStorage, memory: a = !1 } = {}) {
-		this.dbName = e, this.dbVersion = t, this.storeName = n, this.indexedDB = r, this.localStorage = rh(i) ? i : null, this.memoryMode = a || !r || typeof r.open != "function", this.durability = this.memoryMode ? "temporary" : "indexeddb", this.warning = this.memoryMode ? "IndexedDB 不可用，内容只保存在当前运行期间" : null, this.memory = eh(e, n), this.dbPromise = null;
+var ch = class {
+	constructor({ dbName: e = Xm, dbVersion: t = 1, storeName: n = Zm, indexedDB: r = globalThis.indexedDB, localStorage: i = globalThis.localStorage, memory: a = !1 } = {}) {
+		this.dbName = e, this.dbVersion = t, this.storeName = n, this.indexedDB = r, this.localStorage = ih(i) ? i : null, this.memoryMode = a || !r || typeof r.open != "function", this.durability = this.memoryMode ? "temporary" : "indexeddb", this.warning = this.memoryMode ? "IndexedDB 不可用，内容只保存在当前运行期间" : null, this.memory = th(e, n), this.dbPromise = null;
 	}
 	async ready() {
 		return this.memoryMode ? null : (this.dbPromise ||= new Promise((e, t) => {
@@ -7690,20 +7694,20 @@ var sh = class {
 		};
 	}
 	readSettings(e = {}) {
-		return nh(this.localStorage?.getItem(Qm), e);
+		return rh(this.localStorage?.getItem($m), e);
 	}
 	writeSettings(e) {
 		let t = X(Y(e || {}));
-		return this.localStorage && this.localStorage.setItem(Qm, JSON.stringify(t)), t;
+		return this.localStorage && this.localStorage.setItem($m, JSON.stringify(t)), t;
 	}
 	readIndex() {
-		let e = nh(this.localStorage?.getItem(Zm), []);
+		let e = rh(this.localStorage?.getItem(Qm), []);
 		return Array.isArray(e) ? e : [];
 	}
 	writeIndex(e) {
-		let t = Array.isArray(e) ? e.map((e) => Qf(e)) : [];
+		let t = Array.isArray(e) ? e.map((e) => $f(e)) : [];
 		if (this.localStorage) try {
-			this.localStorage.setItem(Zm, JSON.stringify(t));
+			this.localStorage.setItem(Qm, JSON.stringify(t));
 		} catch (e) {
 			this.warning = `内容已写入 IndexedDB，但索引缓存不可用：${e.message}`;
 		}
@@ -7711,11 +7715,11 @@ var sh = class {
 	}
 	async _readAll() {
 		let e = await this.ready();
-		return e ? (await ih(e.transaction(this.storeName, "readonly").objectStore(this.storeName).getAll())).map(Y) : [...this.memory.values()].map(Y);
+		return e ? (await ah(e.transaction(this.storeName, "readonly").objectStore(this.storeName).getAll())).map(Y) : [...this.memory.values()].map(Y);
 	}
 	async _read(e) {
 		let t = await this.ready();
-		return Y(t ? await ih(t.transaction(this.storeName, "readonly").objectStore(this.storeName).get(String(e))) : this.memory.get(String(e)));
+		return Y(t ? await ah(t.transaction(this.storeName, "readonly").objectStore(this.storeName).get(String(e))) : this.memory.get(String(e)));
 	}
 	async _write(e, { overwrite: t = !0 } = {}) {
 		let n = await this.ready();
@@ -7726,10 +7730,10 @@ var sh = class {
 		}
 		let r = n.transaction(this.storeName, "readwrite"), i = r.objectStore(this.storeName), a = t ? i.put(Y(e)) : i.add(Y(e));
 		a.onerror = () => {
-			a.error?.name === "ConstraintError" && oh(r, /* @__PURE__ */ Error(`内容已存在：${e.id}`));
+			a.error?.name === "ConstraintError" && sh(r, /* @__PURE__ */ Error(`内容已存在：${e.id}`));
 		};
 		try {
-			await ah(r);
+			await oh(r);
 		} catch (e) {
 			throw r.__xyError || e;
 		}
@@ -7741,11 +7745,11 @@ var sh = class {
 			return;
 		}
 		let n = t.transaction(this.storeName, "readwrite");
-		n.objectStore(this.storeName).delete(String(e)), await ah(n);
+		n.objectStore(this.storeName).delete(String(e)), await oh(n);
 	}
 	async _replaceIndex() {
 		let e = await this._readAll();
-		return this.writeIndex(e.map(Qf).sort((e, t) => String(t.updatedAt).localeCompare(String(e.updatedAt))));
+		return this.writeIndex(e.map($f).sort((e, t) => String(t.updatedAt).localeCompare(String(e.updatedAt))));
 	}
 	async list({ contentType: e, type: t, query: n } = {}) {
 		let r = e || t;
@@ -7763,7 +7767,7 @@ var sh = class {
 		return Y(await this._read(e));
 	}
 	async put(e, t = {}) {
-		let n = e?.id ? await this._read(e.id) : void 0, r = Yf(e, {
+		let n = e?.id ? await this._read(e.id) : void 0, r = Xf(e, {
 			...t,
 			createdAt: t.createdAt || n?.createdAt,
 			updatedAt: t.updatedAt || (/* @__PURE__ */ new Date()).toISOString()
@@ -7786,8 +7790,8 @@ var sh = class {
 	async putMany(e, t = {}) {
 		if (!Array.isArray(e) || !e.length) return [];
 		let n = e.map((e) => {
-			let n = e?.entry ? Y(e) : Yf(e, t);
-			return $f(n), n;
+			let n = e?.entry ? Y(e) : Xf(e, t);
+			return ep(n), n;
 		}), r = /* @__PURE__ */ new Set();
 		for (let e of n) {
 			if (r.has(e.id)) throw Error(`内容 id 重复：${e.id}`);
@@ -7803,11 +7807,11 @@ var sh = class {
 			for (let i of n) {
 				let n = t.overwrite ? r.put(Y(i)) : r.add(Y(i));
 				n.onerror = () => {
-					n.error?.name === "ConstraintError" && oh(e, /* @__PURE__ */ Error(`内容已存在：${i.id}`));
+					n.error?.name === "ConstraintError" && sh(e, /* @__PURE__ */ Error(`内容已存在：${i.id}`));
 				};
 			}
 			try {
-				await ah(e);
+				await oh(e);
 			} catch (t) {
 				throw e.__xyError || t;
 			}
@@ -7849,7 +7853,7 @@ var sh = class {
 	async copy(e, t = {}) {
 		let n = await this._read(e);
 		if (!n) throw Error(`内容不存在：${e}`);
-		let r = t.id || `${n.id}-copy-${Date.now().toString(36)}-${th()}`;
+		let r = t.id || `${n.id}-copy-${Date.now().toString(36)}-${nh()}`;
 		if (await this._read(r)) throw Error(`内容已存在：${r}`);
 		let i = Y(n.entry);
 		i.id = r, i.name = t.name ? t.name : `${i.name} 副本`;
@@ -7870,13 +7874,13 @@ var sh = class {
 		if (!t) this.memory.clear();
 		else {
 			let e = t.transaction(this.storeName, "readwrite");
-			e.objectStore(this.storeName).clear(), await ah(e);
+			e.objectStore(this.storeName).clear(), await oh(e);
 		}
 		return this.writeIndex([]), e.length;
 	}
 	async exportContents(e, t = {}) {
 		let n = e == null ? null : new Set(Array.isArray(e) ? e : [e]);
-		return Xf((await this._readAll()).filter((e) => !n || n.has(e.id)), t);
+		return Zf((await this._readAll()).filter((e) => !n || n.has(e.id)), t);
 	}
 	async exportData(e, t = {}) {
 		let n = await this.exportContents(e, t);
@@ -7885,15 +7889,15 @@ var sh = class {
 	async export(e, t = {}) {
 		return this.exportData(e, t);
 	}
-}, ch = {
+}, lh = {
 	id: "xybattle-v2-root",
 	class: "xy-root-container"
-}, lh = {
+}, uh = {
 	id: "xybattle-v2-panel",
 	class: "xy-workbench-panel",
 	role: "dialog",
 	"aria-label": "独立战斗工作台"
-}, uh = { class: "xy-notice-icon" }, dh = { class: "xy-notice-text" }, fh = {
+}, dh = { class: "xy-notice-icon" }, fh = { class: "xy-notice-text" }, ph = {
 	__name: "App",
 	props: {
 		controller: {
@@ -7906,7 +7910,7 @@ var sh = class {
 		}
 	},
 	setup(e, { expose: t }) {
-		let n = e, r = /* @__PURE__ */ I(!1), i = /* @__PURE__ */ I("workbench"), a = /* @__PURE__ */ I(""), o = new sh(), s = /* @__PURE__ */ I(!1), c = /* @__PURE__ */ I(!1), l = /* @__PURE__ */ Jt(null), u = /* @__PURE__ */ Jt(n.controller.playerView()), d = /* @__PURE__ */ Jt(n.controller.state);
+		let n = e, r = /* @__PURE__ */ I(!1), i = /* @__PURE__ */ I("workbench"), a = /* @__PURE__ */ I(""), o = new ch(), s = /* @__PURE__ */ I(!1), c = /* @__PURE__ */ I(!1), l = /* @__PURE__ */ Jt(null), u = /* @__PURE__ */ Jt(n.controller.playerView()), d = /* @__PURE__ */ Jt(n.controller.state);
 		function f() {
 			u.value = n.controller.playerView(), d.value = n.controller.state;
 		}
@@ -8067,22 +8071,22 @@ var sh = class {
 		}
 		function O() {
 			try {
-				n.controller.importScene(Jm), a.value = "已成功载入《叠浪玄潮决》演示场景", f();
+				n.controller.importScene(Ym), a.value = "已成功载入《叠浪玄潮决》演示场景", f();
 			} catch (e) {
 				a.value = e.message;
 			}
 		}
 		function se() {
-			tm(`battle-v2-save-${Date.now()}.json`, n.controller.exportData());
+			nm(`battle-v2-save-${Date.now()}.json`, n.controller.exportData());
 		}
 		function ce() {
-			tm(`battle-v2-public-${Date.now()}.json`, JSON.stringify(n.controller.playerView(), null, 2));
+			nm(`battle-v2-public-${Date.now()}.json`, JSON.stringify(n.controller.playerView(), null, 2));
 		}
 		function le() {
-			tm(`battle-v2-public-logs-${Date.now()}.json`, n.controller.logExport());
+			nm(`battle-v2-public-logs-${Date.now()}.json`, n.controller.logExport());
 		}
 		function ue() {
-			tm(`battle-v2-developer-logs-${Date.now()}.json`, n.controller.debugLogExport());
+			nm(`battle-v2-developer-logs-${Date.now()}.json`, n.controller.debugLogExport());
 		}
 		async function fe() {
 			await navigator.clipboard.writeText(n.controller.debugLogExport()), a.value = "已复制完整天道开发审计日志";
@@ -8112,7 +8116,7 @@ var sh = class {
 			a.value = "内容库已更新；已开始的战斗仍使用各自的 registry snapshot", e?.action === "delete" && f();
 		}
 		function _e(e) {
-			tm(`xybattle-content-${Date.now()}.json`, e);
+			nm(`xybattle-content-${Date.now()}.json`, e);
 		}
 		function ve(e) {
 			try {
@@ -8126,7 +8130,7 @@ var sh = class {
 			actors: d.value.actors,
 			semanticState: d.value.semanticState,
 			resourceRules: d.value.resourceRules
-		})), be = G(() => X(Bm(d.value), n.controller.secrets()));
+		})), be = G(() => X(Vm(d.value), n.controller.secrets()));
 		return t({
 			open: () => {
 				r.value = !0;
@@ -8134,7 +8138,7 @@ var sh = class {
 			close: () => {
 				r.value = !1;
 			}
-		}), (t, n) => (B(), V("div", ch, [H("button", {
+		}), (t, n) => (B(), V("div", lh, [H("button", {
 			ref: "launcherRef",
 			id: "xybattle-v2-launcher",
 			class: k(["xy-launcher-seal", {
@@ -8157,7 +8161,7 @@ var sh = class {
 				key: 0,
 				class: "xy-modal-backdrop",
 				onClick: as(x, ["self"])
-			}, [H("section", lh, [
+			}, [H("section", uh, [
 				U(Js, {
 					scene: u.value.scene,
 					"semantic-state": u.value.semanticState,
@@ -8190,8 +8194,8 @@ var sh = class {
 						class: k(["xy-notice-banner", { "is-error": !!d.value.lastError }]),
 						role: "status"
 					}, [
-						H("span", uh, A(d.value.lastError ? "⚠️" : "✨"), 1),
-						H("span", dh, A(a.value || d.value.lastError || d.value.hostSync?.reason), 1),
+						H("span", dh, A(d.value.lastError ? "⚠️" : "✨"), 1),
+						H("span", fh, A(a.value || d.value.lastError || d.value.hostSync?.reason), 1),
 						H("button", {
 							class: "xy-notice-dismiss",
 							onClick: n[1] ||= (e) => {
@@ -8202,7 +8206,7 @@ var sh = class {
 					_: 1
 				}),
 				H("div", { class: k(["xy-content-body xy-custom-scroll", { "is-scrollable": i.value !== "workbench" }]) }, [
-					i.value === "workbench" && s.value ? (B(), Zi(em, {
+					i.value === "workbench" && s.value ? (B(), Zi(tm, {
 						key: 0,
 						preparation: l.value,
 						busy: c.value,
@@ -8211,7 +8215,7 @@ var sh = class {
 						onConfirm: ee,
 						onCancel: te
 					}, null, 8, ["preparation", "busy"])) : W("", !0),
-					L(U(Ad, {
+					L(U(jd, {
 						view: u.value,
 						state: d.value,
 						controller: e.controller,
@@ -8228,12 +8232,12 @@ var sh = class {
 						"state",
 						"controller"
 					]), [[uo, i.value === "workbench" && !s.value]]),
-					i.value === "settings" ? (B(), Zi(of, {
+					i.value === "settings" ? (B(), Zi(sf, {
 						key: 1,
 						settings: e.controller.settings,
 						onSave: oe,
 						onBack: n[2] ||= (e) => i.value = "workbench"
-					}, null, 8, ["settings"])) : i.value === "data" ? (B(), Zi(vf, {
+					}, null, 8, ["settings"])) : i.value === "data" ? (B(), Zi(yf, {
 						key: 2,
 						snapshot: ye.value,
 						onLoadDemo: O,
@@ -8242,13 +8246,13 @@ var sh = class {
 						onImportScene: pe,
 						onImportRegistry: me,
 						onImportSave: he
-					}, null, 8, ["snapshot"])) : i.value === "library" ? (B(), Zi(Ep, {
+					}, null, 8, ["snapshot"])) : i.value === "library" ? (B(), Zi(Dp, {
 						key: 3,
 						store: Zt(o),
 						onChanged: ge,
 						onExport: _e,
 						onApply: ve
-					}, null, 8, ["store"])) : i.value === "developer" ? (B(), Zi(jf, {
+					}, null, 8, ["store"])) : i.value === "developer" ? (B(), Zi(Mf, {
 						key: 4,
 						"ai-context": be.value,
 						logs: e.controller.logs || [],
@@ -8264,7 +8268,7 @@ var sh = class {
 };
 //#endregion
 //#region src/adapters.js
-function ph(e = {}) {
+function mh(e = {}) {
 	let t = {
 		mode: "unconfigured",
 		endpoint: "",
@@ -8306,7 +8310,7 @@ function ph(e = {}) {
 		developerLogs: e.developerLogs !== !1
 	};
 }
-function mh(e) {
+function hh(e) {
 	if (e && typeof e == "object") return Y(e);
 	let t = String(e || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```$/i, "").trim();
 	try {
@@ -8317,18 +8321,18 @@ function mh(e) {
 		throw Error("AI 响应不是合法 JSON");
 	}
 }
-var hh = class {
+var gh = class {
 	async judge() {
 		throw Error("未配置裁定 AI；请在独立设置中选择 HTTP，或明确选择离线 Mock 演示");
 	}
-}, gh = class {
+}, _h = class {
 	async generate() {
 		throw Error("未配置正文 AI；默认可选择主剧情一次性注入");
 	}
 	async rewrite() {
 		return this.generate();
 	}
-}, _h = class {
+}, vh = class {
 	constructor() {
 		this.mode = "main_story";
 	}
@@ -8345,16 +8349,16 @@ var hh = class {
 	async rewrite() {
 		return this.generate();
 	}
-}, vh = class extends _h {
+}, yh = class extends vh {
 	constructor() {
 		super(), this.mode = "packet";
 	}
-}, yh = class {
+}, bh = class {
 	constructor() {
 		this.calls = [], this.isMock = !0;
 	}
 	async judge(e, { signal: t } = {}) {
-		_d(t), this.calls.push(Y(e));
+		vd(t), this.calls.push(Y(e));
 		let n = Y(e.context.semanticState), r = Y(n), i = e.action.techniqueId;
 		"潮眼" in r && i === "chaoyan" && (r.潮眼 = !0), "回弦" in r && i === "huixian" && (r.回弦 = !0), "站位" in r && i === "xianshi" && (r.站位 = "中近距"), "压制" in r && i === "dielang" && (r.压制 = "我方取得节奏"), "破绽" in r && i === "fanyin-chaoyan" && (r.破绽 = ["敌方节奏出现可见偏差"]), r.statuses = [.../* @__PURE__ */ new Set([...r.statuses || [], ...i ? [`${i}:triggered`] : []])], r.effects = [...(r.effects || []).filter((e) => e.id !== `mock-${i}`), ...i ? [{
 			id: `mock-${i}`,
@@ -8379,7 +8383,7 @@ var hh = class {
 			confidence: .95
 		};
 	}
-}, bh = class {
+}, xh = class {
 	constructor() {
 		this.calls = [], this.mode = "mock";
 	}
@@ -8393,9 +8397,9 @@ var hh = class {
 		}), { text: `【离线重写】保留已提交事实：${e.committedFacts.join("；")}。` };
 	}
 };
-async function xh(e, t, n = {}) {
+async function Sh(e, t, n = {}) {
 	if (!e.endpoint || !e.model) throw Error("HTTP 适配器缺少 endpoint 或 model");
-	_d(n.signal);
+	vd(n.signal);
 	let r = new AbortController(), i = () => r.abort();
 	n.signal?.addEventListener("abort", i, { once: !0 });
 	let a = setTimeout(i, e.timeoutMs ?? 6e4), o = { "content-type": "application/json" };
@@ -8417,7 +8421,7 @@ async function xh(e, t, n = {}) {
 		body: Y(s)
 	});
 	try {
-		let t = await fetch(e.endpoint, {
+		let t = await fetch(gd(e.endpoint), {
 			method: "POST",
 			headers: o,
 			signal: r.signal,
@@ -8444,7 +8448,7 @@ async function xh(e, t, n = {}) {
 		clearTimeout(a), n.signal?.removeEventListener("abort", i);
 	}
 }
-var Sh = class {
+var Ch = class {
 	constructor(e = {}) {
 		this.config = {
 			timeoutMs: 6e4,
@@ -8453,13 +8457,13 @@ var Sh = class {
 		}, this.isMock = !1;
 	}
 	async judge(e, t = {}) {
-		let n = await xh({
+		let n = await Sh({
 			...this.config,
 			temperature: this.config.temperature ?? e.settings.temperature,
 			maxOutput: this.config.maxOutput ?? e.settings.maxOutput
 		}, [{
 			role: "system",
-			content: e.systemPrompt || nm
+			content: e.systemPrompt || rm
 		}, {
 			role: "user",
 			content: e.prompt
@@ -8468,7 +8472,7 @@ var Sh = class {
 			jsonMode: !0
 		});
 		try {
-			return mh(n.content);
+			return hh(n.content);
 		} catch (e) {
 			throw e.rawContent = n.content, e;
 		}
@@ -8481,12 +8485,12 @@ var Sh = class {
 			role: "user",
 			content: `${e.prompt}\n原返回：${JSON.stringify(t)}\n程序拒绝原因：${n.message}`
 		}];
-		return mh((await xh(this.config, i, {
+		return hh((await Sh(this.config, i, {
 			...r,
 			jsonMode: !0
 		})).content);
 	}
-}, Ch = class {
+}, wh = class {
 	constructor(e = {}) {
 		this.config = {
 			timeoutMs: 6e4,
@@ -8499,11 +8503,11 @@ var Sh = class {
 	async generateFromBattlePacket(e, t, n = {}) {
 		let r = [{
 			role: "system",
-			content: `依据已提交战斗场景描写，禁止复判；禁止新增未提交结算。\n${im(t, e)}`
+			content: `依据已提交战斗场景描写，禁止复判；禁止新增未提交结算。\n${am(t, e)}`
 		}, {
 			role: "user",
 			content: e || "继续描写这一已提交战斗场景。"
-		}], i = await xh(this.config, r, n);
+		}], i = await Sh(this.config, r, n);
 		return {
 			text: typeof i.content == "string" ? i.content : JSON.stringify(i.content),
 			metadata: i.metadata
@@ -8512,11 +8516,11 @@ var Sh = class {
 	async rewrite(e, t, n = {}) {
 		return this.generateFromBattlePacket(`${n.originalPrompt ?? this.config.originalPrompt ?? ""}\n重写正文，保持提交事实：${t?.text || ""}`, e, n);
 	}
-}, wh = "battle_v2";
-function Th(e) {
+}, Th = "battle_v2";
+function Eh(e) {
 	return JSON.stringify([String(e.chatId || "default-chat"), String(e.branchId || "main")]);
 }
-var Eh = class e {
+var Dh = class e {
 	constructor(e = globalThis.localStorage, t = {
 		chatId: "default-chat",
 		branchId: "main"
@@ -8524,20 +8528,20 @@ var Eh = class e {
 		this.storage = e && typeof e.getItem == "function" ? e : null, this.scope = {
 			chatId: String(t.chatId || "default-chat"),
 			branchId: String(t.branchId || "main")
-		}, this.token = encodeURIComponent(Th(this.scope)), this.memory = /* @__PURE__ */ new Map();
+		}, this.token = encodeURIComponent(Eh(this.scope)), this.memory = /* @__PURE__ */ new Map();
 	}
 	withScope(t) {
 		return new e(this.storage, t);
 	}
 	key(e) {
-		return `${wh}.${e}.${this.token}`;
+		return `${Th}.${e}.${this.token}`;
 	}
 	readSettings() {
-		return this.read(`${wh}.settings`, this.read(this.key("settings"), {}));
+		return this.read(`${Th}.settings`, this.read(this.key("settings"), {}));
 	}
 	writeSettings(e) {
 		let t = X(e);
-		return this.write(`${wh}.settings`, t), t;
+		return this.write(`${Th}.settings`, t), t;
 	}
 	readSession() {
 		return this.read(this.key("session"), null);
@@ -8579,25 +8583,25 @@ var Eh = class e {
 		let n = JSON.stringify(t);
 		this.storage ? this.storage.setItem(e, n) : this.memory.set(e, n);
 	}
-}, Dh = "battle_character_preparation_v1", Oh = Object.freeze({
+}, Oh = "battle_character_preparation_v1", kh = Object.freeze({
 	ai_extracted: 0,
 	ai_inferred: 0,
 	context_explicit: 1,
 	database: 2,
 	mvu_dynamic: 3,
 	user_confirmed: 4
-}), kh = /* @__PURE__ */ new Set([
+}), Ah = /* @__PURE__ */ new Set([
 	"apiKey",
 	"api_key",
 	"authorization",
 	"token",
 	"password",
 	"secret"
-]), Ah = /* @__PURE__ */ new Set([
+]), jh = /* @__PURE__ */ new Set([
 	"__proto__",
 	"prototype",
 	"constructor"
-]), jh = [
+]), Mh = [
 	["enemies", "context_explicit"],
 	["opponents", "context_explicit"],
 	["hostiles", "context_explicit"],
@@ -8607,7 +8611,7 @@ var Eh = class e {
 	["scene.enemies", "context_explicit"],
 	["characters", "context_explicit"],
 	["actors.characters", "context_explicit"]
-], Mh = {
+], Nh = {
 	mvu_dynamic: [
 		"getEnemy",
 		"getCharacter",
@@ -8625,30 +8629,30 @@ var Eh = class e {
 		"get"
 	]
 };
-function Nh(e) {
+function Ph(e) {
 	return !!e && typeof e == "object" && !Array.isArray(e);
 }
 function Q(e) {
 	return typeof e == "string" ? e.trim() : e == null ? "" : String(e).trim();
 }
-function Ph(e, t) {
+function Fh(e, t) {
 	return t.split(".").reduce((e, t) => e?.[t], e);
 }
-function Fh(e, t = "enemy") {
+function Ih(e, t = "enemy") {
 	return Q(e).toLowerCase().replace(/[^\w\u4e00-\u9fff-]+/g, "-").replace(/^-+|-+$/g, "") || t;
 }
-function Ih(e) {
-	return Array.isArray(e) ? e.map(Ih) : Nh(e) ? Object.fromEntries(Object.entries(e).filter(([e]) => !kh.has(e) && !Ah.has(e)).map(([e, t]) => [e, Ih(t)])) : e;
-}
 function Lh(e) {
-	return Oh[e] ?? 0;
+	return Array.isArray(e) ? e.map(Lh) : Ph(e) ? Object.fromEntries(Object.entries(e).filter(([e]) => !Ah.has(e) && !jh.has(e)).map(([e, t]) => [e, Lh(t)])) : e;
 }
 function Rh(e) {
+	return kh[e] ?? 0;
+}
+function zh(e) {
 	if (!e) return "context_explicit";
 	let t = String(e);
 	return t === "mvu" || t === "mvu_dynamic_value" ? "mvu_dynamic" : t === "db" || t === "database_profile" ? "database" : t === "context" || t === "explicit" ? "context_explicit" : t === "ai" || t === "inference" || t === "ai_inference" ? "ai_inferred" : t === "ai_extract" || t === "ai_extracted" ? "ai_extracted" : t === "user" || t === "confirmed" ? "user_confirmed" : t;
 }
-function zh(e) {
+function Bh(e) {
 	return [
 		"enemy",
 		"opponent",
@@ -8658,23 +8662,23 @@ function zh(e) {
 		"对手"
 	].includes(Q(e).toLowerCase());
 }
-function Bh(e, t, n = "context_explicit") {
+function Vh(e, t, n = "context_explicit") {
 	if (typeof e == "string") {
 		let r = Q(e);
 		return r ? {
-			id: `enemy-${Fh(r, t + 1)}`,
+			id: `enemy-${Ih(r, t + 1)}`,
 			name: r,
 			fields: {
-				id: `enemy-${Fh(r, t + 1)}`,
+				id: `enemy-${Ih(r, t + 1)}`,
 				name: r
 			},
-			source: Rh(n)
+			source: zh(n)
 		} : null;
 	}
-	if (!Nh(e)) return null;
+	if (!Ph(e)) return null;
 	let r = Q(e.name || e.characterName || e.displayName || e.title || e.label), i = Q(e.id || e.characterId || e.uid || e.uuid);
 	if (!r && !i) return null;
-	let a = i || `enemy-${Fh(r, t + 1)}`, o = Ih({
+	let a = i || `enemy-${Ih(r, t + 1)}`, o = Lh({
 		...e,
 		id: a,
 		...r ? { name: r } : {}
@@ -8683,11 +8687,11 @@ function Bh(e, t, n = "context_explicit") {
 		id: a,
 		name: r || a,
 		fields: o,
-		source: Rh(n)
+		source: zh(n)
 	};
 }
-function Vh(e) {
-	return Array.isArray(e) ? e : typeof e == "string" ? [e] : Nh(e) ? Object.entries(e).map(([e, t]) => Nh(t) ? {
+function Hh(e) {
+	return Array.isArray(e) ? e : typeof e == "string" ? [e] : Ph(e) ? Object.entries(e).map(([e, t]) => Ph(t) ? {
 		id: t.id || e,
 		...t
 	} : {
@@ -8695,7 +8699,7 @@ function Vh(e) {
 		name: t
 	}) : [];
 }
-function Hh(e) {
+function Uh(e) {
 	let t = /* @__PURE__ */ new Map();
 	for (let n of e) {
 		let e = Q(n.id || n.name).toLowerCase();
@@ -8712,82 +8716,82 @@ function Hh(e) {
 	}
 	return [...t.values()];
 }
-function Uh(e = {}, { maxCandidates: t = 32 } = {}) {
+function Wh(e = {}, { maxCandidates: t = 32 } = {}) {
 	let n = [], r = (r, i) => {
-		for (let a of Vh(r)) {
-			let o = Bh(a, n.length, i);
-			if (o && (i !== "context_explicit" || Ph(e, "characters") !== r && Ph(e, "actors.characters") !== r || zh(a?.side || a?.faction || a?.role || a?.alignment || a?.team)) && (n.push(o), n.length >= t)) return;
+		for (let a of Hh(r)) {
+			let o = Vh(a, n.length, i);
+			if (o && (i !== "context_explicit" || Fh(e, "characters") !== r && Fh(e, "actors.characters") !== r || Bh(a?.side || a?.faction || a?.role || a?.alignment || a?.team)) && (n.push(o), n.length >= t)) return;
 		}
 	};
-	for (let [i, a] of jh) {
+	for (let [i, a] of Mh) {
 		if (n.length >= t) break;
-		r(Ph(e, i), a);
+		r(Fh(e, i), a);
 	}
-	return n.length < t && r(e.enemy || e.opponent || e.hostile, "context_explicit"), Hh(n).slice(0, t);
+	return n.length < t && r(e.enemy || e.opponent || e.hostile, "context_explicit"), Uh(n).slice(0, t);
 }
-function Wh(e, t, n) {
+function Gh(e, t, n) {
 	if (n == null) return null;
-	let r = Nh(n) ? Ih(n) : { value: Ih(n) };
+	let r = Ph(n) ? Lh(n) : { value: Lh(n) };
 	return {
-		source: Rh(t),
-		priority: Lh(Rh(t)),
+		source: zh(t),
+		priority: Rh(zh(t)),
 		data: r
 	};
 }
-function Gh(e, t = "") {
-	if (Array.isArray(e)) return e.length ? e.flatMap((e, n) => Gh(e, `${t}.${n}`)) : t ? [[t, []]] : [];
-	if (!Nh(e)) return t ? [[t, e]] : [];
+function Kh(e, t = "") {
+	if (Array.isArray(e)) return e.length ? e.flatMap((e, n) => Kh(e, `${t}.${n}`)) : t ? [[t, []]] : [];
+	if (!Ph(e)) return t ? [[t, e]] : [];
 	let n = [];
 	for (let [r, i] of Object.entries(e)) {
-		if (kh.has(r) || Ah.has(r) || r === "provenance" || r === "sources" || r === "confirmation") continue;
+		if (Ah.has(r) || jh.has(r) || r === "provenance" || r === "sources" || r === "confirmation") continue;
 		let e = t ? `${t}.${r}` : r;
-		Nh(i) ? n.push(...Gh(i, e)) : n.push([e, i]);
+		Ph(i) ? n.push(...Kh(i, e)) : n.push([e, i]);
 	}
 	return n;
 }
-function Kh(e, t, n) {
+function qh(e, t, n) {
 	let r = t.split("."), i = e;
 	r.forEach((e, t) => {
 		if (!e || e === "__proto__" || e === "constructor" || e === "prototype") throw Error("人物资料字段路径非法");
 		if (t === r.length - 1) i[e] = Y(n);
 		else {
 			let n = /^\d+$/.test(r[t + 1]);
-			!Nh(i[e]) && !Array.isArray(i[e]) && (i[e] = n ? [] : {}), i = i[e];
+			!Ph(i[e]) && !Array.isArray(i[e]) && (i[e] = n ? [] : {}), i = i[e];
 		}
 	});
 }
-function qh(e, { mvu: t, database: n, inference: r, aiExtracted: i } = {}) {
+function Jh(e, { mvu: t, database: n, inference: r, aiExtracted: i } = {}) {
 	return [
-		Wh(e, "ai_extracted", i),
-		Wh(e, "ai_inferred", r),
-		Wh(e, e.source || "context_explicit", e.fields || e),
-		Wh(e, "database", n),
-		Wh(e, "mvu_dynamic", t)
+		Gh(e, "ai_extracted", i),
+		Gh(e, "ai_inferred", r),
+		Gh(e, e.source || "context_explicit", e.fields || e),
+		Gh(e, "database", n),
+		Gh(e, "mvu_dynamic", t)
 	].filter(Boolean);
 }
-function Jh(e, t = {}) {
-	let n = qh(e, t).sort((e, t) => e.priority - t.priority), r = {}, i = {}, a = [];
-	for (let e of n) for (let [t, n] of Gh(e.data)) {
-		let o = i[t], s = Ph(r, t);
+function Yh(e, t = {}) {
+	let n = Jh(e, t).sort((e, t) => e.priority - t.priority), r = {}, i = {}, a = [];
+	for (let e of n) for (let [t, n] of Kh(e.data)) {
+		let o = i[t], s = Fh(r, t);
 		o && JSON.stringify(s) !== JSON.stringify(n) && a.push({
 			path: t,
 			kept: e.source,
 			ignored: o.source,
 			keptValue: Y(n),
 			ignoredValue: Y(s)
-		}), (!o || e.priority >= o.priority) && (Kh(r, t, n), i[t] = {
+		}), (!o || e.priority >= o.priority) && (qh(r, t, n), i[t] = {
 			source: e.source,
 			priority: e.priority
 		});
 	}
-	let o = Q(r.id || e.id) || `enemy-${Fh(r.name || e.name)}`, s = Q(r.name || e.name || o);
+	let o = Q(r.id || e.id) || `enemy-${Ih(r.name || e.name)}`, s = Q(r.name || e.name || o);
 	return r.id = o, r.name = s, i.id ||= {
 		source: e.source || "context_explicit",
-		priority: Lh(e.source || "context_explicit")
+		priority: Rh(e.source || "context_explicit")
 	}, i.name ||= i.id, {
 		id: o,
 		name: s,
-		fields: Ih(r),
+		fields: Lh(r),
 		sources: Object.fromEntries(n.map((e) => [e.source, Y(e.data)])),
 		provenance: i,
 		conflicts: a,
@@ -8797,7 +8801,7 @@ function Jh(e, t = {}) {
 		}
 	};
 }
-async function Yh(e, t, n, r) {
+async function Xh(e, t, n, r) {
 	if (!e) return null;
 	let i = {
 		candidate: Y(t),
@@ -8809,12 +8813,12 @@ async function Yh(e, t, n, r) {
 	if (typeof e == "function") return e(i);
 	if (r === "mvu_dynamic" && typeof e.getMvuData == "function") {
 		let r = n.scope || n;
-		return Zh(await e.getMvuData({
+		return Qh(await e.getMvuData({
 			type: "message",
 			message_id: r.messageId ?? n.messageId
 		}), t);
 	}
-	let a = Mh[r] || [
+	let a = Nh[r] || [
 		"resolve",
 		"lookup",
 		"query",
@@ -8823,18 +8827,18 @@ async function Yh(e, t, n, r) {
 	];
 	for (let n of a) if (typeof e[n] == "function") {
 		let r = await e[n](i);
-		if (r != null) return Zh(r, t);
+		if (r != null) return Qh(r, t);
 	}
 	return null;
 }
-async function Xh(e, t, n, r) {
+async function Zh(e, t, n, r) {
 	if (!e) return {
 		value: null,
 		status: "missing",
 		error: null
 	};
 	try {
-		let i = await Yh(e, t, n, r);
+		let i = await Xh(e, t, n, r);
 		return i && typeof i == "object" && typeof i.status == "string" && ("data" in i || "reason" in i || "error" in i) ? {
 			value: i.data ?? null,
 			status: i.status,
@@ -8860,10 +8864,10 @@ async function Xh(e, t, n, r) {
 		};
 	}
 }
-function Zh(e, t) {
+function Qh(e, t) {
 	if (e == null) return null;
 	if (Array.isArray(e)) return e.find((e) => Q(e?.id || e?.characterId || e?.uid) === t.id || Q(e?.name || e?.characterName) === t.name) || null;
-	if (!Nh(e)) return e;
+	if (!Ph(e)) return e;
 	for (let n of [
 		"enemies",
 		"opponents",
@@ -8876,43 +8880,43 @@ function Zh(e, t) {
 		if (Array.isArray(r)) {
 			let e = r.find((e) => Q(e?.id || e?.characterId || e?.uid) === t.id || Q(e?.name || e?.characterName) === t.name);
 			if (e) return e;
-		} else if (Nh(r) && (r[t.id] || r[t.name])) return r[t.id] || r[t.name];
+		} else if (Ph(r) && (r[t.id] || r[t.name])) return r[t.id] || r[t.name];
 	}
 	return e[t.id] || e[t.name] ? e[t.id] || e[t.name] : Q(e.id || e.characterId || e.uid) === t.id || Q(e.name || e.characterName) === t.name ? e : null;
 }
-async function Qh(e, t) {
+async function $h(e, t) {
 	if (!e) return [];
 	let n = typeof e == "function" ? await e(Y(t)) : typeof e.extract == "function" ? await e.extract(Y(t)) : typeof e.inferCandidates == "function" ? await e.inferCandidates(Y(t)) : typeof e.infer == "function" ? await e.infer(Y(t)) : e, r = n?.data ?? n;
 	return Array.isArray(r) ? r : r?.enemies || r?.candidates || [];
 }
-function $h(e = {}) {
+function eg(e = {}) {
 	let t = e.explicitFacts || e.explicit || e.facts || e.contextFacts || (e.inferred === !0 ? {} : e.fields) || {}, n = (e.inferred === !0 ? e.fields : e.inferred) || e.inference || e.guess || e.predicted || {};
 	return {
-		explicit: Nh(t) ? Ih(t) : {},
-		inferred: Nh(n) ? Ih(n) : {}
+		explicit: Ph(t) ? Lh(t) : {},
+		inferred: Ph(n) ? Lh(n) : {}
 	};
 }
-function eg(e, t, n) {
-	let r = $h(t), i = Bh({
+function tg(e, t, n) {
+	let r = eg(t), i = Vh({
 		id: t?.id || t?.characterId,
 		name: t?.name || t?.characterName || r.explicit.name
 	}, n, "ai_extracted");
 	return i && (i.aiExtracted = r.explicit, i.aiInferred = r.inferred), i ? e.find((e) => e.id === i.id || e.name === i.name) || i : null;
 }
-async function tg(e = {}, { mvu: t, database: n, inference: r, ai: i, maxCandidates: a = 32, signal: o } = {}) {
+async function ng(e = {}, { mvu: t, database: n, inference: r, ai: i, maxCandidates: a = 32, signal: o } = {}) {
 	if (o?.aborted) throw new DOMException("人物准备已取消", "AbortError");
-	let s = Uh(e, { maxCandidates: a }), c = i || r, l = await Qh(c, e), u = [...s];
+	let s = Wh(e, { maxCandidates: a }), c = i || r, l = await $h(c, e), u = [...s];
 	l.forEach((e, t) => {
-		let n = eg(u, e, t);
+		let n = tg(u, e, t);
 		n && !u.includes(n) && u.push(n);
 	});
 	let d = [];
 	for (let r of u.slice(0, a)) {
 		if (o?.aborted) throw new DOMException("人物准备已取消", "AbortError");
-		let i = l.find((e) => Q(e?.id || e?.name || e?.characterName) === r.id || Q(e?.name || e?.characterName) === r.name), a = i ? $h(i) : {
+		let i = l.find((e) => Q(e?.id || e?.name || e?.characterName) === r.id || Q(e?.name || e?.characterName) === r.name), a = i ? eg(i) : {
 			explicit: {},
 			inferred: {}
-		}, [s, u] = await Promise.all([Xh(t, r, e, "mvu_dynamic"), Xh(n, r, e, "database")]), f = Jh(r, {
+		}, [s, u] = await Promise.all([Zh(t, r, e, "mvu_dynamic"), Zh(n, r, e, "database")]), f = Yh(r, {
 			mvu: s.value,
 			database: u.value,
 			inference: a.inferred,
@@ -8939,7 +8943,7 @@ async function tg(e = {}, { mvu: t, database: n, inference: r, ai: i, maxCandida
 			}), r = n?.data ?? n;
 			if (r && typeof r == "object" && n?.status !== "read_failed") {
 				let e = r.fields || r.inferred || r;
-				f = Jh(f, {
+				f = Yh(f, {
 					mvu: s.value,
 					database: u.value,
 					inference: e,
@@ -8967,7 +8971,7 @@ async function tg(e = {}, { mvu: t, database: n, inference: r, ai: i, maxCandida
 		}, d.push(f);
 	}
 	return {
-		schema: Dh,
+		schema: Oh,
 		version: 1,
 		status: "awaiting_confirmation",
 		createdAt: (/* @__PURE__ */ new Date()).toISOString(),
@@ -8976,28 +8980,28 @@ async function tg(e = {}, { mvu: t, database: n, inference: r, ai: i, maxCandida
 		confirmedAt: null
 	};
 }
-function ng(e) {
+function rg(e) {
 	return e ? Array.isArray(e) ? Object.fromEntries(e.map((e) => [e.id, e.fields || e.patch || e])) : e : {};
 }
-function rg(e, t = {}, { removeIds: n = [], requireName: r = !0 } = {}) {
-	ig(e);
-	let i = ng(t), a = new Set(n.map(String)), o = e.candidates.filter((e) => !a.has(String(e.id))).map((e) => {
-		let t = i[e.id] || {}, n = Ih(Y(e.fields));
-		for (let [e, r] of Gh(t)) Kh(n, e, r);
+function ig(e, t = {}, { removeIds: n = [], requireName: r = !0 } = {}) {
+	ag(e);
+	let i = rg(t), a = new Set(n.map(String)), o = e.candidates.filter((e) => !a.has(String(e.id))).map((e) => {
+		let t = i[e.id] || {}, n = Lh(Y(e.fields));
+		for (let [e, r] of Kh(t)) qh(n, e, r);
 		let a = Q(n.id || e.id), o = Q(n.name || e.name || a);
 		if (!a || r && !o) throw Error(`敌方人物 ${e.id} 缺少 id/name`);
 		n.id = a, n.name = o;
 		let s = { ...e.provenance };
-		for (let [e] of Gh(t)) s[e] = {
+		for (let [e] of Kh(t)) s[e] = {
 			source: "user_confirmed",
-			priority: Lh("user_confirmed")
+			priority: Rh("user_confirmed")
 		};
 		return s.id = {
 			source: "user_confirmed",
-			priority: Lh("user_confirmed")
+			priority: Rh("user_confirmed")
 		}, s.name = {
 			source: "user_confirmed",
-			priority: Lh("user_confirmed")
+			priority: Rh("user_confirmed")
 		}, {
 			...e,
 			id: a,
@@ -9021,21 +9025,21 @@ function rg(e, t = {}, { removeIds: n = [], requireName: r = !0 } = {}) {
 		candidates: o
 	};
 }
-function ig(e) {
+function ag(e) {
 	if (!e || e.schema !== "battle_character_preparation_v1" || !Array.isArray(e.candidates)) throw Error("无效的人物准备草稿");
 	return e;
 }
-function ag(e) {
-	if (ig(e), e.status !== "confirmed" || !e.confirmedAt || e.candidates.some((e) => e.confirmation?.status !== "confirmed")) throw Error("敌方人物资料尚未确认，禁止进入裁定器");
+function og(e) {
+	if (ag(e), e.status !== "confirmed" || !e.confirmedAt || e.candidates.some((e) => e.confirmation?.status !== "confirmed")) throw Error("敌方人物资料尚未确认，禁止进入裁定器");
 	return e;
 }
-function og(e) {
-	return ag(e), e.candidates.map((e) => Y(e.fields));
+function sg(e) {
+	return og(e), e.candidates.map((e) => Y(e.fields));
 }
-function sg(e, t) {
-	if (ag(t), !e || !["idle", "ended"].includes(e.phase)) throw Error("只能在战斗开始前写入已确认人物");
+function cg(e, t) {
+	if (og(t), !e || !["idle", "ended"].includes(e.phase)) throw Error("只能在战斗开始前写入已确认人物");
 	if (t.scope && (String(t.scope.chatId) !== String(e.scope?.chatId) || String(t.scope.branchId) !== String(e.scope?.branchId))) throw Error("人物准备作用域与当前聊天/分支不一致");
-	let n = og(t);
+	let n = sg(t);
 	if (n.some((t) => t.id === e.actors?.player?.id)) throw Error("敌方人物 id 与主角重复");
 	return {
 		...Y(e),
@@ -9048,9 +9052,9 @@ function sg(e, t) {
 		updatedAt: (/* @__PURE__ */ new Date()).toISOString()
 	};
 }
-function cg(e) {
-	return ig(e), {
-		schema: Dh,
+function lg(e) {
+	return ag(e), {
+		schema: Oh,
 		status: e.status,
 		scope: Y(e.scope),
 		candidates: e.candidates.map((e) => ({
@@ -9067,19 +9071,19 @@ function cg(e) {
 }
 //#endregion
 //#region src/character-source-adapters.js
-var lg = (e) => e == null ? "" : String(e).trim(), ug = (e) => !!e && typeof e == "object" && !Array.isArray(e);
-function dg(e, t) {
-	let n = Array.isArray(e) ? e : e && typeof e == "object" ? Object.entries(e).map(([e, t]) => ug(t) ? {
+var ug = (e) => e == null ? "" : String(e).trim(), dg = (e) => !!e && typeof e == "object" && !Array.isArray(e);
+function fg(e, t) {
+	let n = Array.isArray(e) ? e : e && typeof e == "object" ? Object.entries(e).map(([e, t]) => dg(t) ? {
 		id: t.id || e,
 		...t
 	} : {
 		id: e,
 		name: t
-	}) : [], r = lg(t?.id), i = lg(t?.name), a = n.filter((e) => lg(e?.id || e?.characterId || e?.uid) === r || lg(e?.name || e?.characterName || e?.displayName) === i);
+	}) : [], r = ug(t?.id), i = ug(t?.name), a = n.filter((e) => ug(e?.id || e?.characterId || e?.uid) === r || ug(e?.name || e?.characterName || e?.displayName) === i);
 	if (a.length > 1) throw Error(`人物资料匹配歧义：${r || i}`);
 	return a[0] ? Y(a[0]) : null;
 }
-function fg(e) {
+function pg(e) {
 	let t = e?.stat_data ?? e?.data?.stat_data ?? e;
 	if (!t || typeof t != "object") return [];
 	let n = [
@@ -9090,22 +9094,22 @@ function fg(e) {
 		t.敌方,
 		t.对手
 	].filter(Boolean);
-	return n.length ? n.flatMap((e) => Array.isArray(e) ? e : Object.entries(e).map(([e, t]) => ug(t) ? {
+	return n.length ? n.flatMap((e) => Array.isArray(e) ? e : Object.entries(e).map(([e, t]) => dg(t) ? {
 		id: t.id || e,
 		...t
 	} : {
 		id: e,
 		name: t
-	})) : Object.entries(t).filter(([, e]) => ug(e)).map(([e, t]) => ({
+	})) : Object.entries(t).filter(([, e]) => dg(e)).map(([e, t]) => ({
 		id: t.id || e,
 		...t
 	}));
 }
-async function pg({ candidate: e, context: t = {} } = {}, { mvu: n = globalThis.Mvu } = {}) {
+async function mg({ candidate: e, context: t = {} } = {}, { mvu: n = globalThis.Mvu } = {}) {
 	if (!n?.getMvuData) return null;
 	let r = t.scope || t, i = r.messageId ?? t.messageId ?? t.message_id;
 	if (i == null) throw Error("MVU 当前消息作用域不可用");
-	let a = dg(fg(await n.getMvuData({
+	let a = fg(pg(await n.getMvuData({
 		type: "message",
 		message_id: i
 	})), e);
@@ -9121,17 +9125,17 @@ async function pg({ candidate: e, context: t = {} } = {}, { mvu: n = globalThis.
 		branchKnown: !0
 	} : null;
 }
-function mg(e) {
+function hg(e) {
 	return Object.values(e || {}).flatMap((e) => {
 		let t = e?.content;
 		if (!Array.isArray(t) || !Array.isArray(t[0])) return [];
-		let n = t[0].map((e) => lg(e));
+		let n = t[0].map((e) => ug(e));
 		return t.slice(1).filter(Array.isArray).map((e) => Object.fromEntries(n.map((t, n) => [t, e[n]])));
 	});
 }
-async function hg({ candidate: e } = {}, { database: t = globalThis.AutoCardUpdaterAPI } = {}) {
+async function gg({ candidate: e } = {}, { database: t = globalThis.AutoCardUpdaterAPI } = {}) {
 	if (!t?.exportTableAsJson) return null;
-	let n = dg(mg(await t.exportTableAsJson()), e);
+	let n = fg(hg(await t.exportTableAsJson()), e);
 	return n ? {
 		...n,
 		sourceKind: "database",
@@ -9139,7 +9143,7 @@ async function hg({ candidate: e } = {}, { database: t = globalThis.AutoCardUpda
 		branchKnown: !1
 	} : null;
 }
-async function gg(e) {
+async function _g(e) {
 	if (!e?.ok) throw Error(`人物 AI HTTP ${e?.status || "失败"}`);
 	let t = await e.json(), n = t?.choices?.[0]?.message?.content ?? t?.output_text ?? t;
 	if (typeof n == "string") {
@@ -9148,12 +9152,12 @@ async function gg(e) {
 	}
 	return n;
 }
-function _g({ endpoint: e, model: t, apiKey: n = "", fetchImpl: r = globalThis.fetch, timeoutMs: i = 3e4 } = {}) {
+function vg({ endpoint: e, model: t, apiKey: n = "", fetchImpl: r = globalThis.fetch, timeoutMs: i = 3e4 } = {}) {
 	if (!e || typeof r != "function") throw Error("人物 AI 需要 endpoint 与 fetch");
 	let a = async (a, o) => {
 		let s = new AbortController(), c = setTimeout(() => s.abort(), i);
 		try {
-			return await gg(await r(e, {
+			return await _g(await r(gd(e), {
 				method: "POST",
 				headers: {
 					"content-type": "application/json",
@@ -9192,30 +9196,30 @@ function _g({ endpoint: e, model: t, apiKey: n = "", fetchImpl: r = globalThis.f
 		}
 	};
 }
-function vg(e = {}) {
+function yg(e = {}) {
 	let t = e.mvu || globalThis.Mvu, n = e.database || globalThis.AutoCardUpdaterAPI;
 	return {
-		mvu: (e) => pg(e, { mvu: t }),
-		database: (e) => hg(e, { database: n }),
+		mvu: (e) => mg(e, { mvu: t }),
+		database: (e) => gg(e, { database: n }),
 		...e.inference ? { inference: e.inference } : {}
 	};
 }
 //#endregion
 //#region src/battle-controller.js
-function yg(e = {}) {
-	let t = ph(e), n = t.adjudicator, r = t.narrator;
+function bg(e = {}) {
+	let t = mh(e), n = t.adjudicator, r = t.narrator;
 	return {
-		adjudicator: n.mode === "mock" ? new yh() : n.mode === "http" ? new Sh(n) : new hh(),
-		narrator: r.mode === "mock" ? new bh() : r.mode === "http" ? new Ch(r) : r.mode === "main_story" ? new _h() : r.mode === "packet" ? new vh() : new gh()
+		adjudicator: n.mode === "mock" ? new bh() : n.mode === "http" ? new Ch(n) : new gh(),
+		narrator: r.mode === "mock" ? new xh() : r.mode === "http" ? new wh(r) : r.mode === "main_story" ? new vh() : r.mode === "packet" ? new yh() : new _h()
 	};
 }
-var bg = class {
-	constructor({ storage: e, chatId: t = "default-chat", branchId: n = "main", adjudicator: r, narrator: i, hostAdapter: a, registry: o = new zf(), onChange: s = () => {}, initialScene: c = {}, initialPlayer: l, initialEnemies: u = [], semanticState: d } = {}) {
-		this.storage = e instanceof Eh ? e : new Eh(e, {
+var xg = class {
+	constructor({ storage: e, chatId: t = "default-chat", branchId: n = "main", adjudicator: r, narrator: i, hostAdapter: a, registry: o = new Bf(), onChange: s = () => {}, initialScene: c = {}, initialPlayer: l, initialEnemies: u = [], semanticState: d } = {}) {
+		this.storage = e instanceof Dh ? e : new Dh(e, {
 			chatId: t,
 			branchId: n
-		}), this.registry = o, this.settings = ph(this.storage.readSettings());
-		let f = yg(this.settings);
+		}), this.registry = o, this.settings = mh(this.storage.readSettings());
+		let f = bg(this.settings);
 		this.adjudicator = r || f.adjudicator, this.narrator = i || f.narrator, this.customAdapters = {
 			adjudicator: r,
 			narrator: i
@@ -9227,11 +9231,11 @@ var bg = class {
 			semanticState: d
 		};
 		let p = this.storage.readSession();
-		this.state = p ? Fm(p) : Am({
+		this.state = p ? Im(p) : jm({
 			...this.initialOptions,
 			chatId: t,
 			branchId: n
-		}), p && (this.registry = new zf(this.state.registrySnapshot)), this.logs = this.storage.readLogs(), this.ready = Promise.resolve(), a && (a.start?.(), this.unsubScope = a.subscribeScopeChange?.((e) => {
+		}), p && (this.registry = new Bf(this.state.registrySnapshot)), this.logs = this.storage.readLogs(), this.ready = Promise.resolve(), a && (a.start?.(), this.unsubScope = a.subscribeScopeChange?.((e) => {
 			this.ready = this.switchScope(e);
 		}), this.unsubNarrative = a.subscribeNarrative?.((e) => this.recordHostNarrative(e)), this.ready = this.initializeHost());
 	}
@@ -9259,7 +9263,7 @@ var bg = class {
 			this.cancelPending("当前聊天已没有可用的助手消息锚点"), this.characterPreparation = null, this.characterPreparationRequest += 1, this.hostAdapter?.clearScenePacket?.(), this.storage = this.storage.withScope({
 				chatId: r,
 				branchId: i
-			}), this.storage.clear(), this.logs = [], this.registry = new zf(this.initialOptions.registrySnapshot), this.state = Am({
+			}), this.storage.clear(), this.logs = [], this.registry = new Bf(this.initialOptions.registrySnapshot), this.state = jm({
 				...this.initialOptions,
 				chatId: r,
 				branchId: i
@@ -9273,7 +9277,7 @@ var bg = class {
 		(a.chatId !== r || a.branchId !== i) && (this.characterPreparation = null, this.characterPreparationRequest += 1, this.storage = this.storage.withScope({
 			chatId: r,
 			branchId: i
-		}), n = this.storage.readSession(), this.state = n ? Fm(n) : Am({
+		}), n = this.storage.readSession(), this.state = n ? Im(n) : jm({
 			...this.initialOptions,
 			chatId: r,
 			branchId: i
@@ -9281,17 +9285,17 @@ var bg = class {
 		let o = this.epoch, s = await this.hostAdapter?.loadSession?.(e);
 		if (o === this.epoch) {
 			if (s?.loaded && s.state) {
-				let e = Fm(s.state);
+				let e = Im(s.state);
 				e.scope.chatId === this.state.scope.chatId && e.scope.branchId === this.state.scope.branchId && (!n || e.sessionId === this.state.sessionId && e.version >= this.state.version || Date.parse(e.updatedAt) > Date.parse(this.state.updatedAt) ? (this.state = e, this.storage.writeSession(e)) : this.log({
 					kind: "host_local_ahead",
 					capability: { reason: "本地checkpoint比宿主新，将重试持久化；不回退回合" }
 				}));
 			}
-			this.registry = new zf(this.state.registrySnapshot), this.emit();
+			this.registry = new Bf(this.state.registrySnapshot), this.emit();
 		}
 	}
 	emit({ persistHost: e = !0 } = {}) {
-		if (this.storage.writeSession(X(this.state, this.secrets())), this.onChange(this.state, zm(this.state)), this.hostAdapter && e) {
+		if (this.storage.writeSession(X(this.state, this.secrets())), this.onChange(this.state, Bm(this.state)), this.hostAdapter && e) {
 			let e = Y(this.state), t = Y(this.hostAdapter.scope?.() || this.state.scope), n = this.epoch;
 			if (t.available === !1) return;
 			this.checkpoints = this.checkpoints.catch(() => {}).then(async () => {
@@ -9304,7 +9308,7 @@ var bg = class {
 				return n === this.epoch && this.state.version === e.version && (this.state.hostSync = {
 					status: r?.persisted && r?.confirmed ? "confirmed" : "pending",
 					reason: r?.reason || null
-				}, this.storage.writeSession(X(this.state, this.secrets())), this.onChange(this.state, zm(this.state))), r;
+				}, this.storage.writeSession(X(this.state, this.secrets())), this.onChange(this.state, Bm(this.state))), r;
 			});
 		}
 	}
@@ -9326,7 +9330,7 @@ var bg = class {
 		}), e.narrator && (t.narrator = {
 			...this.settings.narrator,
 			...e.narrator
-		}), e.mode !== void 0 && (delete t.adjudicator, delete t.narrator), this.settings = ph(t), this.storage.writeSettings(this.settings), this.setAdapters(yg(this.settings)), this.emit(), this.settings;
+		}), e.mode !== void 0 && (delete t.adjudicator, delete t.narrator), this.settings = mh(t), this.storage.writeSettings(this.settings), this.setAdapters(bg(this.settings)), this.emit(), this.settings;
 	}
 	setAdapters({ adjudicator: e, narrator: t } = {}) {
 		e && (this.adjudicator = e), t && (this.narrator = t);
@@ -9338,7 +9342,7 @@ var bg = class {
 	applyContentEntries(e = []) {
 		if (this.assertIdleRequest(), !["idle", "ended"].includes(this.state.phase)) throw Error("活动战斗中不能替换本场功法");
 		if (!Array.isArray(e) || !e.length) throw Error("至少选择一条内容");
-		let t = new zf(e).snapshot(), n = new Set(t.map((e) => e.id)), r = new zf([...this.registry.snapshot().filter((e) => !n.has(e.id)), ...t]);
+		let t = new Bf(e).snapshot(), n = new Set(t.map((e) => e.id)), r = new Bf([...this.registry.snapshot().filter((e) => !n.has(e.id)), ...t]);
 		return this.registry = r, this.state = {
 			...this.state,
 			registrySnapshot: r.snapshot(),
@@ -9347,7 +9351,7 @@ var bg = class {
 		}, this.initialOptions.registrySnapshot = r.snapshot(), this.emit(), r.snapshot();
 	}
 	characterConfirmationPanel() {
-		return this.characterPreparation ? cg(this.characterPreparation) : null;
+		return this.characterPreparation ? lg(this.characterPreparation) : null;
 	}
 	async prepareCharacters({ context: e, mvu: t, database: n, inference: r } = {}) {
 		if (await this.ready, this.assertIdleRequest(), !["idle", "ended"].includes(this.state.phase)) throw Error("只能在战斗开始前准备敌方人物");
@@ -9362,17 +9366,17 @@ var bg = class {
 			scope: i,
 			recentMessages: o,
 			enemies: Y(e?.enemies || this.state.actors.enemies)
-		}, c = this.settings.adjudicator, l = vg({
+		}, c = this.settings.adjudicator, l = yg({
 			mvu: t,
 			database: n,
-			inference: r || (c.mode === "http" && c.endpoint && c.model ? _g({
+			inference: r || (c.mode === "http" && c.endpoint && c.model ? vg({
 				endpoint: c.endpoint,
 				model: c.model,
 				apiKey: c.apiKey || ""
 			}) : null)
 		}), u = this.epoch, d = ++this.characterPreparationRequest;
 		this.characterPreparation = null;
-		let f = await tg(s, l);
+		let f = await ng(s, l);
 		if (d !== this.characterPreparationRequest || u !== this.epoch || this.state.scope.chatId !== i.chatId || this.state.scope.branchId !== i.branchId) throw Error("人物读取期间聊天分支已改变或读取已取消，请重新读取");
 		return this.characterPreparation = f, this.characterConfirmationPanel();
 	}
@@ -9380,21 +9384,21 @@ var bg = class {
 		if (this.assertIdleRequest(), !this.characterPreparation) throw Error("请先读取敌方人物资料");
 		let n = this.hostAdapter?.scope?.() || this.state.scope;
 		if (n.chatId !== this.state.scope.chatId || n.branchId !== this.state.scope.branchId) throw Error("当前聊天分支已改变");
-		let r = rg(this.characterPreparation, e, t);
-		return this.state = sg(this.state, r), this.characterPreparation = null, this.emit(), this.state;
+		let r = ig(this.characterPreparation, e, t);
+		return this.state = cg(this.state, r), this.characterPreparation = null, this.emit(), this.state;
 	}
 	cancelCharacterPreparation() {
 		this.characterPreparationRequest += 1, this.characterPreparation = null;
 	}
 	start() {
 		if (this.assertIdleRequest(), this.hostAdapter?.scope?.()?.available === !1) throw Error("当前聊天没有可用的助手消息锚点；请先生成新的正文消息。");
-		return this.state = Nm(this.state), this.emit(), this.state;
+		return this.state = Pm(this.state), this.emit(), this.state;
 	}
 	cancelPending() {
 		this.epoch += 1, this.inFlight?.abort(), this.inFlight = null, this.bridgeQueuedAction = null;
 	}
 	stop(e = "用户停止") {
-		return this.cancelPending(), this.hostAdapter?.clearScenePacket?.(), this.state = Pm({
+		return this.cancelPending(), this.hostAdapter?.clearScenePacket?.(), this.state = Fm({
 			...this.state,
 			history: this.state.history.map((t) => t.status === "prepared" ? {
 				...t,
@@ -9405,7 +9409,7 @@ var bg = class {
 	}
 	continueNext(e = {}) {
 		if (this.assertIdleRequest(), this.bridgeQueuedAction) throw Error("本轮场景包仍等待主剧情生成；请先生成正文或跳过本轮正文");
-		return this.state = Lm(this.state, e), this.emit(), this.state;
+		return this.state = Rm(this.state, e), this.emit(), this.state;
 	}
 	assertIdleRequest() {
 		if (this.inFlight) throw Error("正在处理本轮请求，请等待或停止");
@@ -9500,7 +9504,7 @@ var bg = class {
 			this.state = e, this.emit(), await this.checkpoints;
 		};
 		try {
-			let t = await Km(this.state, e, {
+			let t = await qm(this.state, e, {
 				adjudicator: this.adjudicator,
 				narrator: this.narrator,
 				settings: this.settings,
@@ -9512,7 +9516,7 @@ var bg = class {
 				onCommit: async (e, t) => {
 					if (n !== this.epoch) return;
 					let a = await this.persistToHost(e, t, i);
-					return _d(r.signal), {
+					return vd(r.signal), {
 						allowed: !this.hostAdapter || !!(a?.persisted && a?.confirmed),
 						reason: a?.reason
 					};
@@ -9527,7 +9531,7 @@ var bg = class {
 			return this.settings.autoNarrative && this.settings.narrator.mode === "main_story" && o?.persisted && o?.confirmed ? await this.queueMainStory(t.record, i) : this.settings.narrator.mode === "main_story" && this.hostAdapter && (this.state.hostSync = {
 				status: "pending",
 				reason: o?.reason
-			}), this.storage.writeSession(X(this.state, this.secrets())), this.onChange(this.state, zm(this.state)), t;
+			}), this.storage.writeSession(X(this.state, this.secrets())), this.onChange(this.state, Bm(this.state)), t;
 		} catch (e) {
 			if (n !== this.epoch || r.signal.aborted) return {
 				stale: !0,
@@ -9547,7 +9551,7 @@ var bg = class {
 			this.state = e, this.emit(), await this.checkpoints;
 		};
 		try {
-			let a = await qm(this.state, e, this.narrator, {
+			let a = await Jm(this.state, e, this.narrator, {
 				signal: n.signal,
 				save: i,
 				logger: (e) => {
@@ -9575,7 +9579,7 @@ var bg = class {
 		return this.state.hostSync = {
 			status: n?.persisted && n?.confirmed ? "confirmed" : "pending",
 			reason: n?.reason
-		}, this.storage.writeSession(X(this.state, this.secrets())), n?.persisted && n?.confirmed && t && !t.narrative?.text && this.settings.narrator.mode === "main_story" && await this.queueMainStory(t, e), this.onChange(this.state, zm(this.state)), n;
+		}, this.storage.writeSession(X(this.state, this.secrets())), n?.persisted && n?.confirmed && t && !t.narrative?.text && this.settings.narrator.mode === "main_story" && await this.queueMainStory(t, e), this.onChange(this.state, Bm(this.state)), n;
 	}
 	skipPendingNarrative() {
 		this.hostAdapter?.clearScenePacket?.(), this.bridgeQueuedAction = null;
@@ -9612,13 +9616,13 @@ var bg = class {
 	}
 	importScene(e) {
 		if (this.assertIdleRequest(), !["idle", "ended"].includes(this.state.phase)) throw Error("活动战斗中不能导入新场景，请先停止");
-		let t = typeof e == "string" ? JSON.parse(e) : Y(e), n = new zf(t.registry || this.registry.snapshot());
+		let t = typeof e == "string" ? JSON.parse(e) : Y(e), n = new Bf(t.registry || this.registry.snapshot());
 		if (!t.scene || !t.actors?.player || !Array.isArray(t.actors.enemies)) throw Error("场景需 scene、actors.player、actors.enemies");
 		for (let e of [t.actors.player, ...t.actors.enemies]) if (!e.id || !e.name) throw Error("角色需id/name");
 		if (new Set([t.actors.player, ...t.actors.enemies].map((e) => e.id)).size !== t.actors.enemies.length + 1) throw Error("角色id重复");
 		this.cancelPending(), this.characterPreparationRequest += 1, this.characterPreparation = null, this.hostAdapter?.clearScenePacket?.();
 		let r = this.state.version;
-		return this.registry = n, this.state = Am({
+		return this.registry = n, this.state = jm({
 			chatId: this.state.scope.chatId,
 			branchId: this.state.scope.branchId,
 			scene: t.scene,
@@ -9632,7 +9636,7 @@ var bg = class {
 	}
 	importRegistry(e) {
 		if (this.assertIdleRequest(), !["idle", "ended"].includes(this.state.phase)) throw Error("活动战斗中不能替换功法");
-		let t = typeof e == "string" ? JSON.parse(e) : e, n = new zf(Array.isArray(t) ? t : t.registry || [t]);
+		let t = typeof e == "string" ? JSON.parse(e) : e, n = new Bf(Array.isArray(t) ? t : t.registry || [t]);
 		return this.registry = n, this.state = {
 			...this.state,
 			registrySnapshot: n.snapshot(),
@@ -9651,18 +9655,18 @@ var bg = class {
 	}
 	importData(e) {
 		this.assertIdleRequest();
-		let t = typeof e == "string" ? JSON.parse(e) : Y(e), n = Fm(t.state || t);
+		let t = typeof e == "string" ? JSON.parse(e) : Y(e), n = Im(t.state || t);
 		if (n.scope.chatId !== this.state.scope.chatId || n.scope.branchId !== this.state.scope.branchId) throw Error("导入文件作用域与当前聊天/分支不一致");
 		return this.cancelPending(), this.hostAdapter?.clearScenePacket?.(), this.state = {
 			...n,
 			version: Math.max(n.version, this.state.version) + 1
-		}, this.registry = new zf(n.registrySnapshot), this.logs = X(Array.isArray(t.logs) ? t.logs : [], this.secrets()), this.storage.replaceLogs(this.logs), t.settings && (this.settings = ph(X(t.settings)), this.storage.writeSettings(this.settings), this.setAdapters(yg(this.settings))), this.emit(), this.state;
+		}, this.registry = new Bf(n.registrySnapshot), this.logs = X(Array.isArray(t.logs) ? t.logs : [], this.secrets()), this.storage.replaceLogs(this.logs), t.settings && (this.settings = mh(X(t.settings)), this.storage.writeSettings(this.settings), this.setAdapters(bg(this.settings))), this.emit(), this.state;
 	}
 	playerView() {
-		return zm(this.state);
+		return Bm(this.state);
 	}
 	logExport() {
-		return JSON.stringify(this.logs.map(vd), null, 2);
+		return JSON.stringify(this.logs.map(yd), null, 2);
 	}
 	debugLogExport() {
 		return JSON.stringify(X(this.logs, this.secrets()), null, 2);
@@ -9670,8 +9674,8 @@ var bg = class {
 	dispose() {
 		this.cancelPending(), this.unsubScope?.(), this.unsubNarrative?.(), this.hostAdapter?.dispose?.();
 	}
-}, xg = "[[XY_BATTLE_PACKET v1 ", Sg = "[[/XY_BATTLE_PACKET]]", Cg = (e) => e == null ? e : JSON.parse(JSON.stringify(e)), wg = (e) => Number.isInteger(Number(e)) && Number(e) >= 0 ? Number(e) : null;
-function Tg(e, t = {}) {
+}, Sg = "[[XY_BATTLE_PACKET v1 ", Cg = "[[/XY_BATTLE_PACKET]]", wg = (e) => e == null ? e : JSON.parse(JSON.stringify(e)), Tg = (e) => Number.isInteger(Number(e)) && Number(e) >= 0 ? Number(e) : null;
+function Eg(e, t = {}) {
 	let n = e?.scope || {};
 	return {
 		chatId: n.chatId ?? t.chatId,
@@ -9681,8 +9685,8 @@ function Tg(e, t = {}) {
 		messageUid: n.messageUid ?? t.messageUid
 	};
 }
-function Eg(e, t = {}) {
-	let n = Tg(e, t), r = String(e?.actionId ?? "").trim(), i = String(n.branchId ?? "").trim(), a = wg(e?.version ?? t.version);
+function Dg(e, t = {}) {
+	let n = Eg(e, t), r = String(e?.actionId ?? "").trim(), i = String(n.branchId ?? "").trim(), a = Tg(e?.version ?? t.version);
 	if (!r) throw Error("BATTLE_SCENE_PACKET requires actionId");
 	if (!i) throw Error("BATTLE_SCENE_PACKET requires scope.branchId");
 	if (a == null) throw Error("BATTLE_SCENE_PACKET requires a non-negative integer version");
@@ -9692,30 +9696,30 @@ function Eg(e, t = {}) {
 		branchId: i
 	};
 }
-function Dg(e, t = {}) {
-	let n = Eg(e, t);
+function Og(e, t = {}) {
+	let n = Dg(e, t);
 	return JSON.stringify([
 		n.branchId,
 		n.version,
 		n.actionId
 	]);
 }
-function Og(e, t = {}) {
+function kg(e, t = {}) {
 	if (!e || typeof e != "object" || Array.isArray(e)) throw Error("BATTLE_SCENE_PACKET must be an object");
 	if (e.type !== "BATTLE_SCENE_PACKET") throw Error("Expected a BATTLE_SCENE_PACKET");
-	let n = Eg(e, t), r = e.scope?.branchId;
+	let n = Dg(e, t), r = e.scope?.branchId;
 	if (r != null && String(r) !== n.branchId) throw Error("BATTLE_SCENE_PACKET scope.branchId is inconsistent");
 	if (t.branchId != null && String(t.branchId) !== n.branchId) throw Error("BATTLE_SCENE_PACKET branchId does not match the active scope");
 	return n;
 }
-function kg(e, t = {}) {
-	let n = Og(e, t), r = encodeURIComponent(JSON.stringify(n)), i = {
-		...Cg(e),
+function Ag(e, t = {}) {
+	let n = kg(e, t), r = encodeURIComponent(JSON.stringify(n)), i = {
+		...wg(e),
 		version: n.version
 	};
-	return `${xg}${r}]]\n${JSON.stringify(i).replaceAll(Sg, "\\u005b\\u005b/XY_BATTLE_PACKET]]")}\n${Sg}`;
+	return `${Sg}${r}]]\n${JSON.stringify(i).replaceAll(Cg, "\\u005b\\u005b/XY_BATTLE_PACKET]]")}\n${Cg}`;
 }
-function Ag(e) {
+function jg(e) {
 	if (!e || /[\r\n]/.test(e)) throw Error("Malformed XY_BATTLE_PACKET header");
 	let t;
 	try {
@@ -9724,21 +9728,21 @@ function Ag(e) {
 		throw Error("Malformed XY_BATTLE_PACKET header");
 	}
 	if (!t || typeof t != "object" || Array.isArray(t)) throw Error("Malformed XY_BATTLE_PACKET header");
-	return Eg({
+	return Dg({
 		actionId: t.actionId,
 		version: t.version,
 		scope: { branchId: t.branchId }
 	});
 }
-var jg = /* @__PURE__ */ RegExp("^\\[\\[XY_BATTLE_PACKET v1 ([^\\r\\n]+)\\]\\]$", "gm");
-function Mg(e, t, n, r, i) {
-	let a = Ag(e), o;
+var Mg = /* @__PURE__ */ RegExp("^\\[\\[XY_BATTLE_PACKET v1 ([^\\r\\n]+)\\]\\]$", "gm");
+function Ng(e, t, n, r, i) {
+	let a = jg(e), o;
 	try {
 		o = JSON.parse(t);
 	} catch {
 		throw Error("Malformed XY_BATTLE_PACKET payload");
 	}
-	let s = Og(o, { branchId: a.branchId });
+	let s = kg(o, { branchId: a.branchId });
 	if (s.actionId !== a.actionId || s.version !== a.version || s.branchId !== a.branchId) throw Error("XY_BATTLE_PACKET header does not match payload");
 	return {
 		packet: o,
@@ -9754,48 +9758,48 @@ function Mg(e, t, n, r, i) {
 		end: i
 	};
 }
-function Ng(e) {
+function Pg(e) {
 	if (typeof e != "string" || !e) return [];
 	let t = [];
-	jg.lastIndex = 0;
+	Mg.lastIndex = 0;
 	let n;
-	for (; n = jg.exec(e);) {
+	for (; n = Mg.exec(e);) {
 		let r = n.index + n[0].length;
 		e.slice(r, r + 2) === "\r\n" ? r += 2 : e[r] === "\n" && (r += 1);
-		let i = e.indexOf(Sg, r);
+		let i = e.indexOf(Cg, r);
 		if (i < 0) continue;
 		let a = i;
 		e[a - 2] === "\r" && e[a - 1] === "\n" ? a -= 2 : e[a - 1] === "\n" && --a;
 		let o = i + 21;
 		try {
-			t.push(Mg(n[1], e.slice(r, a), e, n.index, o));
+			t.push(Ng(n[1], e.slice(r, a), e, n.index, o));
 		} catch {}
-		jg.lastIndex = o;
+		Mg.lastIndex = o;
 	}
 	return t;
 }
-function Pg(e, t, n = {}) {
-	let r = typeof e == "string" ? e : "", i = Og(t, n), a = JSON.stringify([
+function Fg(e, t, n = {}) {
+	let r = typeof e == "string" ? e : "", i = kg(t, n), a = JSON.stringify([
 		i.branchId,
 		i.version,
 		i.actionId
-	]), o = JSON.stringify([i.branchId, i.actionId]), s = Ng(r), c = s.find((e) => e.key === a);
+	]), o = JSON.stringify([i.branchId, i.actionId]), s = Pg(r), c = s.find((e) => e.key === a);
 	if (c) return {
 		text: r,
 		marker: c.raw,
 		match: c,
-		packet: Cg(c.packet),
+		packet: wg(c.packet),
 		key: a,
 		identity: o,
 		deduplicated: !0,
 		appended: !1
 	};
 	if (s.find((e) => e.identity === o)) throw Error("An XY_BATTLE_PACKET for this action and branch already has a different version");
-	let l = kg(t, n), u = r && !r.endsWith("\n") ? "\n\n" : r ? "\n" : "", d = `${r}${u}${l}`;
+	let l = Ag(t, n), u = r && !r.endsWith("\n") ? "\n\n" : r ? "\n" : "", d = `${r}${u}${l}`;
 	return {
 		text: d,
 		marker: l,
-		packet: Cg(t),
+		packet: wg(t),
 		key: a,
 		identity: o,
 		deduplicated: !1,
@@ -9804,10 +9808,10 @@ function Pg(e, t, n = {}) {
 		end: d.length
 	};
 }
-function Fg(e) {
+function Ig(e) {
 	return e ? "value" in e && typeof e.value == "string" ? e.value : typeof e.textContent == "string" ? e.textContent : "" : "";
 }
-function Ig(e, t) {
+function Lg(e, t) {
 	if (!e) return !1;
 	if ("value" in e) {
 		let n = Object.getPrototypeOf(e), r = n && Object.getOwnPropertyDescriptor(n, "value")?.set;
@@ -9815,7 +9819,7 @@ function Ig(e, t) {
 	} else e.textContent = t;
 	return !0;
 }
-function Lg(e, t = ["input", "change"]) {
+function Rg(e, t = ["input", "change"]) {
 	if (!e?.dispatchEvent) return;
 	let n = e.ownerDocument?.defaultView?.Event || globalThis.Event;
 	for (let r of t) try {
@@ -9826,11 +9830,11 @@ function Lg(e, t = ["input", "change"]) {
 		e.dispatchEvent(t);
 	} catch {}
 }
-function Rg(e, t) {
+function zg(e, t) {
 	return e?.textarea && (typeof e.textarea == "object" || typeof e.textarea == "function") ? e.textarea : e?.input && (typeof e.input == "object" || typeof e.input == "function") ? e.input : t?.querySelector?.("#send_textarea, textarea#send_textarea, textarea[data-testid=\"send-textarea\"], textarea");
 }
-var zg = class {
-	constructor({ contextProvider: e = () => globalThis.SillyTavern?.getContext?.() || {}, getInputElement: t, documentRef: n = globalThis.document, eventEmitter: r, eventTypes: i, windowRef: a = globalThis, dispatch: o = Lg, bindPageLifecycle: s = !0 } = {}) {
+var Bg = class {
+	constructor({ contextProvider: e = () => globalThis.SillyTavern?.getContext?.() || {}, getInputElement: t, documentRef: n = globalThis.document, eventEmitter: r, eventTypes: i, windowRef: a = globalThis, dispatch: o = Rg, bindPageLifecycle: s = !0 } = {}) {
 		Object.assign(this, {
 			contextProvider: e,
 			getInputElement: t,
@@ -9846,13 +9850,13 @@ var zg = class {
 		return this.contextProvider?.() || {};
 	}
 	inputElement() {
-		return this.getInputElement ? this.getInputElement(this.context(), this.documentRef) : Rg(this.context(), this.documentRef);
+		return this.getInputElement ? this.getInputElement(this.context(), this.documentRef) : zg(this.context(), this.documentRef);
 	}
 	read(e = this.inputElement()) {
-		return Fg(e);
+		return Ig(e);
 	}
 	write(e, t) {
-		let n = Ig(e, t);
+		let n = Lg(e, t);
 		return n && this.dispatch(e), n;
 	}
 	dispatch(e) {
@@ -9878,7 +9882,7 @@ var zg = class {
 		};
 		let n;
 		try {
-			n = Dg(e, t);
+			n = Og(e, t);
 		} catch (e) {
 			return {
 				queued: !1,
@@ -9914,7 +9918,7 @@ var zg = class {
 		};
 		let i = this.read(r), a;
 		try {
-			a = Pg(i, e, t);
+			a = Fg(i, e, t);
 		} catch (e) {
 			return {
 				queued: !1,
@@ -9928,11 +9932,11 @@ var zg = class {
 		return a.deduplicated ? (this.active = {
 			key: n,
 			identity: a.identity,
-			packet: Cg(e),
+			packet: wg(e),
 			marker: a.marker,
 			element: r,
 			owns: !1,
-			scope: Cg(t)
+			scope: wg(t)
 		}, {
 			queued: !0,
 			injected: !0,
@@ -9942,12 +9946,12 @@ var zg = class {
 		}) : (this.write(r, a.text), this.active = {
 			key: n,
 			identity: a.identity,
-			packet: Cg(e),
+			packet: wg(e),
 			marker: a.marker,
 			element: r,
 			previousValue: i,
 			injectedValue: a.text,
-			scope: Cg(t),
+			scope: wg(t),
 			owns: !0
 		}, {
 			queued: !0,
@@ -9966,19 +9970,19 @@ var zg = class {
 	verify(e, t = {}) {
 		let n;
 		try {
-			n = Dg(e, t);
+			n = Og(e, t);
 		} catch {
 			return {
 				valid: !1,
 				reason: "Packet identity is incomplete"
 			};
 		}
-		let r = Ng(this.read(this.inputElement())).find((e) => e.key === n);
+		let r = Pg(this.read(this.inputElement())).find((e) => e.key === n);
 		return r ? {
 			valid: !0,
 			key: n,
 			marker: r.raw,
-			packet: Cg(r.packet)
+			packet: wg(r.packet)
 		} : {
 			valid: !1,
 			key: n,
@@ -10023,7 +10027,7 @@ var zg = class {
 		return this.active ? {
 			key: this.active.key,
 			identity: this.active.identity,
-			scope: Cg(this.active.scope),
+			scope: wg(this.active.scope),
 			owns: this.active.owns
 		} : null;
 	}
@@ -10060,20 +10064,20 @@ var zg = class {
 };
 //#endregion
 //#region src/battle-packet-markers.js
-function Bg(e) {
-	return Ng(e);
+function Vg(e) {
+	return Pg(e);
 }
 //#endregion
 //#region src/host-display-folding.js
-function Vg(e, t) {
+function Hg(e, t) {
 	return t || e?.ownerDocument || globalThis.document;
 }
-function Hg(e) {
+function Ug(e) {
 	return e?.nodeType === 1 && e.hasAttribute?.("data-xy-battle-packet-key");
 }
-function Ug(e) {
+function Wg(e) {
 	let t = [], n = (e) => {
-		if (e && !Hg(e)) {
+		if (e && !Ug(e)) {
 			if (e.nodeType === 3) {
 				t.push({
 					node: e,
@@ -10095,7 +10099,7 @@ function Ug(e) {
 	};
 	return n(e), t;
 }
-function Wg(e, t, n = !1) {
+function Gg(e, t, n = !1) {
 	let r = 0;
 	for (let i = 0; i < e.length; i += 1) {
 		let a = e[i], o = a.length;
@@ -10124,8 +10128,8 @@ function Wg(e, t, n = !1) {
 		offset: i.length
 	} : null;
 }
-function Gg(e, t, n, r) {
-	let i = Ug(e), a = Wg(i, t.start), o = Wg(i, t.end, !0);
+function Kg(e, t, n, r) {
+	let i = Wg(e), a = Gg(i, t.start), o = Gg(i, t.end, !0);
 	if (!a || !o || !n.createRange) return !1;
 	let s = n.createRange();
 	s.setStart(a.node, a.offset), s.setEnd(o.node, o.offset);
@@ -10136,8 +10140,8 @@ function Gg(e, t, n, r) {
 	let u = n.createElement("pre");
 	return u.className = "xy-battle-packet-source", u.textContent = t.raw, c.appendChild(u), s.deleteContents(), s.insertNode(c), s.detach?.(), !0;
 }
-function Kg(e, { documentRef: t, placeholder: n = "战斗场景包（已折叠）" } = {}) {
-	let r = Vg(e, t);
+function qg(e, { documentRef: t, placeholder: n = "战斗场景包（已折叠）" } = {}) {
+	let r = Hg(e, t);
 	if (!e || !r?.createElement) return {
 		folded: 0,
 		available: !1
@@ -10145,15 +10149,15 @@ function Kg(e, { documentRef: t, placeholder: n = "战斗场景包（已折叠�
 	let i = 0, a = e.matches?.(".mes_text") ? [e] : [...e.querySelectorAll?.(".mes_text") || []];
 	a.length || a.push(e);
 	for (let e of a) {
-		let t = Bg(Ug(e).map((e) => e.text).join(""));
-		for (let a of [...t].reverse()) Gg(e, a, r, n) && (i += 1);
+		let t = Vg(Wg(e).map((e) => e.text).join(""));
+		for (let a of [...t].reverse()) Kg(e, a, r, n) && (i += 1);
 	}
 	return {
 		folded: i,
 		available: !0
 	};
 }
-var qg = class {
+var Jg = class {
 	constructor({ documentRef: e = globalThis.document, root: t, rootSelector: n = "#chat", placeholder: r } = {}) {
 		Object.assign(this, {
 			documentRef: e,
@@ -10166,7 +10170,7 @@ var qg = class {
 		return this.root || this.documentRef?.querySelector?.(this.rootSelector);
 	}
 	apply(e = this.resolveRoot()) {
-		return Kg(e, {
+		return qg(e, {
 			documentRef: this.documentRef,
 			placeholder: this.placeholder
 		});
@@ -10195,31 +10199,31 @@ var qg = class {
 	dispose() {
 		this.disconnect();
 	}
-}, $ = (e) => e == null ? e : JSON.parse(JSON.stringify(e)), Jg = (e) => e != null && e !== "" && Number.isInteger(Number(e)) && Number(e) >= 0 ? Number(e) : null, Yg = (e) => !!e && (e.role === "assistant" || e.role == null && e.is_user === !1 && e.extra?.type !== "narrator"), Xg = [
+}, $ = (e) => e == null ? e : JSON.parse(JSON.stringify(e)), Yg = (e) => e != null && e !== "" && Number.isInteger(Number(e)) && Number(e) >= 0 ? Number(e) : null, Xg = (e) => !!e && (e.role === "assistant" || e.role == null && e.is_user === !1 && e.extra?.type !== "narrator"), Zg = [
 	"chatId",
 	"branchId",
 	"messageId",
 	"swipeId",
 	"messageUid"
-], Zg = (e, t, n = !1) => {
+], Qg = (e, t, n = !1) => {
 	if (!e || !t) return !1;
 	let r = e.messageUid != null && t.messageUid != null && String(e.messageUid) === String(t.messageUid);
-	return Xg.every((n) => e[n] == null || r && (n === "messageId" || n === "branchId") ? !0 : String(e[n]) === String(t[n])) && (!n || e.scopeEpoch == null || e.scopeEpoch === t.scopeEpoch);
-}, Qg = (e) => Object.fromEntries(Xg.map((t) => [t, e[t]]));
-function $g(e) {
-	return Array.isArray(e) ? `[${e.map($g).join(",")}]` : e && typeof e == "object" ? `{${Object.keys(e).sort().map((t) => `${JSON.stringify(t)}:${$g(e[t])}`).join(",")}}` : JSON.stringify(e);
-}
+	return Zg.every((n) => e[n] == null || r && (n === "messageId" || n === "branchId") ? !0 : String(e[n]) === String(t[n])) && (!n || e.scopeEpoch == null || e.scopeEpoch === t.scopeEpoch);
+}, $g = (e) => Object.fromEntries(Zg.map((t) => [t, e[t]]));
 function e_(e) {
-	return Array.isArray(e) ? e.map(e_) : !e || typeof e != "object" ? e : Object.fromEntries(Object.entries(e).filter(([e]) => ![
+	return Array.isArray(e) ? `[${e.map(e_).join(",")}]` : e && typeof e == "object" ? `{${Object.keys(e).sort().map((t) => `${JSON.stringify(t)}:${e_(e[t])}`).join(",")}}` : JSON.stringify(e);
+}
+function t_(e) {
+	return Array.isArray(e) ? e.map(t_) : !e || typeof e != "object" ? e : Object.fromEntries(Object.entries(e).filter(([e]) => ![
 		"apiKey",
 		"api_key",
 		"authorization"
-	].includes(e)).map(([e, t]) => [e, e_(t)]));
+	].includes(e)).map(([e, t]) => [e, t_(t)]));
 }
-function t_(e) {
+function n_(e) {
 	return e?.extra?.battle_v2_message_uuid || e?.extra?.message_uuid || e?.swipe_info?.find((e) => e?.battle_v2_message_uuid)?.battle_v2_message_uuid || e?.swipes_info?.find((e) => e?.battle_v2_message_uuid)?.battle_v2_message_uuid;
 }
-var n_ = class {
+var r_ = class {
 	constructor({ contextProvider: e = () => globalThis.SillyTavern?.getContext?.() || {}, helper: t, eventEmitter: n, eventTypes: r, windowRef: i = globalThis, documentRef: a = globalThis.document, inputBridge: o, displayFolding: s, extensionName: c = "st-xybattle-sys" } = {}) {
 		Object.assign(this, {
 			contextProvider: e,
@@ -10229,13 +10233,13 @@ var n_ = class {
 			windowRef: i,
 			documentRef: a,
 			extensionName: c
-		}), this.anchor = null, this.currentScope = null, this.epoch = 0, this.messageUids = /* @__PURE__ */ new WeakMap(), this.scopeListeners = /* @__PURE__ */ new Set(), this.narrativeListeners = /* @__PURE__ */ new Set(), this.disposers = [], this.boundEmitter = null, this.packet = null, this.activePacket = null, this.injected = !1, this.lastInjection = null, this.inputBridge = o || new zg({
+		}), this.anchor = null, this.currentScope = null, this.epoch = 0, this.messageUids = /* @__PURE__ */ new WeakMap(), this.scopeListeners = /* @__PURE__ */ new Set(), this.narrativeListeners = /* @__PURE__ */ new Set(), this.disposers = [], this.boundEmitter = null, this.packet = null, this.activePacket = null, this.injected = !1, this.lastInjection = null, this.inputBridge = o || new Bg({
 			contextProvider: e,
 			documentRef: a,
 			windowRef: i,
 			bindPageLifecycle: !1,
 			getInputElement: (e, t) => t?.querySelector?.("#send_textarea, textarea#send_textarea, textarea[data-testid=\"send-textarea\"]") || null
-		}), this.displayFolding = s || new qg({ documentRef: a }), this.writeQueue = Promise.resolve(), this.uncertainScopes = /* @__PURE__ */ new Set(), this.disposed = !1, this.start();
+		}), this.displayFolding = s || new Jg({ documentRef: a }), this.writeQueue = Promise.resolve(), this.uncertainScopes = /* @__PURE__ */ new Set(), this.disposed = !1, this.start();
 	}
 	context() {
 		return this.contextProvider() || {};
@@ -10247,11 +10251,11 @@ var n_ = class {
 		return String(e.chatId ?? e.getCurrentChatId?.() ?? e.chat?.id ?? "");
 	}
 	explicitMessageId(e) {
-		return Jg(e.messageId ?? e.message_id ?? e.message?.message_id);
+		return Yg(e.messageId ?? e.message_id ?? e.message?.message_id);
 	}
 	latestAssistantId(e) {
 		if (!Array.isArray(e.chat)) return null;
-		for (let t = e.chat.length - 1; t >= 0; --t) if (Yg(e.chat[t])) return t;
+		for (let t = e.chat.length - 1; t >= 0; --t) if (Xg(e.chat[t])) return t;
 		return null;
 	}
 	storedAnchorId(e, t) {
@@ -10259,7 +10263,7 @@ var n_ = class {
 		let n = [];
 		for (let r = e.chat.length - 1; r >= 0; --r) {
 			let i = e.chat[r], a = i?.swipe_id ?? 0, o = (i?.swipe_info?.[a] || i?.swipes_info?.[a] || i?.extra || {})?.battle_v2;
-			if (!Yg(i) || o?.schema !== "battle_v2_host_store" || String(o.scope?.chatId) !== String(t) || String(o.scope?.swipeId) !== String(a)) continue;
+			if (!Xg(i) || o?.schema !== "battle_v2_host_store" || String(o.scope?.chatId) !== String(t) || String(o.scope?.swipeId) !== String(a)) continue;
 			let s = +(String(o.scope?.messageId) === String(r)), c = Number(o.version ?? o.state?.version ?? 0);
 			n.push({
 				index: r,
@@ -10285,7 +10289,7 @@ var n_ = class {
 		}
 		let r = t.chat?.[e] || (this.explicitMessageId(t) === e ? t.message : null);
 		if (!r) return null;
-		let i = r.swipes || [r.mes ?? r.message ?? ""], a = Jg(r.swipe_id ?? r.swipeId) ?? 0, o = Array.from({ length: i.length }, (e, t) => $(r.swipe_info?.[t] ?? r.swipes_info?.[t] ?? (t === a ? r.extra : {}) ?? {}));
+		let i = r.swipes || [r.mes ?? r.message ?? ""], a = Yg(r.swipe_id ?? r.swipeId) ?? 0, o = Array.from({ length: i.length }, (e, t) => $(r.swipe_info?.[t] ?? r.swipes_info?.[t] ?? (t === a ? r.extra : {}) ?? {}));
 		return o[a] = {
 			...$(r.extra || {}),
 			...o[a]
@@ -10303,7 +10307,7 @@ var n_ = class {
 	scope() {
 		let e = this.context(), t = this.chatId(e), n = this.explicitMessageId(e), r = this.anchor?.chatId === t ? this.anchor.messageId : null, i = !1;
 		if (n != null && (r = n), r == null && (r = this.storedAnchorId(e, t), i = r != null, r ??= this.latestAssistantId(e), r == null)) try {
-			r = Jg(this.helper()?.getCurrentMessageId?.());
+			r = Yg(this.helper()?.getCurrentMessageId?.());
 		} catch {}
 		let a;
 		try {
@@ -10311,7 +10315,7 @@ var n_ = class {
 		} catch {
 			a = null;
 		}
-		if (r != null && !Yg(a)) {
+		if (r != null && !Xg(a)) {
 			this.anchor = null, r = this.storedAnchorId(e, t), i = r != null, r ??= this.latestAssistantId(e);
 			try {
 				a = r == null ? null : this.readMessageSync(r, e);
@@ -10320,7 +10324,7 @@ var n_ = class {
 			}
 		}
 		let o = e.chat?.[r] || (n === r ? e.message : null);
-		if (!t || !Yg(a) || Jg(a?.swipe_id) == null) return this.publishScope({
+		if (!t || !Xg(a) || Yg(a?.swipe_id) == null) return this.publishScope({
 			chatId: t || "default-chat",
 			branchId: "main",
 			messageId: null,
@@ -10329,7 +10333,7 @@ var n_ = class {
 			available: !1,
 			writable: !1
 		}), this.anchor = null, { ...this.currentScope };
-		let s = t_(o) || t_(a), c = this.anchor?.chatId === t && this.anchor.messageId === r && (o ? o === this.anchor.raw || s === this.anchor.messageUid : !s || s === this.anchor.messageUid), l = s || (c ? this.anchor.messageUid : o && this.messageUids.get(o));
+		let s = n_(o) || n_(a), c = this.anchor?.chatId === t && this.anchor.messageId === r && (o ? o === this.anchor.raw || s === this.anchor.messageUid : !s || s === this.anchor.messageUid), l = s || (c ? this.anchor.messageUid : o && this.messageUids.get(o));
 		l ||= globalThis.crypto?.randomUUID?.() || `battle-message-${Date.now()}-${Math.random().toString(36).slice(2)}`, o && this.messageUids.set(o, l);
 		let u = this.latestAssistantId(e), d = c ? this.anchor.writable : i || u == null || u === r;
 		return this.anchor = {
@@ -10350,7 +10354,7 @@ var n_ = class {
 	}
 	publishScope(e, t = !1) {
 		let n = this.currentScope;
-		if (t || !n || !Zg(n, e) || n.available !== e.available || n.writable !== e.writable) {
+		if (t || !n || !Qg(n, e) || n.available !== e.available || n.writable !== e.writable) {
 			this.epoch += 1, this.currentScope = {
 				...e,
 				scopeEpoch: this.epoch
@@ -10364,7 +10368,7 @@ var n_ = class {
 	validateScope(e, { writable: t = !1 } = {}) {
 		let n = this.scope();
 		if (!n.available) throw Error("No assistant message anchor is available");
-		if (!Zg(e, n, !0)) throw Error("Host scope changed; refusing a late cross-chat or cross-swipe operation");
+		if (!Qg(e, n, !0)) throw Error("Host scope changed; refusing a late cross-chat or cross-swipe operation");
 		if (t && !n.writable) throw Error("Historical message anchors are read-only");
 		return n;
 	}
@@ -10404,7 +10408,7 @@ var n_ = class {
 				scope: n,
 				capability: t
 			};
-			if (r.schema !== "battle_v2_host_store" || !Zg(r.scope, n) || !Zg(r.state?.scope || r.scope, n)) throw Error("Stored battle_v2 scope does not match this message branch");
+			if (r.schema !== "battle_v2_host_store" || !Qg(r.scope, n) || !Qg(r.state?.scope || r.scope, n)) throw Error("Stored battle_v2 scope does not match this message branch");
 			let i = $(r.state);
 			return i && (i.scope = {
 				...i.scope,
@@ -10430,14 +10434,14 @@ var n_ = class {
 		}
 	}
 	persistReceipt(e, t, n = e?.scope || t?.scope || this.scope()) {
-		let r = { ...n }, i = e_($(e)), a = e_($(t)), o = this.writeQueue.catch(() => {}).then(() => this.writeReceipt(i, a, r));
+		let r = { ...n }, i = t_($(e)), a = t_($(t)), o = this.writeQueue.catch(() => {}).then(() => this.writeReceipt(i, a, r));
 		return this.writeQueue = o, o;
 	}
 	async writeReceipt(e, t, n) {
 		let r = this.capability();
 		try {
 			let i = this.validateScope(n, { writable: !0 });
-			if (e?.scope && !Zg(e.scope, i, !0) || t?.scope && !Zg(t.scope, i, !0)) throw Error("Receipt/session scope mismatch");
+			if (e?.scope && !Qg(e.scope, i, !0) || t?.scope && !Qg(t.scope, i, !0)) throw Error("Receipt/session scope mismatch");
 			if (r.write === "unavailable" || r.save !== "awaitable-save-chat") return {
 				persisted: !1,
 				confirmed: !1,
@@ -10448,15 +10452,15 @@ var n_ = class {
 			let a = this.readMessageSync(i.messageId);
 			if (!a || a.swipe_id !== i.swipeId) throw Error("Anchored swipe is no longer selected");
 			let o = a.swipes_info?.[i.swipeId]?.battle_v2;
-			if (o && (o.schema !== "battle_v2_host_store" || !Zg(o.scope, i))) throw Error("Existing host store has an incompatible scope/schema");
-			let s = $g(Qg(i)), c = Math.max(Number(e?.version ?? 0), Number(t?.version ?? 0));
+			if (o && (o.schema !== "battle_v2_host_store" || !Qg(o.scope, i))) throw Error("Existing host store has an incompatible scope/schema");
+			let s = e_($g(i)), c = Math.max(Number(e?.version ?? 0), Number(t?.version ?? 0));
 			if (!Number.isFinite(c) || c < 0) throw Error("Invalid host store version");
 			let l = e?.actionId && o?.receipts?.[e.actionId], u = e && {
 				...e,
-				scope: Qg(i)
+				scope: $g(i)
 			};
 			if (o && c < o.version) {
-				if (!this.uncertainScopes.has(s) && l && $g(l) === $g(u)) return {
+				if (!this.uncertainScopes.has(s) && l && e_(l) === e_(u)) return {
 					persisted: !0,
 					confirmed: !0,
 					scope: i,
@@ -10476,7 +10480,7 @@ var n_ = class {
 					"before",
 					"after",
 					"narrativePacket"
-				]) if (l.status !== "prepared" && $g(l[e]) !== $g(u[e])) throw Error("Conflicting duplicate actionId refused");
+				]) if (l.status !== "prepared" && e_(l[e]) !== e_(u[e])) throw Error("Conflicting duplicate actionId refused");
 				let t = {
 					prepared: 0,
 					committed: 1,
@@ -10487,18 +10491,18 @@ var n_ = class {
 			let d = {
 				...o || {},
 				schema: "battle_v2_host_store",
-				scope: Qg(i),
+				scope: $g(i),
 				version: Math.max(c, o?.version || 0),
 				state: t ? {
 					...t,
 					scope: {
 						...t.scope,
-						...Qg(i)
+						...$g(i)
 					}
 				} : o?.state || null,
 				receipts: { ...o?.receipts }
 			};
-			if (u && (d.receipts[e.actionId] = u, d.lastActionId = e.actionId), !this.uncertainScopes.has(s) && o && $g(o) === $g(d)) return {
+			if (u && (d.receipts[e.actionId] = u, d.lastActionId = e.actionId), !this.uncertainScopes.has(s) && o && e_(o) === e_(d)) return {
 				persisted: !0,
 				confirmed: !0,
 				scope: i,
@@ -10534,7 +10538,7 @@ var n_ = class {
 			if (this.validateScope(i, { writable: !0 }), await m.saveChat() === !1) throw Error("saveChat returned false");
 			this.validateScope(i, { writable: !0 });
 			let h = this.readMessageSync(i.messageId)?.swipes_info?.[i.swipeId]?.battle_v2;
-			if ($g(h) !== $g(d)) throw Error("Host persistence readback mismatch");
+			if (e_(h) !== e_(d)) throw Error("Host persistence readback mismatch");
 			return this.uncertainScopes.delete(s), {
 				persisted: !0,
 				confirmed: !0,
@@ -10558,7 +10562,7 @@ var n_ = class {
 		try {
 			let n = this.validateScope(t, { writable: !0 });
 			if (!e || e.type !== "BATTLE_SCENE_PACKET" || !e.actionId) throw Error("A committed BATTLE_SCENE_PACKET with actionId is required");
-			if (e.scope && !Zg(e.scope, n, !0)) throw Error("Scene packet scope mismatch");
+			if (e.scope && !Qg(e.scope, n, !0)) throw Error("Scene packet scope mismatch");
 			if (this.capability().injection === "unavailable") return {
 				queued: !1,
 				injected: !1,
@@ -10566,10 +10570,10 @@ var n_ = class {
 				reason: "injectPrompts or generation events are unavailable"
 			};
 			let r = this.readMessageSync(n.messageId)?.swipes_info?.[n.swipeId]?.battle_v2, i = r?.receipts?.[e.actionId];
-			if (this.uncertainScopes.has($g(Qg(n)))) throw Error("Host persistence is unconfirmed after a failed save");
+			if (this.uncertainScopes.has(e_($g(n)))) throw Error("Host persistence is unconfirmed after a failed save");
 			if (!i || ["prepared", "judging"].includes(i.status)) throw Error("Scene packet has no persisted committed receipt");
 			if (e.version != null && Number(e.version) !== r.version) throw Error("Scene packet version mismatch");
-			let a = Dg(e, {
+			let a = Og(e, {
 				branchId: n.branchId,
 				version: r.version
 			});
@@ -10717,7 +10721,7 @@ var n_ = class {
 	verifyRenderedUserMessage(e) {
 		let t = this.activePacket;
 		if (!t || t.transport !== "input-box") return;
-		let n = this.context(), r = Jg(e) ?? (Array.isArray(n.chat) ? n.chat.reduce((e, t, n) => t?.is_user || t?.role === "user" ? n : e, null) : null), i = r == null ? null : n.chat?.[r], a = i?.mes ?? i?.message ?? "", o = Bg(String(a)).some((e) => e.key === t.key);
+		let n = this.context(), r = Yg(e) ?? (Array.isArray(n.chat) ? n.chat.reduce((e, t, n) => t?.is_user || t?.role === "user" ? n : e, null) : null), i = r == null ? null : n.chat?.[r], a = i?.mes ?? i?.message ?? "", o = Vg(String(a)).some((e) => e.key === t.key);
 		if (t.inputVerified = o, o) {
 			this.lastInjection = {
 				...this.lastInjection,
@@ -10792,9 +10796,9 @@ var n_ = class {
 				"MESSAGE_DELETED",
 				"MESSAGE_UPDATED"
 			]) i(r[e] || e, (t) => {
-				this.clearScenePacket(), e === "MESSAGE_SWIPED" && Jg(t) != null && this.anchor && (this.anchor = {
+				this.clearScenePacket(), e === "MESSAGE_SWIPED" && Yg(t) != null && this.anchor && (this.anchor = {
 					...this.anchor,
-					messageId: Jg(t),
+					messageId: Yg(t),
 					raw: null
 				}), this.scope();
 			});
@@ -10819,7 +10823,7 @@ var n_ = class {
 };
 //#endregion
 //#region src/ui/mount.js
-function r_({ documentRef: e = globalThis.document, storage: t = globalThis.localStorage, hostAdapter: n, controller: r, chatId: i = "demo-local", branchId: a = "main" } = {}) {
+function i_({ documentRef: e = globalThis.document, storage: t = globalThis.localStorage, hostAdapter: n, controller: r, chatId: i = "demo-local", branchId: a = "main" } = {}) {
 	if (!e) return null;
 	if (e.getElementById("xybattle-v2-root")) return globalThis.XYBattle;
 	let o = e.createElement("div");
@@ -10835,12 +10839,12 @@ function r_({ documentRef: e = globalThis.document, storage: t = globalThis.loca
 			n.rel = "stylesheet", n.href = t, e.head.appendChild(n);
 		}
 	} catch {}
-	let s = n || (globalThis.SillyTavern?.getContext ? new n_({ contextProvider: () => globalThis.SillyTavern.getContext() }) : null), c = r || new bg({
+	let s = n || (globalThis.SillyTavern?.getContext ? new r_({ contextProvider: () => globalThis.SillyTavern.getContext() }) : null), c = r || new xg({
 		storage: t,
 		chatId: i,
 		branchId: a,
 		hostAdapter: s
-	}), l = ds(fh, {
+	}), l = ds(ph, {
 		controller: c,
 		hostAdapter: s
 	}), u = l.mount(o), d = {
@@ -10860,4 +10864,4 @@ function r_({ documentRef: e = globalThis.document, storage: t = globalThis.loca
 	return globalThis.XYBattle = d, d;
 }
 //#endregion
-export { r_ as mountBattleSystem };
+export { i_ as mountBattleSystem };

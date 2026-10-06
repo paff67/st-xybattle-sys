@@ -1,4 +1,4 @@
-import { clone } from './common.js';
+import { clone, normalizeChatCompletionsEndpoint } from './common.js';
 
 const text = (value) => value == null ? '' : String(value).trim();
 const isObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
@@ -64,7 +64,7 @@ export function createHttpCharacterInference({ endpoint, model, apiKey = '', fet
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetchImpl(endpoint, { method: 'POST', headers: { 'content-type': 'application/json', ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}) }, body: JSON.stringify({ model: model || '', temperature: 0, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: '你是战斗前人物资料辅助器。只返回JSON；不得创造未给出的事实；推断字段必须标记 inferred。' }, { role: 'user', content: `${instruction}\n上下文：${JSON.stringify(context)}` }] }), signal: controller.signal });
+      const response = await fetchImpl(normalizeChatCompletionsEndpoint(endpoint), { method: 'POST', headers: { 'content-type': 'application/json', ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}) }, body: JSON.stringify({ model: model || '', temperature: 0, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: '你是战斗前人物资料辅助器。只返回JSON；不得创造未给出的事实；推断字段必须标记 inferred。' }, { role: 'user', content: `${instruction}\n上下文：${JSON.stringify(context)}` }] }), signal: controller.signal });
       return await readResponse(response);
     } finally { clearTimeout(timer); }
   };
