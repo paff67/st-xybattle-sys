@@ -36,7 +36,7 @@ export class BattleHostAdapter {
   constructor({ contextProvider = () => globalThis.SillyTavern?.getContext?.() || {}, helper, eventEmitter, eventTypes, windowRef = globalThis, documentRef = globalThis.document, inputBridge, displayFolding, extensionName = 'st-xybattle-sys' } = {}) {
     Object.assign(this, { contextProvider, helperDependency: helper, eventEmitterDependency: eventEmitter, eventTypesDependency: eventTypes, windowRef, documentRef, extensionName });
     this.anchor = null; this.currentScope = null; this.epoch = 0; this.messageUids = new WeakMap();
-    this.scopeListeners = new Set(); this.narrativeListeners = new Set(); this.disposers = []; this.boundEmitter = null;
+    this.transcriptListeners = new Set(); this.sentListeners = new Set(); this.scopeListeners = new Set(); this.narrativeListeners = new Set(); this.disposers = []; this.boundEmitter = null;
     this.packet = null; this.activePacket = null; this.injected = false; this.lastInjection = null; this.generationBusy = false;
     this.inputBridge = inputBridge || new HostInputBridge({ contextProvider, documentRef, windowRef, bindPageLifecycle: false, getInputElement: (_context, doc) => doc?.querySelector?.('#send_textarea, textarea#send_textarea, textarea[data-testid="send-textarea"]') || null });
     this.displayFolding = displayFolding || new HostDisplayFolding({ documentRef });
@@ -146,6 +146,12 @@ export class BattleHostAdapter {
   }
   async ready() { this.start(); return { scope: this.scope(), capability: this.capability() }; }
   subscribeScopeChange(listener) { this.scopeListeners.add(listener); return () => this.scopeListeners.delete(listener); }
+  subscribeTranscriptChange(listener) { this.transcriptListeners.add(listener); return () => this.transcriptListeners.delete(listener); }
+  subscribePacketSent(listener) { this.sentListeners.add(listener); return () => this.sentListeners.delete(listener); }
+  hasSentPacket(record) {
+    return (this.context().chat || []).some((message) => (message.is_user || message.role === 'user') && parseBattlePacketMarkers(String(message.mes ?? message.message ?? '')).some((entry) => entry.packet.actionId === record.actionId && (!entry.packet.sessionId || entry.packet.sessionId === record.narrativePacket?.sessionId)));
+  }
+  hasNarrative(record) { return !!record.narrative?.text && (this.context().chat || []).some((message) => assistant(message) && (message.mes ?? message.message) === record.narrative.text); }
   subscribeNarrative(listener) { this.narrativeListeners.add(listener); return () => this.narrativeListeners.delete(listener); }
   async loadSession(expectedScope = this.scope()) {
     const capability = this.capability();
@@ -189,6 +195,10 @@ export class BattleHostAdapter {
         if ((rank[receipt.status] ?? -1) < (rank[oldReceipt.status] ?? -1) && !receipt.rewrittenAt) throw new Error('Receipt status cannot regress');
       }
       const next = { ...(previous || {}), schema: 'battle_v2_host_store', scope: persistedScope(scope), version: Math.max(version, previous?.version || 0), state: state ? { ...state, scope: { ...state.scope, ...persistedScope(scope) } } : previous?.state || null, receipts: { ...previous?.receipts } };
+      if (state?.rollback?.reason === 'host-message-deleted' && version > (previous?.version || 0)) {
+        for (const id of state.rollback.removedActionIds || []) if (!state.history.some((record) => record.actionId === id)) delete next.receipts[id];
+        next.lastActionId = state.history.filter((record) => ['committed', 'complete'].includes(record.status)).at(-1)?.actionId || null;
+      }
       if (cleanReceipt) { next.receipts[receipt.actionId] = cleanReceipt; next.lastActionId = receipt.actionId; }
       if (!this.uncertainScopes.has(key) && previous && canonical(previous) === canonical(next)) return { persisted: true, confirmed: true, scope, capability, deduplicated: true, version: next.version };
       const infos = message.swipes_info.map((info) => clone(info || {}));
@@ -289,7 +299,7 @@ export class BattleHostAdapter {
       let text = message?.mes ?? message?.message ?? '';
       if (id != null && typeof this.helper()?.getChatMessages === 'function') text = this.helper().getChatMessages(id, { include_swipes: false })?.[0]?.message ?? text;
       const complete = status === 'complete' && typeof text === 'string' && text.trim() && (id !== active.baselineId || text !== active.baselineText);
-      const event = { actionId: active.packet.actionId, scope: active.scope, text: complete ? text : '', status: complete ? 'complete' : 'stopped', packet: clone(active.packet), messageId: id };
+      const event = { actionId: active.packet.actionId, scope: active.scope, text: complete ? text : '', status: complete ? 'complete' : 'stopped', packet: clone(active.packet), messageId: id, transport: active.transport, inputVerified: active.inputVerified };
       for (const listener of this.narrativeListeners) await listener(event);
     } catch (error) { this.lastInjection = { injected: false, reason: error.message, stale: true }; }
   }
@@ -302,7 +312,9 @@ export class BattleHostAdapter {
     const text = raw?.mes ?? raw?.message ?? '';
     const exact = parseBattlePacketMarkers(String(text)).some((entry) => entry.key === active.key);
     active.inputVerified = exact;
-    if (exact) { this.lastInjection = { ...this.lastInjection, transport: 'input-box', verified: true, pendingVerification: false }; return; }
+    if (exact) {
+      for (const listener of this.sentListeners) listener({ actionId: active.packet.actionId, scope: active.scope, transport: 'input-box' });
+      this.lastInjection = { ...this.lastInjection, transport: 'input-box', verified: true, pendingVerification: false }; return; }
     // The host created a user message without the marker. The input transport
     // is therefore not authoritative; add one extension prompt before prompt
     // assembly, with no simultaneous input marker transport.
@@ -345,6 +357,7 @@ export class BattleHostAdapter {
         this.clearScenePacket();
         if (name === 'MESSAGE_SWIPED' && integer(messageId) != null && this.anchor) this.anchor = { ...this.anchor, messageId: integer(messageId), raw: null };
         this.scope();
+        if (name === 'MESSAGE_DELETED') return Promise.all([...this.transcriptListeners].map((listener) => listener()));
       });
       on(events.USER_MESSAGE_RENDERED || 'USER_MESSAGE_RENDERED', (messageId) => { this.displayFolding?.apply?.(); this.verifyRenderedUserMessage(messageId); });
       for (const name of ['CHARACTER_MESSAGE_RENDERED', 'MESSAGE_RENDERED']) on(events[name] || name, () => { this.displayFolding?.apply?.(); this.scope(); });
@@ -353,6 +366,6 @@ export class BattleHostAdapter {
     if (this.windowRef?.addEventListener) { const handler = () => this.clearScenePacket(); this.windowRef.addEventListener('pagehide', handler); this.disposers.push(() => this.windowRef.removeEventListener?.('pagehide', handler)); }
     return this.capability();
   }
-  dispose() { this.clearScenePacket(); this.inputBridge?.dispose?.(); this.displayFolding?.dispose?.(); for (const dispose of this.disposers.splice(0)) dispose(); this.boundEmitter = null; this.scopeListeners.clear(); this.narrativeListeners.clear(); this.disposed = true; }
+  dispose() { this.clearScenePacket(); this.inputBridge?.dispose?.(); this.displayFolding?.dispose?.(); for (const dispose of this.disposers.splice(0)) dispose(); this.boundEmitter = null; this.scopeListeners.clear(); this.narrativeListeners.clear(); this.transcriptListeners.clear(); this.sentListeners.clear(); this.disposed = true; }
 }
 export function createHostAdapter(contextProvider) { return new BattleHostAdapter(typeof contextProvider === 'function' ? { contextProvider } : contextProvider); }

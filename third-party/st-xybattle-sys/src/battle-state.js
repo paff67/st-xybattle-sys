@@ -88,7 +88,8 @@ function normalizeNarrative(value) { return typeof value === 'string' ? { text: 
 export async function judgeAndCommit(state, action, { adjudicator, narrator, settings = {}, signal, save = () => {}, logger = () => {}, onCommit = () => {} } = {}) {
   const existing = action?.actionId ? state.history.find((record) => record.actionId === action.actionId) : null; if (existing) return { state, record: clone(existing), deduplicated: true };
   const request = buildAdjudicationRequest(state, action, settings); const allowMock = adjudicator?.isMock === true || (settings.adjudicator?.mode || settings.mode) === 'mock';
-  const attempt = { actionId: request.actionId, roundId: request.roundId, action: clone(request.action), status: 'prepared', version: state.version, before: clone(state.semanticState), causalBefore: clone(state.causalState) };
+  const rollbackState = clone(state); delete rollbackState.history;
+  const attempt = { rollbackState, actionId: request.actionId, roundId: request.roundId, action: clone(request.action), status: 'prepared', version: state.version, before: clone(state.semanticState), causalBefore: clone(state.causalState) };
   let next = transition(state, 'judging', { actionSeq: state.actionSeq + 1, pending: { actionId: request.actionId, roundId: request.roundId }, history: [...state.history,attempt] });
   logger({ kind: 'adjudication_request', actionId: request.actionId, roundId: request.roundId, aiRead: clone(request.context), playerVisible: request.playerVisibleContext, request: clone(request), internal: { requestMetadata: { type: request.type, actionId: request.actionId, roundId: request.roundId, version: request.version, settings: request.settings } } }); await save(next);
   let raw, adjudication; const repairLimit = request.settings.repairAttempts;

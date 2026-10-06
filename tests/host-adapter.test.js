@@ -123,6 +123,74 @@ test('extension-prompt fallback injects the same minimal facts as the input-box 
   host.adapter.dispose();
 });
 
+test('startup repairs old completed actions whose packet and prose have both been deleted', async () => {
+  const host = fixture(), storage = controllerStorage();
+  let controller = await attachedController(host, { storage });
+  controller.start();
+  const before = clone(controller.state.semanticState);
+  await controller.submit({ actionId: 'legacy-deleted', label: '旧版行动', techniqueId: 'xianshi' });
+  const record = controller.state.history[0];
+  delete record.rollbackState;
+  delete record.storyLink;
+  record.status = 'complete'; record.narrative = { text: '已经删除的正文', metadata: { source: 'SillyTavern normal generation' } };
+  controller.state.version += 1; controller.emit(); await controller.checkpoints;
+  controller.dispose();
+  const adapter = new BattleHostAdapter(host.options);
+  controller = new BattleController({ storage, hostAdapter: adapter, chatId: 'chat-1', branchId: 'message:0:swipe:0', adjudicator: new MockAdjudicator(), narrator: new MainStoryNarrator() });
+  try {
+    await controller.ready; await controller.checkpoints;
+    assert.equal(controller.state.history.length, 0);
+    assert.deepEqual(controller.state.semanticState, before);
+    assert.equal(controller.state.hostSync.status, 'confirmed');
+    assert.equal(host.disk()[0].extra.battle_v2.receipts['legacy-deleted'], undefined);
+  } finally { controller.dispose(); }
+});
+
+test('deleting a sent battle exchange rolls back while its original assistant anchor survives, then reload keeps rollback', async () => {
+  const dom = new JSDOM('<textarea id="send_textarea"></textarea><button id="send_but">发送</button>');
+  const host = fixture({ documentRef: dom.window.document });
+  const storage = controllerStorage();
+  let controller = await attachedController(host, { storage });
+  const input = dom.window.document.querySelector('textarea');
+  let generation;
+  dom.window.document.querySelector('button').addEventListener('click', () => {
+    generation = (async () => {
+      await host.events.emit('GENERATION_STARTED', 'normal');
+      await host.events.emit('GENERATION_AFTER_COMMANDS', 'normal');
+      host.context().chat.push({ is_user: true, mes: input.value }); input.value = '';
+      await host.events.emit('USER_MESSAGE_RENDERED', host.context().chat.length - 1);
+      host.context().chat.push(rawAssistant('本轮正文'));
+      await host.events.emit('GENERATION_ENDED');
+    })();
+  });
+  try {
+    controller.start(); await controller.checkpoints;
+    const before = clone(controller.state);
+    await controller.submit({ actionId: 'deleted-exchange', label: '建立弦势', techniqueId: 'xianshi' }); await generation;
+    assert.equal(controller.state.history[0].storyLink.sent, true);
+    assert.ok(controller.state.semanticState.statuses.includes('xianshi:triggered'));
+    host.context().chat.pop(); // Only prose deleted: committed action survives.
+    await host.events.emit('MESSAGE_DELETED', 2);
+    assert.equal(controller.state.history.length, 1);
+    host.context().chat.pop(); // Packet deleted: revert this action.
+    await host.events.emit('MESSAGE_DELETED', 1); await controller.checkpoints;
+    assert.equal(host.adapter.scope().messageId, 0);
+    assert.deepEqual(controller.state.semanticState, before.semanticState);
+    assert.deepEqual(controller.state.actors, before.actors);
+    assert.deepEqual(controller.state.causalState, before.causalState);
+    assert.deepEqual(controller.state.scene.publicEvents, before.scene.publicEvents);
+    assert.equal(controller.state.phase, 'awaiting_player');
+    assert.equal(controller.state.history.length, 0);
+    assert.equal(controller.state.hostSync.status, 'confirmed');
+    assert.equal(host.disk()[0].extra.battle_v2.receipts['deleted-exchange'], undefined);
+    host.reload();
+    const restored = await attachedController(host, { storage });
+    controller.dispose(); controller = restored;
+    assert.equal(controller.state.history.length, 0);
+    assert.deepEqual(controller.state.semanticState, before.semanticState);
+  } finally { controller.dispose(); dom.window.close(); }
+});
+
 test('scope uses ST chat/message/swipe and stays anchored when generation appends floors', async () => {
   const host = fixture(), first = host.adapter.scope();
   assert.equal(first.chatId, 'chat-1'); assert.equal(first.messageId, 0); assert.equal(first.swipeId, 0); assert.equal(first.branchId, 'message:0:swipe:0');
