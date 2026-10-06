@@ -4,7 +4,7 @@
       <div>
         <span class="xy-panel-kicker">TECHNIQUE & TREASURE LIBRARY</span>
         <h2 class="xy-panel-title">功法与法宝 · 内容库</h2>
-        <p class="xy-panel-desc">标准 JSON 先预览后写入浏览器内容库。编辑内容库不会改动已开始战斗的 registry snapshot。</p>
+        <p class="xy-panel-desc">内置六法可直接查看和导出；用户资料保存在当前浏览器。已开始战斗的规则保持不变。</p>
       </div>
       <div class="xy-library-actions">
         <button type="button" @click="refresh">刷新</button>
@@ -28,27 +28,29 @@
             <option value="treasure">法宝</option>
           </select>
         </div>
-        <button v-for="item in filteredRecords" :key="item.id" type="button" class="xy-library-item" :class="{ active: selectedId === item.id }" @click="select(item.id)">
+        <button v-for="item in filteredRecords" :key="item.catalogueKey" :data-source="item.builtin ? 'builtin' : 'user'" type="button" class="xy-library-item" :class="{ active: selectedId === item.catalogueKey }" @click="select(item.catalogueKey)">
           <strong>{{ item.name }}</strong>
-          <small>{{ item.contentType === 'treasure' ? '法宝' : '功法' }} · {{ item.id }}</small>
+          <small>{{ item.builtin ? '内置权威模板 · 只读' : '用户保存' }} · {{ item.contentType === 'treasure' ? '法宝' : '功法' }} · 版本 {{ item.version }}</small>
         </button>
         <p v-if="!filteredRecords.length" class="xy-library-empty">内容库暂无匹配条目</p>
       </aside>
 
       <div class="xy-library-editor">
-        <textarea v-model="jsonText" rows="18" spellcheck="false" placeholder="粘贴单条、数组或 xybattle-content-export-v1 JSON"></textarea>
+        <p v-if="selected?.builtin" class="xy-panel-desc">内置权威模板随扩展更新，不能在此编辑或删除。应用到本场不会自动授予主角招式，仍需人物确认。</p>
+        <p v-else-if="selected && builtinRecords.some(item => item.id === selected.id)" class="xy-panel-desc">这是与内置模板同编号的用户记录，不会覆盖内置权威定义。宿主人物准备仍使用内置版本。</p>
+        <textarea v-model="jsonText" :readonly="!!selected?.builtin" aria-label="模板 JSON" rows="18" spellcheck="false" placeholder="粘贴单条、数组或 xybattle-content-export-v1 JSON"></textarea>
         <div v-if="preview" class="xy-library-preview">
           <strong>导入预览</strong>
           <span>{{ preview.count }} 条 · {{ preview.ids.join('、') }}</span>
           <span v-if="preview.conflicts?.length" class="warning">已有同 ID：{{ preview.conflicts.map((item) => item.id).join('、') }}</span>
         </div>
         <div class="xy-library-buttons">
-          <button type="button" @click="previewImport">预览校验</button>
-          <button type="button" :disabled="!preview" @click="commitImport">新增导入</button>
-          <button type="button" :disabled="!preview" @click="replaceImport">覆盖导入</button>
-          <button type="button" :disabled="!selected" @click="saveEdit">保存编辑</button>
-          <button type="button" :disabled="!selected" @click="copySelected">复制</button>
-          <button type="button" class="danger" :disabled="!selected" @click="removeSelected">删除</button>
+          <button type="button" :disabled="!!selected?.builtin" @click="previewImport">预览校验</button>
+          <button type="button" :disabled="!preview || !!selected?.builtin" @click="commitImport">新增导入</button>
+          <button type="button" :disabled="!preview || !!selected?.builtin" @click="replaceImport">覆盖导入</button>
+          <button type="button" :disabled="!selected || selected.builtin" @click="saveEdit">保存编辑</button>
+          <button type="button" :disabled="!selected || selected.builtin" @click="copySelected">复制</button>
+          <button type="button" class="danger" :disabled="!selected || selected.builtin" @click="removeSelected">删除</button>
           <button type="button" :disabled="!selected" @click="applySelected">应用到本场</button>
         </div>
       </div>
@@ -58,11 +60,15 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
-import { exportContentJson, importContent, previewContentImport } from '../../content-importer.js';
+import { importContent, previewContentImport } from '../../content-importer.js';
 
+import builtinPack from '../../../content/authoritative-six-arts/six-arts.content.json' with { type: 'json' };
+import { createContentExport } from '../../content-protocol.js';
+
+const builtinRecords = builtinPack.items.map(item => ({ ...item, builtin: true, catalogueKey: `builtin:${item.id}` }));
 const props = defineProps({ store: { type: Object, required: true } });
 const emit = defineEmits(['changed', 'error', 'export', 'apply']);
-const records = ref([]);
+const records = ref([...builtinRecords]);
 const selectedId = ref('');
 const jsonText = ref('');
 const query = ref('');
@@ -72,7 +78,7 @@ const busy = ref(false);
 const notice = ref('');
 const noticeType = ref('');
 
-const selected = computed(() => records.value.find((item) => item.id === selectedId.value));
+const selected = computed(() => records.value.find((item) => item.catalogueKey === selectedId.value));
 const filteredRecords = computed(() => records.value.filter((item) => (!typeFilter.value || item.contentType === typeFilter.value) && (!query.value || `${item.name} ${item.id}`.toLowerCase().includes(query.value.toLowerCase()))));
 
 function show(message, type = '') { notice.value = message; noticeType.value = type; }
@@ -87,21 +93,22 @@ async function loadFile(event) {
   const file = event.target.files?.[0]; event.target.value = '';
   if (!file) return;
   if (file.size > 5 * 1024 * 1024) { show('JSON 文件不能超过 5 MiB', 'error'); return; }
-  try { jsonText.value = await file.text(); invalidatePreview(); show(`已载入 ${file.name}，请先预览校验`); }
+  try { const text = await file.text(); selectedId.value = ''; jsonText.value = text; invalidatePreview(); show(`已载入 ${file.name}，请先预览校验`); }
   catch (error) { show(`文件读取失败：${error.message}`, 'error'); }
 }
 async function refresh() {
-  records.value = await props.store.listRecords();
-  if (selectedId.value && !records.value.some((item) => item.id === selectedId.value)) selectedId.value = '';
+  try { records.value = [...builtinRecords, ...(await props.store.listRecords()).map(item => ({ ...item, builtin: false, catalogueKey: `user:${item.id}` }))]; }
+  catch (error) { records.value = [...builtinRecords]; show(`用户资料读取失败，内置模板仍可查看：${error.message}`, 'error'); }
+  if (selectedId.value && !records.value.some((item) => item.catalogueKey === selectedId.value)) selectedId.value = '';
 }
 async function select(id) {
   selectedId.value = id;
-  const value = await props.store.get(id);
+  const value = selected.value?.entry;
   if (value) jsonText.value = JSON.stringify(value, null, 2);
   invalidatePreview();
 }
 async function previewImport() {
-  if (busy.value) return;
+  if (busy.value || selected.value?.builtin) return;
   try {
     const next = previewContentImport(jsonText.value);
     next.conflicts = [];
@@ -113,7 +120,7 @@ async function previewImport() {
 async function commitImport() { await commit('reject'); }
 async function replaceImport() { await commit('replace'); }
 async function commit(mode) {
-  if (busy.value || !preview.value) return;
+  if (busy.value || !preview.value || selected.value?.builtin) return;
   const previewText = jsonText.value;
   busy.value = true;
   try {
@@ -126,7 +133,7 @@ async function commit(mode) {
   finally { busy.value = false; }
 }
 async function saveEdit() {
-  if (!selected.value) return;
+  if (!selected.value || selected.value.builtin) return;
   try {
     const value = JSON.parse(jsonText.value);
     await props.store.update(selected.value.id, value);
@@ -138,21 +145,21 @@ async function applySelected() {
   emit('apply', [selected.value.entry]);
 }
 async function copySelected() {
-  if (!selected.value) return;
-  try { const copy = await props.store.copy(selected.value.id); await refresh(); await select(copy.id); show(`已复制：${copy.name}`); emit('changed', { id: copy.id, action: 'copy' }); }
+  if (!selected.value || selected.value.builtin) return;
+  try { const copy = await props.store.copy(selected.value.id); await refresh(); await select(`user:${copy.id}`); show(`已复制：${copy.name}`); emit('changed', { id: copy.id, action: 'copy' }); }
   catch (error) { show(error.message, 'error'); emit('error', error); }
 }
 async function removeSelected() {
-  if (!selected.value) return;
+  if (!selected.value || selected.value.builtin) return;
   try { const id = selected.value.id; await props.store.remove(id); selectedId.value = ''; jsonText.value = ''; await refresh(); show(`已删除：${id}`); emit('changed', { id, action: 'delete' }); }
   catch (error) { show(error.message, 'error'); emit('error', error); }
 }
 async function exportSelected() {
-  try { const text = await exportContentJson(props.store, selectedId.value); emit('export', text); show('已生成选中内容导出 JSON'); }
+  try { if (!selected.value) return; const text = JSON.stringify(createContentExport([selected.value]), null, 2); emit('export', text); show('已生成选中内容导出 JSON'); }
   catch (error) { show(error.message, 'error'); emit('error', error); }
 }
 async function exportAll() {
-  try { const text = await exportContentJson(props.store); emit('export', text); show('已生成全部内容导出 JSON'); }
+  try { const all = new Map(records.value.map(item => [item.id, item])); const duplicates = records.value.length - all.size; const text = JSON.stringify(createContentExport([...all.values()]), null, 2); emit('export', text); show(duplicates ? `已导出全部唯一编号内容；${duplicates} 个同编号采用用户保存版本，内置原版可选中后单独导出。` : '已生成全部内容导出 JSON（含内置六法）'); }
   catch (error) { show(error.message, 'error'); emit('error', error); }
 }
 onMounted(refresh);
