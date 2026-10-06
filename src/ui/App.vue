@@ -393,7 +393,7 @@ async function handleRetryHost() {
 function handleSaveSettings(newSettings) {
   try {
     props.controller.setSettings(newSettings);
-    notification.value = '独立机枢设定已保存；敏感凭据绝不落盘';
+    notification.value = '独立机枢设定已保存；凭据仅保存在当前浏览器本地，不写入战报或导出';
     updateViews();
   } catch (err) {
     notification.value = err.message;

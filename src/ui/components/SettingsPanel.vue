@@ -6,7 +6,7 @@
         <h2 class="xy-panel-title">独立机枢 · 模型与演算法</h2>
       </div>
       <p class="xy-panel-desc">
-        裁定 AI 与正文生成可分别调配独立接入点与参数；敏感秘钥仅驻留内存，绝不落盘或混入战报存档。
+        裁定 AI 与正文生成可分别调配独立接入点与参数；凭据保存到当前浏览器本地，仅用于本机请求，不写入聊天、战报或导出文件。
       </p>
     </div>
 
@@ -39,8 +39,8 @@
 
         <label class="xy-form-field xy-col-span-2">
           <span class="xy-field-label">
-            <span>API Key (仅驻留内存)</span>
-            <small class="xy-field-hint">刷新页面需重填，绝不进入持久化文件</small>
+            <span>API Key (浏览器本地保存)</span>
+            <small class="xy-field-hint">保存后刷新页面仍可使用；清空并保存即可移除</small>
           </span>
           <div class="xy-password-wrap">
             <input 
@@ -108,7 +108,7 @@
         </label>
 
         <label class="xy-form-field xy-col-span-2">
-          <span class="xy-field-label">API Key (仅驻留内存)</span>
+          <span class="xy-field-label">API Key (浏览器本地保存)</span>
           <div class="xy-password-wrap">
             <input 
               v-model="form.narrator.apiKey" 

@@ -5040,7 +5040,7 @@ var Od = { class: "xy-battle-stage" }, kd = { class: "xy-stage-arena" }, Ad = { 
 			});
 		}
 		return (e, t) => (B(), V("div", Md, [
-			t[42] ||= H("div", { class: "xy-panel-header" }, [H("div", null, [H("span", { class: "xy-panel-kicker" }, "INDEPENDENT ADAPTER CONFIGURATION"), H("h2", { class: "xy-panel-title" }, "独立机枢 · 模型与演算法")]), H("p", { class: "xy-panel-desc" }, " 裁定 AI 与正文生成可分别调配独立接入点与参数；敏感秘钥仅驻留内存，绝不落盘或混入战报存档。 ")], -1),
+			t[42] ||= H("div", { class: "xy-panel-header" }, [H("div", null, [H("span", { class: "xy-panel-kicker" }, "INDEPENDENT ADAPTER CONFIGURATION"), H("h2", { class: "xy-panel-title" }, "独立机枢 · 模型与演算法")]), H("p", { class: "xy-panel-desc" }, " 裁定 AI 与正文生成可分别调配独立接入点与参数；凭据保存到当前浏览器本地，仅用于本机请求，不写入聊天、战报或导出文件。 ")], -1),
 			H("fieldset", Nd, [t[28] ||= H("legend", { class: "xy-card-legend" }, [H("span", { class: "xy-legend-icon" }, "⚖"), H("span", null, "战斗裁定 AI (Adjudicator)")], -1), H("div", Pd, [
 				H("label", Fd, [t[20] ||= H("span", { class: "xy-field-label" }, "推理模式", -1), L(H("select", {
 					"onUpdate:modelValue": t[0] ||= (e) => o.judge.mode = e,
@@ -5060,7 +5060,7 @@ var Od = { class: "xy-battle-stage" }, kd = { class: "xy-stage-arena" }, Ad = { 
 					placeholder: "https://api.openai.com/v1/chat/completions",
 					class: "xy-input-text"
 				}, null, 512), [[K, o.judge.endpoint]])]),
-				H("label", Rd, [t[23] ||= H("span", { class: "xy-field-label" }, [H("span", null, "API Key (仅驻留内存)"), H("small", { class: "xy-field-hint" }, "刷新页面需重填，绝不进入持久化文件")], -1), H("div", zd, [L(H("input", {
+				H("label", Rd, [t[23] ||= H("span", { class: "xy-field-label" }, [H("span", null, "API Key (浏览器本地保存)"), H("small", { class: "xy-field-hint" }, "保存后刷新页面仍可使用；清空并保存即可移除")], -1), H("div", zd, [L(H("input", {
 					"onUpdate:modelValue": t[3] ||= (e) => o.judge.apiKey = e,
 					type: i.value ? "text" : "password",
 					placeholder: "sk-...",
@@ -5124,7 +5124,7 @@ var Od = { class: "xy-battle-stage" }, kd = { class: "xy-stage-arena" }, Ad = { 
 				H("label", qd, [t[30] ||= H("span", { class: "xy-field-label" }, "桥接模式", -1), L(H("select", {
 					"onUpdate:modelValue": t[9] ||= (e) => o.narrator.mode = e,
 					class: "xy-input-select"
-				}, [...t[29] ||= [oa("<option value=\"main_story\" data-v-b8b80bd6>酒馆主剧情注入 (推荐，沿用酒馆设定)</option><option value=\"packet\" data-v-b8b80bd6>仅生成场景包 (供剪贴板与第三方调用)</option><option value=\"http\" data-v-b8b80bd6>独立 OpenAI-Compatible 正文模型</option><option value=\"mock\" data-v-b8b80bd6>离线 Mock 演进</option><option value=\"unconfigured\" data-v-b8b80bd6>未配置</option>", 5)]], 512), [[Yo, o.narrator.mode]])]),
+				}, [...t[29] ||= [oa("<option value=\"main_story\" data-v-98678dc8>酒馆主剧情注入 (推荐，沿用酒馆设定)</option><option value=\"packet\" data-v-98678dc8>仅生成场景包 (供剪贴板与第三方调用)</option><option value=\"http\" data-v-98678dc8>独立 OpenAI-Compatible 正文模型</option><option value=\"mock\" data-v-98678dc8>离线 Mock 演进</option><option value=\"unconfigured\" data-v-98678dc8>未配置</option>", 5)]], 512), [[Yo, o.narrator.mode]])]),
 				H("label", Jd, [t[31] ||= H("span", { class: "xy-field-label" }, "模型标识 (Model)", -1), L(H("input", {
 					"onUpdate:modelValue": t[10] ||= (e) => o.narrator.model = e,
 					placeholder: "正文生成模型名...",
@@ -5135,7 +5135,7 @@ var Od = { class: "xy-battle-stage" }, kd = { class: "xy-stage-arena" }, Ad = { 
 					placeholder: "https://...",
 					class: "xy-input-text"
 				}, null, 512), [[K, o.narrator.endpoint]])]),
-				H("label", Xd, [t[33] ||= H("span", { class: "xy-field-label" }, "API Key (仅驻留内存)", -1), H("div", Zd, [L(H("input", {
+				H("label", Xd, [t[33] ||= H("span", { class: "xy-field-label" }, "API Key (浏览器本地保存)", -1), H("div", Zd, [L(H("input", {
 					"onUpdate:modelValue": t[12] ||= (e) => o.narrator.apiKey = e,
 					type: a.value ? "text" : "password",
 					placeholder: "sk-...",
@@ -5194,7 +5194,7 @@ var Od = { class: "xy-battle-stage" }, kd = { class: "xy-stage-arena" }, Ad = { 
 			}, [...t[41] ||= [H("span", null, "返回战场", -1)]])])
 		]));
 	}
-}, [["__scopeId", "data-v-b8b80bd6"]]), cf = { class: "xy-data-panel xy-custom-scroll" }, lf = { class: "xy-quick-actions-bar" }, uf = { class: "xy-import-console" }, df = { class: "xy-console-header" }, ff = { class: "xy-file-upload-btn" }, pf = { class: "xy-import-btns" }, mf = ["disabled"], hf = ["disabled"], gf = ["disabled"], _f = { class: "xy-snapshot-details" }, vf = { class: "xy-snapshot-pre xy-custom-scroll" }, yf = /*#__PURE__*/ q({
+}, [["__scopeId", "data-v-98678dc8"]]), cf = { class: "xy-data-panel xy-custom-scroll" }, lf = { class: "xy-quick-actions-bar" }, uf = { class: "xy-import-console" }, df = { class: "xy-console-header" }, ff = { class: "xy-file-upload-btn" }, pf = { class: "xy-import-btns" }, mf = ["disabled"], hf = ["disabled"], gf = ["disabled"], _f = { class: "xy-snapshot-details" }, vf = { class: "xy-snapshot-pre xy-custom-scroll" }, yf = /*#__PURE__*/ q({
 	__name: "DataPanel",
 	props: { snapshot: {
 		type: Object,
@@ -8064,7 +8064,7 @@ var ch = class {
 		}
 		function oe(e) {
 			try {
-				n.controller.setSettings(e), a.value = "独立机枢设定已保存；敏感凭据绝不落盘", f();
+				n.controller.setSettings(e), a.value = "独立机枢设定已保存；凭据仅保存在当前浏览器本地，不写入战报或导出", f();
 			} catch (e) {
 				a.value = e.message;
 			}
@@ -8583,25 +8583,72 @@ var Dh = class e {
 		let n = JSON.stringify(t);
 		this.storage ? this.storage.setItem(e, n) : this.memory.set(e, n);
 	}
-}, Oh = "battle_character_preparation_v1", kh = Object.freeze({
+}, Oh = "xybattle.credentials.v1";
+function kh(e) {
+	if (e !== void 0) return e && typeof e.getItem == "function" && typeof e.setItem == "function" ? e : null;
+	try {
+		let e = globalThis?.localStorage;
+		return e && typeof e.getItem == "function" && typeof e.setItem == "function" ? e : null;
+	} catch {
+		return null;
+	}
+}
+function Ah() {
+	return {
+		adjudicator: { apiKey: "" },
+		narrator: { apiKey: "" }
+	};
+}
+function jh(e) {
+	let t = kh(e);
+	if (!t) return Ah();
+	try {
+		let e = t.getItem(Oh);
+		if (!e) return Ah();
+		let n = JSON.parse(e);
+		return {
+			adjudicator: { apiKey: typeof n?.adjudicator?.apiKey == "string" ? n.adjudicator.apiKey : "" },
+			narrator: { apiKey: typeof n?.narrator?.apiKey == "string" ? n.narrator.apiKey : "" }
+		};
+	} catch {
+		return Ah();
+	}
+}
+function Mh(e, t) {
+	let n = kh(t);
+	if (!n) return !1;
+	let r = {
+		version: 1,
+		adjudicator: { apiKey: String(e?.adjudicator?.apiKey || "") },
+		narrator: { apiKey: String(e?.narrator?.apiKey || "") }
+	};
+	try {
+		return !r.adjudicator.apiKey && !r.narrator.apiKey ? n.removeItem?.(Oh) : n.setItem(Oh, JSON.stringify(r)), !0;
+	} catch {
+		return !1;
+	}
+}
+//#endregion
+//#region src/character-preparation.js
+var Nh = "battle_character_preparation_v1", Ph = Object.freeze({
 	ai_extracted: 0,
 	ai_inferred: 0,
 	context_explicit: 1,
 	database: 2,
 	mvu_dynamic: 3,
 	user_confirmed: 4
-}), Ah = /* @__PURE__ */ new Set([
+}), Fh = /* @__PURE__ */ new Set([
 	"apiKey",
 	"api_key",
 	"authorization",
 	"token",
 	"password",
 	"secret"
-]), jh = /* @__PURE__ */ new Set([
+]), Ih = /* @__PURE__ */ new Set([
 	"__proto__",
 	"prototype",
 	"constructor"
-]), Mh = [
+]), Lh = [
 	["enemies", "context_explicit"],
 	["opponents", "context_explicit"],
 	["hostiles", "context_explicit"],
@@ -8611,7 +8658,7 @@ var Dh = class e {
 	["scene.enemies", "context_explicit"],
 	["characters", "context_explicit"],
 	["actors.characters", "context_explicit"]
-], Nh = {
+], Rh = {
 	mvu_dynamic: [
 		"getEnemy",
 		"getCharacter",
@@ -8629,30 +8676,30 @@ var Dh = class e {
 		"get"
 	]
 };
-function Ph(e) {
+function zh(e) {
 	return !!e && typeof e == "object" && !Array.isArray(e);
 }
 function Q(e) {
 	return typeof e == "string" ? e.trim() : e == null ? "" : String(e).trim();
 }
-function Fh(e, t) {
+function Bh(e, t) {
 	return t.split(".").reduce((e, t) => e?.[t], e);
 }
-function Ih(e, t = "enemy") {
+function Vh(e, t = "enemy") {
 	return Q(e).toLowerCase().replace(/[^\w\u4e00-\u9fff-]+/g, "-").replace(/^-+|-+$/g, "") || t;
 }
-function Lh(e) {
-	return Array.isArray(e) ? e.map(Lh) : Ph(e) ? Object.fromEntries(Object.entries(e).filter(([e]) => !Ah.has(e) && !jh.has(e)).map(([e, t]) => [e, Lh(t)])) : e;
+function Hh(e) {
+	return Array.isArray(e) ? e.map(Hh) : zh(e) ? Object.fromEntries(Object.entries(e).filter(([e]) => !Fh.has(e) && !Ih.has(e)).map(([e, t]) => [e, Hh(t)])) : e;
 }
-function Rh(e) {
-	return kh[e] ?? 0;
+function Uh(e) {
+	return Ph[e] ?? 0;
 }
-function zh(e) {
+function Wh(e) {
 	if (!e) return "context_explicit";
 	let t = String(e);
 	return t === "mvu" || t === "mvu_dynamic_value" ? "mvu_dynamic" : t === "db" || t === "database_profile" ? "database" : t === "context" || t === "explicit" ? "context_explicit" : t === "ai" || t === "inference" || t === "ai_inference" ? "ai_inferred" : t === "ai_extract" || t === "ai_extracted" ? "ai_extracted" : t === "user" || t === "confirmed" ? "user_confirmed" : t;
 }
-function Bh(e) {
+function Gh(e) {
 	return [
 		"enemy",
 		"opponent",
@@ -8662,23 +8709,23 @@ function Bh(e) {
 		"对手"
 	].includes(Q(e).toLowerCase());
 }
-function Vh(e, t, n = "context_explicit") {
+function Kh(e, t, n = "context_explicit") {
 	if (typeof e == "string") {
 		let r = Q(e);
 		return r ? {
-			id: `enemy-${Ih(r, t + 1)}`,
+			id: `enemy-${Vh(r, t + 1)}`,
 			name: r,
 			fields: {
-				id: `enemy-${Ih(r, t + 1)}`,
+				id: `enemy-${Vh(r, t + 1)}`,
 				name: r
 			},
-			source: zh(n)
+			source: Wh(n)
 		} : null;
 	}
-	if (!Ph(e)) return null;
+	if (!zh(e)) return null;
 	let r = Q(e.name || e.characterName || e.displayName || e.title || e.label), i = Q(e.id || e.characterId || e.uid || e.uuid);
 	if (!r && !i) return null;
-	let a = i || `enemy-${Ih(r, t + 1)}`, o = Lh({
+	let a = i || `enemy-${Vh(r, t + 1)}`, o = Hh({
 		...e,
 		id: a,
 		...r ? { name: r } : {}
@@ -8687,11 +8734,11 @@ function Vh(e, t, n = "context_explicit") {
 		id: a,
 		name: r || a,
 		fields: o,
-		source: zh(n)
+		source: Wh(n)
 	};
 }
-function Hh(e) {
-	return Array.isArray(e) ? e : typeof e == "string" ? [e] : Ph(e) ? Object.entries(e).map(([e, t]) => Ph(t) ? {
+function qh(e) {
+	return Array.isArray(e) ? e : typeof e == "string" ? [e] : zh(e) ? Object.entries(e).map(([e, t]) => zh(t) ? {
 		id: t.id || e,
 		...t
 	} : {
@@ -8699,7 +8746,7 @@ function Hh(e) {
 		name: t
 	}) : [];
 }
-function Uh(e) {
+function Jh(e) {
 	let t = /* @__PURE__ */ new Map();
 	for (let n of e) {
 		let e = Q(n.id || n.name).toLowerCase();
@@ -8716,82 +8763,82 @@ function Uh(e) {
 	}
 	return [...t.values()];
 }
-function Wh(e = {}, { maxCandidates: t = 32 } = {}) {
+function Yh(e = {}, { maxCandidates: t = 32 } = {}) {
 	let n = [], r = (r, i) => {
-		for (let a of Hh(r)) {
-			let o = Vh(a, n.length, i);
-			if (o && (i !== "context_explicit" || Fh(e, "characters") !== r && Fh(e, "actors.characters") !== r || Bh(a?.side || a?.faction || a?.role || a?.alignment || a?.team)) && (n.push(o), n.length >= t)) return;
+		for (let a of qh(r)) {
+			let o = Kh(a, n.length, i);
+			if (o && (i !== "context_explicit" || Bh(e, "characters") !== r && Bh(e, "actors.characters") !== r || Gh(a?.side || a?.faction || a?.role || a?.alignment || a?.team)) && (n.push(o), n.length >= t)) return;
 		}
 	};
-	for (let [i, a] of Mh) {
+	for (let [i, a] of Lh) {
 		if (n.length >= t) break;
-		r(Fh(e, i), a);
+		r(Bh(e, i), a);
 	}
-	return n.length < t && r(e.enemy || e.opponent || e.hostile, "context_explicit"), Uh(n).slice(0, t);
+	return n.length < t && r(e.enemy || e.opponent || e.hostile, "context_explicit"), Jh(n).slice(0, t);
 }
-function Gh(e, t, n) {
+function Xh(e, t, n) {
 	if (n == null) return null;
-	let r = Ph(n) ? Lh(n) : { value: Lh(n) };
+	let r = zh(n) ? Hh(n) : { value: Hh(n) };
 	return {
-		source: zh(t),
-		priority: Rh(zh(t)),
+		source: Wh(t),
+		priority: Uh(Wh(t)),
 		data: r
 	};
 }
-function Kh(e, t = "") {
-	if (Array.isArray(e)) return e.length ? e.flatMap((e, n) => Kh(e, `${t}.${n}`)) : t ? [[t, []]] : [];
-	if (!Ph(e)) return t ? [[t, e]] : [];
+function Zh(e, t = "") {
+	if (Array.isArray(e)) return e.length ? e.flatMap((e, n) => Zh(e, `${t}.${n}`)) : t ? [[t, []]] : [];
+	if (!zh(e)) return t ? [[t, e]] : [];
 	let n = [];
 	for (let [r, i] of Object.entries(e)) {
-		if (Ah.has(r) || jh.has(r) || r === "provenance" || r === "sources" || r === "confirmation") continue;
+		if (Fh.has(r) || Ih.has(r) || r === "provenance" || r === "sources" || r === "confirmation") continue;
 		let e = t ? `${t}.${r}` : r;
-		Ph(i) ? n.push(...Kh(i, e)) : n.push([e, i]);
+		zh(i) ? n.push(...Zh(i, e)) : n.push([e, i]);
 	}
 	return n;
 }
-function qh(e, t, n) {
+function Qh(e, t, n) {
 	let r = t.split("."), i = e;
 	r.forEach((e, t) => {
 		if (!e || e === "__proto__" || e === "constructor" || e === "prototype") throw Error("人物资料字段路径非法");
 		if (t === r.length - 1) i[e] = Y(n);
 		else {
 			let n = /^\d+$/.test(r[t + 1]);
-			!Ph(i[e]) && !Array.isArray(i[e]) && (i[e] = n ? [] : {}), i = i[e];
+			!zh(i[e]) && !Array.isArray(i[e]) && (i[e] = n ? [] : {}), i = i[e];
 		}
 	});
 }
-function Jh(e, { mvu: t, database: n, inference: r, aiExtracted: i } = {}) {
+function $h(e, { mvu: t, database: n, inference: r, aiExtracted: i } = {}) {
 	return [
-		Gh(e, "ai_extracted", i),
-		Gh(e, "ai_inferred", r),
-		Gh(e, e.source || "context_explicit", e.fields || e),
-		Gh(e, "database", n),
-		Gh(e, "mvu_dynamic", t)
+		Xh(e, "ai_extracted", i),
+		Xh(e, "ai_inferred", r),
+		Xh(e, e.source || "context_explicit", e.fields || e),
+		Xh(e, "database", n),
+		Xh(e, "mvu_dynamic", t)
 	].filter(Boolean);
 }
-function Yh(e, t = {}) {
-	let n = Jh(e, t).sort((e, t) => e.priority - t.priority), r = {}, i = {}, a = [];
-	for (let e of n) for (let [t, n] of Kh(e.data)) {
-		let o = i[t], s = Fh(r, t);
+function eg(e, t = {}) {
+	let n = $h(e, t).sort((e, t) => e.priority - t.priority), r = {}, i = {}, a = [];
+	for (let e of n) for (let [t, n] of Zh(e.data)) {
+		let o = i[t], s = Bh(r, t);
 		o && JSON.stringify(s) !== JSON.stringify(n) && a.push({
 			path: t,
 			kept: e.source,
 			ignored: o.source,
 			keptValue: Y(n),
 			ignoredValue: Y(s)
-		}), (!o || e.priority >= o.priority) && (qh(r, t, n), i[t] = {
+		}), (!o || e.priority >= o.priority) && (Qh(r, t, n), i[t] = {
 			source: e.source,
 			priority: e.priority
 		});
 	}
-	let o = Q(r.id || e.id) || `enemy-${Ih(r.name || e.name)}`, s = Q(r.name || e.name || o);
+	let o = Q(r.id || e.id) || `enemy-${Vh(r.name || e.name)}`, s = Q(r.name || e.name || o);
 	return r.id = o, r.name = s, i.id ||= {
 		source: e.source || "context_explicit",
-		priority: Rh(e.source || "context_explicit")
+		priority: Uh(e.source || "context_explicit")
 	}, i.name ||= i.id, {
 		id: o,
 		name: s,
-		fields: Lh(r),
+		fields: Hh(r),
 		sources: Object.fromEntries(n.map((e) => [e.source, Y(e.data)])),
 		provenance: i,
 		conflicts: a,
@@ -8801,7 +8848,7 @@ function Yh(e, t = {}) {
 		}
 	};
 }
-async function Xh(e, t, n, r) {
+async function tg(e, t, n, r) {
 	if (!e) return null;
 	let i = {
 		candidate: Y(t),
@@ -8813,12 +8860,12 @@ async function Xh(e, t, n, r) {
 	if (typeof e == "function") return e(i);
 	if (r === "mvu_dynamic" && typeof e.getMvuData == "function") {
 		let r = n.scope || n;
-		return Qh(await e.getMvuData({
+		return rg(await e.getMvuData({
 			type: "message",
 			message_id: r.messageId ?? n.messageId
 		}), t);
 	}
-	let a = Nh[r] || [
+	let a = Rh[r] || [
 		"resolve",
 		"lookup",
 		"query",
@@ -8827,18 +8874,18 @@ async function Xh(e, t, n, r) {
 	];
 	for (let n of a) if (typeof e[n] == "function") {
 		let r = await e[n](i);
-		if (r != null) return Qh(r, t);
+		if (r != null) return rg(r, t);
 	}
 	return null;
 }
-async function Zh(e, t, n, r) {
+async function ng(e, t, n, r) {
 	if (!e) return {
 		value: null,
 		status: "missing",
 		error: null
 	};
 	try {
-		let i = await Xh(e, t, n, r);
+		let i = await tg(e, t, n, r);
 		return i && typeof i == "object" && typeof i.status == "string" && ("data" in i || "reason" in i || "error" in i) ? {
 			value: i.data ?? null,
 			status: i.status,
@@ -8864,10 +8911,10 @@ async function Zh(e, t, n, r) {
 		};
 	}
 }
-function Qh(e, t) {
+function rg(e, t) {
 	if (e == null) return null;
 	if (Array.isArray(e)) return e.find((e) => Q(e?.id || e?.characterId || e?.uid) === t.id || Q(e?.name || e?.characterName) === t.name) || null;
-	if (!Ph(e)) return e;
+	if (!zh(e)) return e;
 	for (let n of [
 		"enemies",
 		"opponents",
@@ -8880,43 +8927,43 @@ function Qh(e, t) {
 		if (Array.isArray(r)) {
 			let e = r.find((e) => Q(e?.id || e?.characterId || e?.uid) === t.id || Q(e?.name || e?.characterName) === t.name);
 			if (e) return e;
-		} else if (Ph(r) && (r[t.id] || r[t.name])) return r[t.id] || r[t.name];
+		} else if (zh(r) && (r[t.id] || r[t.name])) return r[t.id] || r[t.name];
 	}
 	return e[t.id] || e[t.name] ? e[t.id] || e[t.name] : Q(e.id || e.characterId || e.uid) === t.id || Q(e.name || e.characterName) === t.name ? e : null;
 }
-async function $h(e, t) {
+async function ig(e, t) {
 	if (!e) return [];
 	let n = typeof e == "function" ? await e(Y(t)) : typeof e.extract == "function" ? await e.extract(Y(t)) : typeof e.inferCandidates == "function" ? await e.inferCandidates(Y(t)) : typeof e.infer == "function" ? await e.infer(Y(t)) : e, r = n?.data ?? n;
 	return Array.isArray(r) ? r : r?.enemies || r?.candidates || [];
 }
-function eg(e = {}) {
+function ag(e = {}) {
 	let t = e.explicitFacts || e.explicit || e.facts || e.contextFacts || (e.inferred === !0 ? {} : e.fields) || {}, n = (e.inferred === !0 ? e.fields : e.inferred) || e.inference || e.guess || e.predicted || {};
 	return {
-		explicit: Ph(t) ? Lh(t) : {},
-		inferred: Ph(n) ? Lh(n) : {}
+		explicit: zh(t) ? Hh(t) : {},
+		inferred: zh(n) ? Hh(n) : {}
 	};
 }
-function tg(e, t, n) {
-	let r = eg(t), i = Vh({
+function og(e, t, n) {
+	let r = ag(t), i = Kh({
 		id: t?.id || t?.characterId,
 		name: t?.name || t?.characterName || r.explicit.name
 	}, n, "ai_extracted");
 	return i && (i.aiExtracted = r.explicit, i.aiInferred = r.inferred), i ? e.find((e) => e.id === i.id || e.name === i.name) || i : null;
 }
-async function ng(e = {}, { mvu: t, database: n, inference: r, ai: i, maxCandidates: a = 32, signal: o } = {}) {
+async function sg(e = {}, { mvu: t, database: n, inference: r, ai: i, maxCandidates: a = 32, signal: o } = {}) {
 	if (o?.aborted) throw new DOMException("人物准备已取消", "AbortError");
-	let s = Wh(e, { maxCandidates: a }), c = i || r, l = await $h(c, e), u = [...s];
+	let s = Yh(e, { maxCandidates: a }), c = i || r, l = await ig(c, e), u = [...s];
 	l.forEach((e, t) => {
-		let n = tg(u, e, t);
+		let n = og(u, e, t);
 		n && !u.includes(n) && u.push(n);
 	});
 	let d = [];
 	for (let r of u.slice(0, a)) {
 		if (o?.aborted) throw new DOMException("人物准备已取消", "AbortError");
-		let i = l.find((e) => Q(e?.id || e?.name || e?.characterName) === r.id || Q(e?.name || e?.characterName) === r.name), a = i ? eg(i) : {
+		let i = l.find((e) => Q(e?.id || e?.name || e?.characterName) === r.id || Q(e?.name || e?.characterName) === r.name), a = i ? ag(i) : {
 			explicit: {},
 			inferred: {}
-		}, [s, u] = await Promise.all([Zh(t, r, e, "mvu_dynamic"), Zh(n, r, e, "database")]), f = Yh(r, {
+		}, [s, u] = await Promise.all([ng(t, r, e, "mvu_dynamic"), ng(n, r, e, "database")]), f = eg(r, {
 			mvu: s.value,
 			database: u.value,
 			inference: a.inferred,
@@ -8943,7 +8990,7 @@ async function ng(e = {}, { mvu: t, database: n, inference: r, ai: i, maxCandida
 			}), r = n?.data ?? n;
 			if (r && typeof r == "object" && n?.status !== "read_failed") {
 				let e = r.fields || r.inferred || r;
-				f = Yh(f, {
+				f = eg(f, {
 					mvu: s.value,
 					database: u.value,
 					inference: e,
@@ -8971,7 +9018,7 @@ async function ng(e = {}, { mvu: t, database: n, inference: r, ai: i, maxCandida
 		}, d.push(f);
 	}
 	return {
-		schema: Oh,
+		schema: Nh,
 		version: 1,
 		status: "awaiting_confirmation",
 		createdAt: (/* @__PURE__ */ new Date()).toISOString(),
@@ -8980,28 +9027,28 @@ async function ng(e = {}, { mvu: t, database: n, inference: r, ai: i, maxCandida
 		confirmedAt: null
 	};
 }
-function rg(e) {
+function cg(e) {
 	return e ? Array.isArray(e) ? Object.fromEntries(e.map((e) => [e.id, e.fields || e.patch || e])) : e : {};
 }
-function ig(e, t = {}, { removeIds: n = [], requireName: r = !0 } = {}) {
-	ag(e);
-	let i = rg(t), a = new Set(n.map(String)), o = e.candidates.filter((e) => !a.has(String(e.id))).map((e) => {
-		let t = i[e.id] || {}, n = Lh(Y(e.fields));
-		for (let [e, r] of Kh(t)) qh(n, e, r);
+function lg(e, t = {}, { removeIds: n = [], requireName: r = !0 } = {}) {
+	ug(e);
+	let i = cg(t), a = new Set(n.map(String)), o = e.candidates.filter((e) => !a.has(String(e.id))).map((e) => {
+		let t = i[e.id] || {}, n = Hh(Y(e.fields));
+		for (let [e, r] of Zh(t)) Qh(n, e, r);
 		let a = Q(n.id || e.id), o = Q(n.name || e.name || a);
 		if (!a || r && !o) throw Error(`敌方人物 ${e.id} 缺少 id/name`);
 		n.id = a, n.name = o;
 		let s = { ...e.provenance };
-		for (let [e] of Kh(t)) s[e] = {
+		for (let [e] of Zh(t)) s[e] = {
 			source: "user_confirmed",
-			priority: Rh("user_confirmed")
+			priority: Uh("user_confirmed")
 		};
 		return s.id = {
 			source: "user_confirmed",
-			priority: Rh("user_confirmed")
+			priority: Uh("user_confirmed")
 		}, s.name = {
 			source: "user_confirmed",
-			priority: Rh("user_confirmed")
+			priority: Uh("user_confirmed")
 		}, {
 			...e,
 			id: a,
@@ -9025,21 +9072,21 @@ function ig(e, t = {}, { removeIds: n = [], requireName: r = !0 } = {}) {
 		candidates: o
 	};
 }
-function ag(e) {
+function ug(e) {
 	if (!e || e.schema !== "battle_character_preparation_v1" || !Array.isArray(e.candidates)) throw Error("无效的人物准备草稿");
 	return e;
 }
-function og(e) {
-	if (ag(e), e.status !== "confirmed" || !e.confirmedAt || e.candidates.some((e) => e.confirmation?.status !== "confirmed")) throw Error("敌方人物资料尚未确认，禁止进入裁定器");
+function dg(e) {
+	if (ug(e), e.status !== "confirmed" || !e.confirmedAt || e.candidates.some((e) => e.confirmation?.status !== "confirmed")) throw Error("敌方人物资料尚未确认，禁止进入裁定器");
 	return e;
 }
-function sg(e) {
-	return og(e), e.candidates.map((e) => Y(e.fields));
+function fg(e) {
+	return dg(e), e.candidates.map((e) => Y(e.fields));
 }
-function cg(e, t) {
-	if (og(t), !e || !["idle", "ended"].includes(e.phase)) throw Error("只能在战斗开始前写入已确认人物");
+function pg(e, t) {
+	if (dg(t), !e || !["idle", "ended"].includes(e.phase)) throw Error("只能在战斗开始前写入已确认人物");
 	if (t.scope && (String(t.scope.chatId) !== String(e.scope?.chatId) || String(t.scope.branchId) !== String(e.scope?.branchId))) throw Error("人物准备作用域与当前聊天/分支不一致");
-	let n = sg(t);
+	let n = fg(t);
 	if (n.some((t) => t.id === e.actors?.player?.id)) throw Error("敌方人物 id 与主角重复");
 	return {
 		...Y(e),
@@ -9052,9 +9099,9 @@ function cg(e, t) {
 		updatedAt: (/* @__PURE__ */ new Date()).toISOString()
 	};
 }
-function lg(e) {
-	return ag(e), {
-		schema: Oh,
+function mg(e) {
+	return ug(e), {
+		schema: Nh,
 		status: e.status,
 		scope: Y(e.scope),
 		candidates: e.candidates.map((e) => ({
@@ -9071,19 +9118,19 @@ function lg(e) {
 }
 //#endregion
 //#region src/character-source-adapters.js
-var ug = (e) => e == null ? "" : String(e).trim(), dg = (e) => !!e && typeof e == "object" && !Array.isArray(e);
-function fg(e, t) {
-	let n = Array.isArray(e) ? e : e && typeof e == "object" ? Object.entries(e).map(([e, t]) => dg(t) ? {
+var hg = (e) => e == null ? "" : String(e).trim(), gg = (e) => !!e && typeof e == "object" && !Array.isArray(e);
+function _g(e, t) {
+	let n = Array.isArray(e) ? e : e && typeof e == "object" ? Object.entries(e).map(([e, t]) => gg(t) ? {
 		id: t.id || e,
 		...t
 	} : {
 		id: e,
 		name: t
-	}) : [], r = ug(t?.id), i = ug(t?.name), a = n.filter((e) => ug(e?.id || e?.characterId || e?.uid) === r || ug(e?.name || e?.characterName || e?.displayName) === i);
+	}) : [], r = hg(t?.id), i = hg(t?.name), a = n.filter((e) => hg(e?.id || e?.characterId || e?.uid) === r || hg(e?.name || e?.characterName || e?.displayName) === i);
 	if (a.length > 1) throw Error(`人物资料匹配歧义：${r || i}`);
 	return a[0] ? Y(a[0]) : null;
 }
-function pg(e) {
+function vg(e) {
 	let t = e?.stat_data ?? e?.data?.stat_data ?? e;
 	if (!t || typeof t != "object") return [];
 	let n = [
@@ -9094,22 +9141,22 @@ function pg(e) {
 		t.敌方,
 		t.对手
 	].filter(Boolean);
-	return n.length ? n.flatMap((e) => Array.isArray(e) ? e : Object.entries(e).map(([e, t]) => dg(t) ? {
+	return n.length ? n.flatMap((e) => Array.isArray(e) ? e : Object.entries(e).map(([e, t]) => gg(t) ? {
 		id: t.id || e,
 		...t
 	} : {
 		id: e,
 		name: t
-	})) : Object.entries(t).filter(([, e]) => dg(e)).map(([e, t]) => ({
+	})) : Object.entries(t).filter(([, e]) => gg(e)).map(([e, t]) => ({
 		id: t.id || e,
 		...t
 	}));
 }
-async function mg({ candidate: e, context: t = {} } = {}, { mvu: n = globalThis.Mvu } = {}) {
+async function yg({ candidate: e, context: t = {} } = {}, { mvu: n = globalThis.Mvu } = {}) {
 	if (!n?.getMvuData) return null;
 	let r = t.scope || t, i = r.messageId ?? t.messageId ?? t.message_id;
 	if (i == null) throw Error("MVU 当前消息作用域不可用");
-	let a = fg(pg(await n.getMvuData({
+	let a = _g(vg(await n.getMvuData({
 		type: "message",
 		message_id: i
 	})), e);
@@ -9125,17 +9172,17 @@ async function mg({ candidate: e, context: t = {} } = {}, { mvu: n = globalThis.
 		branchKnown: !0
 	} : null;
 }
-function hg(e) {
+function bg(e) {
 	return Object.values(e || {}).flatMap((e) => {
 		let t = e?.content;
 		if (!Array.isArray(t) || !Array.isArray(t[0])) return [];
-		let n = t[0].map((e) => ug(e));
+		let n = t[0].map((e) => hg(e));
 		return t.slice(1).filter(Array.isArray).map((e) => Object.fromEntries(n.map((t, n) => [t, e[n]])));
 	});
 }
-async function gg({ candidate: e } = {}, { database: t = globalThis.AutoCardUpdaterAPI } = {}) {
+async function xg({ candidate: e } = {}, { database: t = globalThis.AutoCardUpdaterAPI } = {}) {
 	if (!t?.exportTableAsJson) return null;
-	let n = fg(hg(await t.exportTableAsJson()), e);
+	let n = _g(bg(await t.exportTableAsJson()), e);
 	return n ? {
 		...n,
 		sourceKind: "database",
@@ -9143,7 +9190,7 @@ async function gg({ candidate: e } = {}, { database: t = globalThis.AutoCardUpda
 		branchKnown: !1
 	} : null;
 }
-async function _g(e) {
+async function Sg(e) {
 	if (!e?.ok) throw Error(`人物 AI HTTP ${e?.status || "失败"}`);
 	let t = await e.json(), n = t?.choices?.[0]?.message?.content ?? t?.output_text ?? t;
 	if (typeof n == "string") {
@@ -9152,12 +9199,12 @@ async function _g(e) {
 	}
 	return n;
 }
-function vg({ endpoint: e, model: t, apiKey: n = "", fetchImpl: r = globalThis.fetch, timeoutMs: i = 6e4 } = {}) {
+function Cg({ endpoint: e, model: t, apiKey: n = "", fetchImpl: r = globalThis.fetch, timeoutMs: i = 6e4 } = {}) {
 	if (!e || typeof r != "function") throw Error("人物 AI 需要 endpoint 与 fetch");
 	let a = async (a, o) => {
 		let s = new AbortController(), c = setTimeout(() => s.abort(), i);
 		try {
-			return await _g(await r(gd(e), {
+			return await Sg(await r(gd(e), {
 				method: "POST",
 				headers: {
 					"content-type": "application/json",
@@ -9196,48 +9243,60 @@ function vg({ endpoint: e, model: t, apiKey: n = "", fetchImpl: r = globalThis.f
 		}
 	};
 }
-function yg(e = {}) {
+function wg(e = {}) {
 	let t = e.mvu || globalThis.Mvu, n = e.database || globalThis.AutoCardUpdaterAPI;
 	return {
-		mvu: (e) => mg(e, { mvu: t }),
-		database: (e) => gg(e, { database: n }),
+		mvu: (e) => yg(e, { mvu: t }),
+		database: (e) => xg(e, { database: n }),
 		...e.inference ? { inference: e.inference } : {}
 	};
 }
 //#endregion
 //#region src/battle-controller.js
-function bg(e = {}) {
+function Tg(e = {}) {
 	let t = mh(e), n = t.adjudicator, r = t.narrator;
 	return {
 		adjudicator: n.mode === "mock" ? new bh() : n.mode === "http" ? new Ch(n) : new gh(),
 		narrator: r.mode === "mock" ? new xh() : r.mode === "http" ? new wh(r) : r.mode === "main_story" ? new vh() : r.mode === "packet" ? new yh() : new _h()
 	};
 }
-var xg = class {
-	constructor({ storage: e, chatId: t = "default-chat", branchId: n = "main", adjudicator: r, narrator: i, hostAdapter: a, registry: o = new Bf(), onChange: s = () => {}, initialScene: c = {}, initialPlayer: l, initialEnemies: u = [], semanticState: d } = {}) {
+var Eg = class {
+	constructor({ storage: e, credentialStorage: t, chatId: n = "default-chat", branchId: r = "main", adjudicator: i, narrator: a, hostAdapter: o, registry: s = new Bf(), onChange: c = () => {}, initialScene: l = {}, initialPlayer: u, initialEnemies: d = [], semanticState: f } = {}) {
 		this.storage = e instanceof Dh ? e : new Dh(e, {
-			chatId: t,
-			branchId: n
-		}), this.registry = o, this.settings = mh(this.storage.readSettings());
-		let f = bg(this.settings);
-		this.adjudicator = r || f.adjudicator, this.narrator = i || f.narrator, this.customAdapters = {
-			adjudicator: r,
-			narrator: i
-		}, this.hostAdapter = a, this.onChange = s, this.epoch = 0, this.inFlight = null, this.checkpoints = Promise.resolve(), this.bridgeQueuedAction = null, this.characterPreparation = null, this.characterPreparationRequest = 0, this.initialOptions = {
-			registrySnapshot: o.snapshot(),
-			player: l || this.defaultPlayer(),
-			enemies: u,
-			...c,
-			semanticState: d
+			chatId: n,
+			branchId: r
+		}), this.credentialStorage = t, this.registry = s;
+		let p = this.storage.readSettings(), m = jh(this.credentialStorage);
+		this.settings = mh({
+			...p,
+			adjudicator: {
+				...p.adjudicator,
+				...m.adjudicator
+			},
+			narrator: {
+				...p.narrator,
+				...m.narrator
+			}
+		});
+		let h = Tg(this.settings);
+		this.adjudicator = i || h.adjudicator, this.narrator = a || h.narrator, this.customAdapters = {
+			adjudicator: i,
+			narrator: a
+		}, this.hostAdapter = o, this.onChange = c, this.epoch = 0, this.inFlight = null, this.checkpoints = Promise.resolve(), this.bridgeQueuedAction = null, this.characterPreparation = null, this.characterPreparationRequest = 0, this.initialOptions = {
+			registrySnapshot: s.snapshot(),
+			player: u || this.defaultPlayer(),
+			enemies: d,
+			...l,
+			semanticState: f
 		};
-		let p = this.storage.readSession();
-		this.state = p ? Im(p) : jm({
+		let g = this.storage.readSession();
+		this.state = g ? Im(g) : jm({
 			...this.initialOptions,
-			chatId: t,
-			branchId: n
-		}), p && (this.registry = new Bf(this.state.registrySnapshot)), this.logs = this.storage.readLogs(), this.ready = Promise.resolve(), a && (a.start?.(), this.unsubScope = a.subscribeScopeChange?.((e) => {
+			chatId: n,
+			branchId: r
+		}), g && (this.registry = new Bf(this.state.registrySnapshot)), this.logs = this.storage.readLogs(), this.ready = Promise.resolve(), o && (o.start?.(), this.unsubScope = o.subscribeScopeChange?.((e) => {
 			this.ready = this.switchScope(e);
-		}), this.unsubNarrative = a.subscribeNarrative?.((e) => this.recordHostNarrative(e)), this.ready = this.initializeHost());
+		}), this.unsubNarrative = o.subscribeNarrative?.((e) => this.recordHostNarrative(e)), this.ready = this.initializeHost());
 	}
 	defaultPlayer() {
 		let e = this.registry.findEntry?.("gongfa.dielang-xuanchaojue") || this.registry.list().find((e) => e.id === "gongfa.dielang-xuanchaojue") || this.registry.list()[0];
@@ -9330,7 +9389,7 @@ var xg = class {
 		}), e.narrator && (t.narrator = {
 			...this.settings.narrator,
 			...e.narrator
-		}), e.mode !== void 0 && (delete t.adjudicator, delete t.narrator), this.settings = mh(t), this.storage.writeSettings(this.settings), this.setAdapters(bg(this.settings)), this.emit(), this.settings;
+		}), e.mode !== void 0 && (delete t.adjudicator, delete t.narrator), this.settings = mh(t), this.storage.writeSettings(this.settings), Mh(this.settings, this.credentialStorage), this.setAdapters(Tg(this.settings)), this.emit(), this.settings;
 	}
 	setAdapters({ adjudicator: e, narrator: t } = {}) {
 		e && (this.adjudicator = e), t && (this.narrator = t);
@@ -9351,7 +9410,7 @@ var xg = class {
 		}, this.initialOptions.registrySnapshot = r.snapshot(), this.emit(), r.snapshot();
 	}
 	characterConfirmationPanel() {
-		return this.characterPreparation ? lg(this.characterPreparation) : null;
+		return this.characterPreparation ? mg(this.characterPreparation) : null;
 	}
 	async prepareCharacters({ context: e, mvu: t, database: n, inference: r } = {}) {
 		if (await this.ready, this.assertIdleRequest(), !["idle", "ended"].includes(this.state.phase)) throw Error("只能在战斗开始前准备敌方人物");
@@ -9366,10 +9425,10 @@ var xg = class {
 			scope: i,
 			recentMessages: o,
 			enemies: Y(e?.enemies || this.state.actors.enemies)
-		}, c = this.settings.adjudicator, l = yg({
+		}, c = this.settings.adjudicator, l = wg({
 			mvu: t,
 			database: n,
-			inference: r || (c.mode === "http" && c.endpoint && c.model ? vg({
+			inference: r || (c.mode === "http" && c.endpoint && c.model ? Cg({
 				endpoint: c.endpoint,
 				model: c.model,
 				apiKey: c.apiKey || "",
@@ -9377,7 +9436,7 @@ var xg = class {
 			}) : null)
 		}), u = this.epoch, d = ++this.characterPreparationRequest;
 		this.characterPreparation = null;
-		let f = await ng(s, l);
+		let f = await sg(s, l);
 		if (d !== this.characterPreparationRequest || u !== this.epoch || this.state.scope.chatId !== i.chatId || this.state.scope.branchId !== i.branchId) throw Error("人物读取期间聊天分支已改变或读取已取消，请重新读取");
 		return this.characterPreparation = f, this.characterConfirmationPanel();
 	}
@@ -9385,8 +9444,8 @@ var xg = class {
 		if (this.assertIdleRequest(), !this.characterPreparation) throw Error("请先读取敌方人物资料");
 		let n = this.hostAdapter?.scope?.() || this.state.scope;
 		if (n.chatId !== this.state.scope.chatId || n.branchId !== this.state.scope.branchId) throw Error("当前聊天分支已改变");
-		let r = ig(this.characterPreparation, e, t);
-		return this.state = cg(this.state, r), this.characterPreparation = null, this.emit(), this.state;
+		let r = lg(this.characterPreparation, e, t);
+		return this.state = pg(this.state, r), this.characterPreparation = null, this.emit(), this.state;
 	}
 	cancelCharacterPreparation() {
 		this.characterPreparationRequest += 1, this.characterPreparation = null;
@@ -9661,7 +9720,7 @@ var xg = class {
 		return this.cancelPending(), this.hostAdapter?.clearScenePacket?.(), this.state = {
 			...n,
 			version: Math.max(n.version, this.state.version) + 1
-		}, this.registry = new Bf(n.registrySnapshot), this.logs = X(Array.isArray(t.logs) ? t.logs : [], this.secrets()), this.storage.replaceLogs(this.logs), t.settings && (this.settings = mh(X(t.settings)), this.storage.writeSettings(this.settings), this.setAdapters(bg(this.settings))), this.emit(), this.state;
+		}, this.registry = new Bf(n.registrySnapshot), this.logs = X(Array.isArray(t.logs) ? t.logs : [], this.secrets()), this.storage.replaceLogs(this.logs), t.settings && (this.settings = mh(X(t.settings)), this.storage.writeSettings(this.settings), this.setAdapters(Tg(this.settings))), this.emit(), this.state;
 	}
 	playerView() {
 		return Bm(this.state);
@@ -9675,8 +9734,8 @@ var xg = class {
 	dispose() {
 		this.cancelPending(), this.unsubScope?.(), this.unsubNarrative?.(), this.hostAdapter?.dispose?.();
 	}
-}, Sg = "[[XY_BATTLE_PACKET v1 ", Cg = "[[/XY_BATTLE_PACKET]]", wg = (e) => e == null ? e : JSON.parse(JSON.stringify(e)), Tg = (e) => Number.isInteger(Number(e)) && Number(e) >= 0 ? Number(e) : null;
-function Eg(e, t = {}) {
+}, Dg = "[[XY_BATTLE_PACKET v1 ", Og = "[[/XY_BATTLE_PACKET]]", kg = (e) => e == null ? e : JSON.parse(JSON.stringify(e)), Ag = (e) => Number.isInteger(Number(e)) && Number(e) >= 0 ? Number(e) : null;
+function jg(e, t = {}) {
 	let n = e?.scope || {};
 	return {
 		chatId: n.chatId ?? t.chatId,
@@ -9686,8 +9745,8 @@ function Eg(e, t = {}) {
 		messageUid: n.messageUid ?? t.messageUid
 	};
 }
-function Dg(e, t = {}) {
-	let n = Eg(e, t), r = String(e?.actionId ?? "").trim(), i = String(n.branchId ?? "").trim(), a = Tg(e?.version ?? t.version);
+function Mg(e, t = {}) {
+	let n = jg(e, t), r = String(e?.actionId ?? "").trim(), i = String(n.branchId ?? "").trim(), a = Ag(e?.version ?? t.version);
 	if (!r) throw Error("BATTLE_SCENE_PACKET requires actionId");
 	if (!i) throw Error("BATTLE_SCENE_PACKET requires scope.branchId");
 	if (a == null) throw Error("BATTLE_SCENE_PACKET requires a non-negative integer version");
@@ -9697,30 +9756,30 @@ function Dg(e, t = {}) {
 		branchId: i
 	};
 }
-function Og(e, t = {}) {
-	let n = Dg(e, t);
+function Ng(e, t = {}) {
+	let n = Mg(e, t);
 	return JSON.stringify([
 		n.branchId,
 		n.version,
 		n.actionId
 	]);
 }
-function kg(e, t = {}) {
+function Pg(e, t = {}) {
 	if (!e || typeof e != "object" || Array.isArray(e)) throw Error("BATTLE_SCENE_PACKET must be an object");
 	if (e.type !== "BATTLE_SCENE_PACKET") throw Error("Expected a BATTLE_SCENE_PACKET");
-	let n = Dg(e, t), r = e.scope?.branchId;
+	let n = Mg(e, t), r = e.scope?.branchId;
 	if (r != null && String(r) !== n.branchId) throw Error("BATTLE_SCENE_PACKET scope.branchId is inconsistent");
 	if (t.branchId != null && String(t.branchId) !== n.branchId) throw Error("BATTLE_SCENE_PACKET branchId does not match the active scope");
 	return n;
 }
-function Ag(e, t = {}) {
-	let n = kg(e, t), r = encodeURIComponent(JSON.stringify(n)), i = {
-		...wg(e),
+function Fg(e, t = {}) {
+	let n = Pg(e, t), r = encodeURIComponent(JSON.stringify(n)), i = {
+		...kg(e),
 		version: n.version
 	};
-	return `${Sg}${r}]]\n${JSON.stringify(i).replaceAll(Cg, "\\u005b\\u005b/XY_BATTLE_PACKET]]")}\n${Cg}`;
+	return `${Dg}${r}]]\n${JSON.stringify(i).replaceAll(Og, "\\u005b\\u005b/XY_BATTLE_PACKET]]")}\n${Og}`;
 }
-function jg(e) {
+function Ig(e) {
 	if (!e || /[\r\n]/.test(e)) throw Error("Malformed XY_BATTLE_PACKET header");
 	let t;
 	try {
@@ -9729,21 +9788,21 @@ function jg(e) {
 		throw Error("Malformed XY_BATTLE_PACKET header");
 	}
 	if (!t || typeof t != "object" || Array.isArray(t)) throw Error("Malformed XY_BATTLE_PACKET header");
-	return Dg({
+	return Mg({
 		actionId: t.actionId,
 		version: t.version,
 		scope: { branchId: t.branchId }
 	});
 }
-var Mg = /* @__PURE__ */ RegExp("^\\[\\[XY_BATTLE_PACKET v1 ([^\\r\\n]+)\\]\\]$", "gm");
-function Ng(e, t, n, r, i) {
-	let a = jg(e), o;
+var Lg = /* @__PURE__ */ RegExp("^\\[\\[XY_BATTLE_PACKET v1 ([^\\r\\n]+)\\]\\]$", "gm");
+function Rg(e, t, n, r, i) {
+	let a = Ig(e), o;
 	try {
 		o = JSON.parse(t);
 	} catch {
 		throw Error("Malformed XY_BATTLE_PACKET payload");
 	}
-	let s = kg(o, { branchId: a.branchId });
+	let s = Pg(o, { branchId: a.branchId });
 	if (s.actionId !== a.actionId || s.version !== a.version || s.branchId !== a.branchId) throw Error("XY_BATTLE_PACKET header does not match payload");
 	return {
 		packet: o,
@@ -9759,48 +9818,48 @@ function Ng(e, t, n, r, i) {
 		end: i
 	};
 }
-function Pg(e) {
+function zg(e) {
 	if (typeof e != "string" || !e) return [];
 	let t = [];
-	Mg.lastIndex = 0;
+	Lg.lastIndex = 0;
 	let n;
-	for (; n = Mg.exec(e);) {
+	for (; n = Lg.exec(e);) {
 		let r = n.index + n[0].length;
 		e.slice(r, r + 2) === "\r\n" ? r += 2 : e[r] === "\n" && (r += 1);
-		let i = e.indexOf(Cg, r);
+		let i = e.indexOf(Og, r);
 		if (i < 0) continue;
 		let a = i;
 		e[a - 2] === "\r" && e[a - 1] === "\n" ? a -= 2 : e[a - 1] === "\n" && --a;
 		let o = i + 21;
 		try {
-			t.push(Ng(n[1], e.slice(r, a), e, n.index, o));
+			t.push(Rg(n[1], e.slice(r, a), e, n.index, o));
 		} catch {}
-		Mg.lastIndex = o;
+		Lg.lastIndex = o;
 	}
 	return t;
 }
-function Fg(e, t, n = {}) {
-	let r = typeof e == "string" ? e : "", i = kg(t, n), a = JSON.stringify([
+function Bg(e, t, n = {}) {
+	let r = typeof e == "string" ? e : "", i = Pg(t, n), a = JSON.stringify([
 		i.branchId,
 		i.version,
 		i.actionId
-	]), o = JSON.stringify([i.branchId, i.actionId]), s = Pg(r), c = s.find((e) => e.key === a);
+	]), o = JSON.stringify([i.branchId, i.actionId]), s = zg(r), c = s.find((e) => e.key === a);
 	if (c) return {
 		text: r,
 		marker: c.raw,
 		match: c,
-		packet: wg(c.packet),
+		packet: kg(c.packet),
 		key: a,
 		identity: o,
 		deduplicated: !0,
 		appended: !1
 	};
 	if (s.find((e) => e.identity === o)) throw Error("An XY_BATTLE_PACKET for this action and branch already has a different version");
-	let l = Ag(t, n), u = r && !r.endsWith("\n") ? "\n\n" : r ? "\n" : "", d = `${r}${u}${l}`;
+	let l = Fg(t, n), u = r && !r.endsWith("\n") ? "\n\n" : r ? "\n" : "", d = `${r}${u}${l}`;
 	return {
 		text: d,
 		marker: l,
-		packet: wg(t),
+		packet: kg(t),
 		key: a,
 		identity: o,
 		deduplicated: !1,
@@ -9809,10 +9868,10 @@ function Fg(e, t, n = {}) {
 		end: d.length
 	};
 }
-function Ig(e) {
+function Vg(e) {
 	return e ? "value" in e && typeof e.value == "string" ? e.value : typeof e.textContent == "string" ? e.textContent : "" : "";
 }
-function Lg(e, t) {
+function Hg(e, t) {
 	if (!e) return !1;
 	if ("value" in e) {
 		let n = Object.getPrototypeOf(e), r = n && Object.getOwnPropertyDescriptor(n, "value")?.set;
@@ -9820,7 +9879,7 @@ function Lg(e, t) {
 	} else e.textContent = t;
 	return !0;
 }
-function Rg(e, t = ["input", "change"]) {
+function Ug(e, t = ["input", "change"]) {
 	if (!e?.dispatchEvent) return;
 	let n = e.ownerDocument?.defaultView?.Event || globalThis.Event;
 	for (let r of t) try {
@@ -9831,11 +9890,11 @@ function Rg(e, t = ["input", "change"]) {
 		e.dispatchEvent(t);
 	} catch {}
 }
-function zg(e, t) {
+function Wg(e, t) {
 	return e?.textarea && (typeof e.textarea == "object" || typeof e.textarea == "function") ? e.textarea : e?.input && (typeof e.input == "object" || typeof e.input == "function") ? e.input : t?.querySelector?.("#send_textarea, textarea#send_textarea, textarea[data-testid=\"send-textarea\"], textarea");
 }
-var Bg = class {
-	constructor({ contextProvider: e = () => globalThis.SillyTavern?.getContext?.() || {}, getInputElement: t, documentRef: n = globalThis.document, eventEmitter: r, eventTypes: i, windowRef: a = globalThis, dispatch: o = Rg, bindPageLifecycle: s = !0 } = {}) {
+var Gg = class {
+	constructor({ contextProvider: e = () => globalThis.SillyTavern?.getContext?.() || {}, getInputElement: t, documentRef: n = globalThis.document, eventEmitter: r, eventTypes: i, windowRef: a = globalThis, dispatch: o = Ug, bindPageLifecycle: s = !0 } = {}) {
 		Object.assign(this, {
 			contextProvider: e,
 			getInputElement: t,
@@ -9851,13 +9910,13 @@ var Bg = class {
 		return this.contextProvider?.() || {};
 	}
 	inputElement() {
-		return this.getInputElement ? this.getInputElement(this.context(), this.documentRef) : zg(this.context(), this.documentRef);
+		return this.getInputElement ? this.getInputElement(this.context(), this.documentRef) : Wg(this.context(), this.documentRef);
 	}
 	read(e = this.inputElement()) {
-		return Ig(e);
+		return Vg(e);
 	}
 	write(e, t) {
-		let n = Lg(e, t);
+		let n = Hg(e, t);
 		return n && this.dispatch(e), n;
 	}
 	dispatch(e) {
@@ -9883,7 +9942,7 @@ var Bg = class {
 		};
 		let n;
 		try {
-			n = Og(e, t);
+			n = Ng(e, t);
 		} catch (e) {
 			return {
 				queued: !1,
@@ -9919,7 +9978,7 @@ var Bg = class {
 		};
 		let i = this.read(r), a;
 		try {
-			a = Fg(i, e, t);
+			a = Bg(i, e, t);
 		} catch (e) {
 			return {
 				queued: !1,
@@ -9933,11 +9992,11 @@ var Bg = class {
 		return a.deduplicated ? (this.active = {
 			key: n,
 			identity: a.identity,
-			packet: wg(e),
+			packet: kg(e),
 			marker: a.marker,
 			element: r,
 			owns: !1,
-			scope: wg(t)
+			scope: kg(t)
 		}, {
 			queued: !0,
 			injected: !0,
@@ -9947,12 +10006,12 @@ var Bg = class {
 		}) : (this.write(r, a.text), this.active = {
 			key: n,
 			identity: a.identity,
-			packet: wg(e),
+			packet: kg(e),
 			marker: a.marker,
 			element: r,
 			previousValue: i,
 			injectedValue: a.text,
-			scope: wg(t),
+			scope: kg(t),
 			owns: !0
 		}, {
 			queued: !0,
@@ -9971,19 +10030,19 @@ var Bg = class {
 	verify(e, t = {}) {
 		let n;
 		try {
-			n = Og(e, t);
+			n = Ng(e, t);
 		} catch {
 			return {
 				valid: !1,
 				reason: "Packet identity is incomplete"
 			};
 		}
-		let r = Pg(this.read(this.inputElement())).find((e) => e.key === n);
+		let r = zg(this.read(this.inputElement())).find((e) => e.key === n);
 		return r ? {
 			valid: !0,
 			key: n,
 			marker: r.raw,
-			packet: wg(r.packet)
+			packet: kg(r.packet)
 		} : {
 			valid: !1,
 			key: n,
@@ -10028,7 +10087,7 @@ var Bg = class {
 		return this.active ? {
 			key: this.active.key,
 			identity: this.active.identity,
-			scope: wg(this.active.scope),
+			scope: kg(this.active.scope),
 			owns: this.active.owns
 		} : null;
 	}
@@ -10065,20 +10124,20 @@ var Bg = class {
 };
 //#endregion
 //#region src/battle-packet-markers.js
-function Vg(e) {
-	return Pg(e);
+function Kg(e) {
+	return zg(e);
 }
 //#endregion
 //#region src/host-display-folding.js
-function Hg(e, t) {
+function qg(e, t) {
 	return t || e?.ownerDocument || globalThis.document;
 }
-function Ug(e) {
+function Jg(e) {
 	return e?.nodeType === 1 && e.hasAttribute?.("data-xy-battle-packet-key");
 }
-function Wg(e) {
+function Yg(e) {
 	let t = [], n = (e) => {
-		if (e && !Ug(e)) {
+		if (e && !Jg(e)) {
 			if (e.nodeType === 3) {
 				t.push({
 					node: e,
@@ -10100,7 +10159,7 @@ function Wg(e) {
 	};
 	return n(e), t;
 }
-function Gg(e, t, n = !1) {
+function Xg(e, t, n = !1) {
 	let r = 0;
 	for (let i = 0; i < e.length; i += 1) {
 		let a = e[i], o = a.length;
@@ -10129,8 +10188,8 @@ function Gg(e, t, n = !1) {
 		offset: i.length
 	} : null;
 }
-function Kg(e, t, n, r) {
-	let i = Wg(e), a = Gg(i, t.start), o = Gg(i, t.end, !0);
+function Zg(e, t, n, r) {
+	let i = Yg(e), a = Xg(i, t.start), o = Xg(i, t.end, !0);
 	if (!a || !o || !n.createRange) return !1;
 	let s = n.createRange();
 	s.setStart(a.node, a.offset), s.setEnd(o.node, o.offset);
@@ -10141,8 +10200,8 @@ function Kg(e, t, n, r) {
 	let u = n.createElement("pre");
 	return u.className = "xy-battle-packet-source", u.textContent = t.raw, c.appendChild(u), s.deleteContents(), s.insertNode(c), s.detach?.(), !0;
 }
-function qg(e, { documentRef: t, placeholder: n = "战斗场景包（已折叠）" } = {}) {
-	let r = Hg(e, t);
+function Qg(e, { documentRef: t, placeholder: n = "战斗场景包（已折叠）" } = {}) {
+	let r = qg(e, t);
 	if (!e || !r?.createElement) return {
 		folded: 0,
 		available: !1
@@ -10150,15 +10209,15 @@ function qg(e, { documentRef: t, placeholder: n = "战斗场景包（已折叠�
 	let i = 0, a = e.matches?.(".mes_text") ? [e] : [...e.querySelectorAll?.(".mes_text") || []];
 	a.length || a.push(e);
 	for (let e of a) {
-		let t = Vg(Wg(e).map((e) => e.text).join(""));
-		for (let a of [...t].reverse()) Kg(e, a, r, n) && (i += 1);
+		let t = Kg(Yg(e).map((e) => e.text).join(""));
+		for (let a of [...t].reverse()) Zg(e, a, r, n) && (i += 1);
 	}
 	return {
 		folded: i,
 		available: !0
 	};
 }
-var Jg = class {
+var $g = class {
 	constructor({ documentRef: e = globalThis.document, root: t, rootSelector: n = "#chat", placeholder: r } = {}) {
 		Object.assign(this, {
 			documentRef: e,
@@ -10171,7 +10230,7 @@ var Jg = class {
 		return this.root || this.documentRef?.querySelector?.(this.rootSelector);
 	}
 	apply(e = this.resolveRoot()) {
-		return qg(e, {
+		return Qg(e, {
 			documentRef: this.documentRef,
 			placeholder: this.placeholder
 		});
@@ -10200,31 +10259,31 @@ var Jg = class {
 	dispose() {
 		this.disconnect();
 	}
-}, $ = (e) => e == null ? e : JSON.parse(JSON.stringify(e)), Yg = (e) => e != null && e !== "" && Number.isInteger(Number(e)) && Number(e) >= 0 ? Number(e) : null, Xg = (e) => !!e && (e.role === "assistant" || e.role == null && e.is_user === !1 && e.extra?.type !== "narrator"), Zg = [
+}, $ = (e) => e == null ? e : JSON.parse(JSON.stringify(e)), e_ = (e) => e != null && e !== "" && Number.isInteger(Number(e)) && Number(e) >= 0 ? Number(e) : null, t_ = (e) => !!e && (e.role === "assistant" || e.role == null && e.is_user === !1 && e.extra?.type !== "narrator"), n_ = [
 	"chatId",
 	"branchId",
 	"messageId",
 	"swipeId",
 	"messageUid"
-], Qg = (e, t, n = !1) => {
+], r_ = (e, t, n = !1) => {
 	if (!e || !t) return !1;
 	let r = e.messageUid != null && t.messageUid != null && String(e.messageUid) === String(t.messageUid);
-	return Zg.every((n) => e[n] == null || r && (n === "messageId" || n === "branchId") ? !0 : String(e[n]) === String(t[n])) && (!n || e.scopeEpoch == null || e.scopeEpoch === t.scopeEpoch);
-}, $g = (e) => Object.fromEntries(Zg.map((t) => [t, e[t]]));
-function e_(e) {
-	return Array.isArray(e) ? `[${e.map(e_).join(",")}]` : e && typeof e == "object" ? `{${Object.keys(e).sort().map((t) => `${JSON.stringify(t)}:${e_(e[t])}`).join(",")}}` : JSON.stringify(e);
+	return n_.every((n) => e[n] == null || r && (n === "messageId" || n === "branchId") ? !0 : String(e[n]) === String(t[n])) && (!n || e.scopeEpoch == null || e.scopeEpoch === t.scopeEpoch);
+}, i_ = (e) => Object.fromEntries(n_.map((t) => [t, e[t]]));
+function a_(e) {
+	return Array.isArray(e) ? `[${e.map(a_).join(",")}]` : e && typeof e == "object" ? `{${Object.keys(e).sort().map((t) => `${JSON.stringify(t)}:${a_(e[t])}`).join(",")}}` : JSON.stringify(e);
 }
-function t_(e) {
-	return Array.isArray(e) ? e.map(t_) : !e || typeof e != "object" ? e : Object.fromEntries(Object.entries(e).filter(([e]) => ![
+function o_(e) {
+	return Array.isArray(e) ? e.map(o_) : !e || typeof e != "object" ? e : Object.fromEntries(Object.entries(e).filter(([e]) => ![
 		"apiKey",
 		"api_key",
 		"authorization"
-	].includes(e)).map(([e, t]) => [e, t_(t)]));
+	].includes(e)).map(([e, t]) => [e, o_(t)]));
 }
-function n_(e) {
+function s_(e) {
 	return e?.extra?.battle_v2_message_uuid || e?.extra?.message_uuid || e?.swipe_info?.find((e) => e?.battle_v2_message_uuid)?.battle_v2_message_uuid || e?.swipes_info?.find((e) => e?.battle_v2_message_uuid)?.battle_v2_message_uuid;
 }
-var r_ = class {
+var c_ = class {
 	constructor({ contextProvider: e = () => globalThis.SillyTavern?.getContext?.() || {}, helper: t, eventEmitter: n, eventTypes: r, windowRef: i = globalThis, documentRef: a = globalThis.document, inputBridge: o, displayFolding: s, extensionName: c = "st-xybattle-sys" } = {}) {
 		Object.assign(this, {
 			contextProvider: e,
@@ -10234,13 +10293,13 @@ var r_ = class {
 			windowRef: i,
 			documentRef: a,
 			extensionName: c
-		}), this.anchor = null, this.currentScope = null, this.epoch = 0, this.messageUids = /* @__PURE__ */ new WeakMap(), this.scopeListeners = /* @__PURE__ */ new Set(), this.narrativeListeners = /* @__PURE__ */ new Set(), this.disposers = [], this.boundEmitter = null, this.packet = null, this.activePacket = null, this.injected = !1, this.lastInjection = null, this.inputBridge = o || new Bg({
+		}), this.anchor = null, this.currentScope = null, this.epoch = 0, this.messageUids = /* @__PURE__ */ new WeakMap(), this.scopeListeners = /* @__PURE__ */ new Set(), this.narrativeListeners = /* @__PURE__ */ new Set(), this.disposers = [], this.boundEmitter = null, this.packet = null, this.activePacket = null, this.injected = !1, this.lastInjection = null, this.inputBridge = o || new Gg({
 			contextProvider: e,
 			documentRef: a,
 			windowRef: i,
 			bindPageLifecycle: !1,
 			getInputElement: (e, t) => t?.querySelector?.("#send_textarea, textarea#send_textarea, textarea[data-testid=\"send-textarea\"]") || null
-		}), this.displayFolding = s || new Jg({ documentRef: a }), this.writeQueue = Promise.resolve(), this.uncertainScopes = /* @__PURE__ */ new Set(), this.disposed = !1, this.start();
+		}), this.displayFolding = s || new $g({ documentRef: a }), this.writeQueue = Promise.resolve(), this.uncertainScopes = /* @__PURE__ */ new Set(), this.disposed = !1, this.start();
 	}
 	context() {
 		return this.contextProvider() || {};
@@ -10252,11 +10311,11 @@ var r_ = class {
 		return String(e.chatId ?? e.getCurrentChatId?.() ?? e.chat?.id ?? "");
 	}
 	explicitMessageId(e) {
-		return Yg(e.messageId ?? e.message_id ?? e.message?.message_id);
+		return e_(e.messageId ?? e.message_id ?? e.message?.message_id);
 	}
 	latestAssistantId(e) {
 		if (!Array.isArray(e.chat)) return null;
-		for (let t = e.chat.length - 1; t >= 0; --t) if (Xg(e.chat[t])) return t;
+		for (let t = e.chat.length - 1; t >= 0; --t) if (t_(e.chat[t])) return t;
 		return null;
 	}
 	storedAnchorId(e, t) {
@@ -10264,7 +10323,7 @@ var r_ = class {
 		let n = [];
 		for (let r = e.chat.length - 1; r >= 0; --r) {
 			let i = e.chat[r], a = i?.swipe_id ?? 0, o = (i?.swipe_info?.[a] || i?.swipes_info?.[a] || i?.extra || {})?.battle_v2;
-			if (!Xg(i) || o?.schema !== "battle_v2_host_store" || String(o.scope?.chatId) !== String(t) || String(o.scope?.swipeId) !== String(a)) continue;
+			if (!t_(i) || o?.schema !== "battle_v2_host_store" || String(o.scope?.chatId) !== String(t) || String(o.scope?.swipeId) !== String(a)) continue;
 			let s = +(String(o.scope?.messageId) === String(r)), c = Number(o.version ?? o.state?.version ?? 0);
 			n.push({
 				index: r,
@@ -10290,7 +10349,7 @@ var r_ = class {
 		}
 		let r = t.chat?.[e] || (this.explicitMessageId(t) === e ? t.message : null);
 		if (!r) return null;
-		let i = r.swipes || [r.mes ?? r.message ?? ""], a = Yg(r.swipe_id ?? r.swipeId) ?? 0, o = Array.from({ length: i.length }, (e, t) => $(r.swipe_info?.[t] ?? r.swipes_info?.[t] ?? (t === a ? r.extra : {}) ?? {}));
+		let i = r.swipes || [r.mes ?? r.message ?? ""], a = e_(r.swipe_id ?? r.swipeId) ?? 0, o = Array.from({ length: i.length }, (e, t) => $(r.swipe_info?.[t] ?? r.swipes_info?.[t] ?? (t === a ? r.extra : {}) ?? {}));
 		return o[a] = {
 			...$(r.extra || {}),
 			...o[a]
@@ -10308,7 +10367,7 @@ var r_ = class {
 	scope() {
 		let e = this.context(), t = this.chatId(e), n = this.explicitMessageId(e), r = this.anchor?.chatId === t ? this.anchor.messageId : null, i = !1;
 		if (n != null && (r = n), r == null && (r = this.storedAnchorId(e, t), i = r != null, r ??= this.latestAssistantId(e), r == null)) try {
-			r = Yg(this.helper()?.getCurrentMessageId?.());
+			r = e_(this.helper()?.getCurrentMessageId?.());
 		} catch {}
 		let a;
 		try {
@@ -10316,7 +10375,7 @@ var r_ = class {
 		} catch {
 			a = null;
 		}
-		if (r != null && !Xg(a)) {
+		if (r != null && !t_(a)) {
 			this.anchor = null, r = this.storedAnchorId(e, t), i = r != null, r ??= this.latestAssistantId(e);
 			try {
 				a = r == null ? null : this.readMessageSync(r, e);
@@ -10325,7 +10384,7 @@ var r_ = class {
 			}
 		}
 		let o = e.chat?.[r] || (n === r ? e.message : null);
-		if (!t || !Xg(a) || Yg(a?.swipe_id) == null) return this.publishScope({
+		if (!t || !t_(a) || e_(a?.swipe_id) == null) return this.publishScope({
 			chatId: t || "default-chat",
 			branchId: "main",
 			messageId: null,
@@ -10334,7 +10393,7 @@ var r_ = class {
 			available: !1,
 			writable: !1
 		}), this.anchor = null, { ...this.currentScope };
-		let s = n_(o) || n_(a), c = this.anchor?.chatId === t && this.anchor.messageId === r && (o ? o === this.anchor.raw || s === this.anchor.messageUid : !s || s === this.anchor.messageUid), l = s || (c ? this.anchor.messageUid : o && this.messageUids.get(o));
+		let s = s_(o) || s_(a), c = this.anchor?.chatId === t && this.anchor.messageId === r && (o ? o === this.anchor.raw || s === this.anchor.messageUid : !s || s === this.anchor.messageUid), l = s || (c ? this.anchor.messageUid : o && this.messageUids.get(o));
 		l ||= globalThis.crypto?.randomUUID?.() || `battle-message-${Date.now()}-${Math.random().toString(36).slice(2)}`, o && this.messageUids.set(o, l);
 		let u = this.latestAssistantId(e), d = c ? this.anchor.writable : i || u == null || u === r;
 		return this.anchor = {
@@ -10355,7 +10414,7 @@ var r_ = class {
 	}
 	publishScope(e, t = !1) {
 		let n = this.currentScope;
-		if (t || !n || !Qg(n, e) || n.available !== e.available || n.writable !== e.writable) {
+		if (t || !n || !r_(n, e) || n.available !== e.available || n.writable !== e.writable) {
 			this.epoch += 1, this.currentScope = {
 				...e,
 				scopeEpoch: this.epoch
@@ -10369,7 +10428,7 @@ var r_ = class {
 	validateScope(e, { writable: t = !1 } = {}) {
 		let n = this.scope();
 		if (!n.available) throw Error("No assistant message anchor is available");
-		if (!Qg(e, n, !0)) throw Error("Host scope changed; refusing a late cross-chat or cross-swipe operation");
+		if (!r_(e, n, !0)) throw Error("Host scope changed; refusing a late cross-chat or cross-swipe operation");
 		if (t && !n.writable) throw Error("Historical message anchors are read-only");
 		return n;
 	}
@@ -10409,7 +10468,7 @@ var r_ = class {
 				scope: n,
 				capability: t
 			};
-			if (r.schema !== "battle_v2_host_store" || !Qg(r.scope, n) || !Qg(r.state?.scope || r.scope, n)) throw Error("Stored battle_v2 scope does not match this message branch");
+			if (r.schema !== "battle_v2_host_store" || !r_(r.scope, n) || !r_(r.state?.scope || r.scope, n)) throw Error("Stored battle_v2 scope does not match this message branch");
 			let i = $(r.state);
 			return i && (i.scope = {
 				...i.scope,
@@ -10435,14 +10494,14 @@ var r_ = class {
 		}
 	}
 	persistReceipt(e, t, n = e?.scope || t?.scope || this.scope()) {
-		let r = { ...n }, i = t_($(e)), a = t_($(t)), o = this.writeQueue.catch(() => {}).then(() => this.writeReceipt(i, a, r));
+		let r = { ...n }, i = o_($(e)), a = o_($(t)), o = this.writeQueue.catch(() => {}).then(() => this.writeReceipt(i, a, r));
 		return this.writeQueue = o, o;
 	}
 	async writeReceipt(e, t, n) {
 		let r = this.capability();
 		try {
 			let i = this.validateScope(n, { writable: !0 });
-			if (e?.scope && !Qg(e.scope, i, !0) || t?.scope && !Qg(t.scope, i, !0)) throw Error("Receipt/session scope mismatch");
+			if (e?.scope && !r_(e.scope, i, !0) || t?.scope && !r_(t.scope, i, !0)) throw Error("Receipt/session scope mismatch");
 			if (r.write === "unavailable" || r.save !== "awaitable-save-chat") return {
 				persisted: !1,
 				confirmed: !1,
@@ -10453,15 +10512,15 @@ var r_ = class {
 			let a = this.readMessageSync(i.messageId);
 			if (!a || a.swipe_id !== i.swipeId) throw Error("Anchored swipe is no longer selected");
 			let o = a.swipes_info?.[i.swipeId]?.battle_v2;
-			if (o && (o.schema !== "battle_v2_host_store" || !Qg(o.scope, i))) throw Error("Existing host store has an incompatible scope/schema");
-			let s = e_($g(i)), c = Math.max(Number(e?.version ?? 0), Number(t?.version ?? 0));
+			if (o && (o.schema !== "battle_v2_host_store" || !r_(o.scope, i))) throw Error("Existing host store has an incompatible scope/schema");
+			let s = a_(i_(i)), c = Math.max(Number(e?.version ?? 0), Number(t?.version ?? 0));
 			if (!Number.isFinite(c) || c < 0) throw Error("Invalid host store version");
 			let l = e?.actionId && o?.receipts?.[e.actionId], u = e && {
 				...e,
-				scope: $g(i)
+				scope: i_(i)
 			};
 			if (o && c < o.version) {
-				if (!this.uncertainScopes.has(s) && l && e_(l) === e_(u)) return {
+				if (!this.uncertainScopes.has(s) && l && a_(l) === a_(u)) return {
 					persisted: !0,
 					confirmed: !0,
 					scope: i,
@@ -10481,7 +10540,7 @@ var r_ = class {
 					"before",
 					"after",
 					"narrativePacket"
-				]) if (l.status !== "prepared" && e_(l[e]) !== e_(u[e])) throw Error("Conflicting duplicate actionId refused");
+				]) if (l.status !== "prepared" && a_(l[e]) !== a_(u[e])) throw Error("Conflicting duplicate actionId refused");
 				let t = {
 					prepared: 0,
 					committed: 1,
@@ -10492,18 +10551,18 @@ var r_ = class {
 			let d = {
 				...o || {},
 				schema: "battle_v2_host_store",
-				scope: $g(i),
+				scope: i_(i),
 				version: Math.max(c, o?.version || 0),
 				state: t ? {
 					...t,
 					scope: {
 						...t.scope,
-						...$g(i)
+						...i_(i)
 					}
 				} : o?.state || null,
 				receipts: { ...o?.receipts }
 			};
-			if (u && (d.receipts[e.actionId] = u, d.lastActionId = e.actionId), !this.uncertainScopes.has(s) && o && e_(o) === e_(d)) return {
+			if (u && (d.receipts[e.actionId] = u, d.lastActionId = e.actionId), !this.uncertainScopes.has(s) && o && a_(o) === a_(d)) return {
 				persisted: !0,
 				confirmed: !0,
 				scope: i,
@@ -10539,7 +10598,7 @@ var r_ = class {
 			if (this.validateScope(i, { writable: !0 }), await m.saveChat() === !1) throw Error("saveChat returned false");
 			this.validateScope(i, { writable: !0 });
 			let h = this.readMessageSync(i.messageId)?.swipes_info?.[i.swipeId]?.battle_v2;
-			if (e_(h) !== e_(d)) throw Error("Host persistence readback mismatch");
+			if (a_(h) !== a_(d)) throw Error("Host persistence readback mismatch");
 			return this.uncertainScopes.delete(s), {
 				persisted: !0,
 				confirmed: !0,
@@ -10563,7 +10622,7 @@ var r_ = class {
 		try {
 			let n = this.validateScope(t, { writable: !0 });
 			if (!e || e.type !== "BATTLE_SCENE_PACKET" || !e.actionId) throw Error("A committed BATTLE_SCENE_PACKET with actionId is required");
-			if (e.scope && !Qg(e.scope, n, !0)) throw Error("Scene packet scope mismatch");
+			if (e.scope && !r_(e.scope, n, !0)) throw Error("Scene packet scope mismatch");
 			if (this.capability().injection === "unavailable") return {
 				queued: !1,
 				injected: !1,
@@ -10571,10 +10630,10 @@ var r_ = class {
 				reason: "injectPrompts or generation events are unavailable"
 			};
 			let r = this.readMessageSync(n.messageId)?.swipes_info?.[n.swipeId]?.battle_v2, i = r?.receipts?.[e.actionId];
-			if (this.uncertainScopes.has(e_($g(n)))) throw Error("Host persistence is unconfirmed after a failed save");
+			if (this.uncertainScopes.has(a_(i_(n)))) throw Error("Host persistence is unconfirmed after a failed save");
 			if (!i || ["prepared", "judging"].includes(i.status)) throw Error("Scene packet has no persisted committed receipt");
 			if (e.version != null && Number(e.version) !== r.version) throw Error("Scene packet version mismatch");
-			let a = Og(e, {
+			let a = Ng(e, {
 				branchId: n.branchId,
 				version: r.version
 			});
@@ -10722,7 +10781,7 @@ var r_ = class {
 	verifyRenderedUserMessage(e) {
 		let t = this.activePacket;
 		if (!t || t.transport !== "input-box") return;
-		let n = this.context(), r = Yg(e) ?? (Array.isArray(n.chat) ? n.chat.reduce((e, t, n) => t?.is_user || t?.role === "user" ? n : e, null) : null), i = r == null ? null : n.chat?.[r], a = i?.mes ?? i?.message ?? "", o = Vg(String(a)).some((e) => e.key === t.key);
+		let n = this.context(), r = e_(e) ?? (Array.isArray(n.chat) ? n.chat.reduce((e, t, n) => t?.is_user || t?.role === "user" ? n : e, null) : null), i = r == null ? null : n.chat?.[r], a = i?.mes ?? i?.message ?? "", o = Kg(String(a)).some((e) => e.key === t.key);
 		if (t.inputVerified = o, o) {
 			this.lastInjection = {
 				...this.lastInjection,
@@ -10797,9 +10856,9 @@ var r_ = class {
 				"MESSAGE_DELETED",
 				"MESSAGE_UPDATED"
 			]) i(r[e] || e, (t) => {
-				this.clearScenePacket(), e === "MESSAGE_SWIPED" && Yg(t) != null && this.anchor && (this.anchor = {
+				this.clearScenePacket(), e === "MESSAGE_SWIPED" && e_(t) != null && this.anchor && (this.anchor = {
 					...this.anchor,
-					messageId: Yg(t),
+					messageId: e_(t),
 					raw: null
 				}), this.scope();
 			});
@@ -10824,7 +10883,7 @@ var r_ = class {
 };
 //#endregion
 //#region src/ui/mount.js
-function i_({ documentRef: e = globalThis.document, storage: t = globalThis.localStorage, hostAdapter: n, controller: r, chatId: i = "demo-local", branchId: a = "main" } = {}) {
+function l_({ documentRef: e = globalThis.document, storage: t = globalThis.localStorage, hostAdapter: n, controller: r, chatId: i = "demo-local", branchId: a = "main" } = {}) {
 	if (!e) return null;
 	if (e.getElementById("xybattle-v2-root")) return globalThis.XYBattle;
 	let o = e.createElement("div");
@@ -10840,7 +10899,7 @@ function i_({ documentRef: e = globalThis.document, storage: t = globalThis.loca
 			n.rel = "stylesheet", n.href = t, e.head.appendChild(n);
 		}
 	} catch {}
-	let s = n || (globalThis.SillyTavern?.getContext ? new r_({ contextProvider: () => globalThis.SillyTavern.getContext() }) : null), c = r || new xg({
+	let s = n || (globalThis.SillyTavern?.getContext ? new c_({ contextProvider: () => globalThis.SillyTavern.getContext() }) : null), c = r || new Eg({
 		storage: t,
 		chatId: i,
 		branchId: a,
@@ -10865,4 +10924,4 @@ function i_({ documentRef: e = globalThis.document, storage: t = globalThis.loca
 	return globalThis.XYBattle = d, d;
 }
 //#endregion
-export { i_ as mountBattleSystem };
+export { l_ as mountBattleSystem };
