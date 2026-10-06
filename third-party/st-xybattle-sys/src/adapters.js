@@ -1,4 +1,5 @@
 import { clone, abortIfNeeded } from './common.js';
+import { DEFAULT_ADJUDICATION_PROMPT, DEFAULT_CHARACTER_COMPLETION_PROMPT, normalizePrompt } from './character-prompts.js';
 export function normalizeSettings(input = {}) {
   const defaultConfig = { mode: 'unconfigured', endpoint: '', model: '', maxOutput: 1600, temperature: 0.2, repairAttempts: 2, timeoutMs: 60000 };
   const adjudicator = { ...defaultConfig, ...(input.adjudicator || {}) };
@@ -11,7 +12,15 @@ export function normalizeSettings(input = {}) {
     config.temperature = Number(config.temperature); config.maxOutput = Number(config.maxOutput); config.repairAttempts = Number(config.repairAttempts); config.timeoutMs = Number(config.timeoutMs);
     if (!Number.isFinite(config.temperature) || config.temperature < 0 || config.temperature > 2 || !Number.isInteger(config.maxOutput) || config.maxOutput < 1 || !Number.isInteger(config.repairAttempts) || config.repairAttempts < 0 || config.repairAttempts > 3 || !Number.isFinite(config.timeoutMs) || config.timeoutMs < 100) throw new Error('模型参数无效（温度0~2；修复0~3）');
   }
-  return { adjudicator, narrator, autoNarrative: input.autoNarrative !== false, originalPrompt: input.originalPrompt || '', developerLogs: input.developerLogs !== false };
+  return {
+    adjudicator,
+    narrator,
+    autoNarrative: input.autoNarrative !== false,
+    originalPrompt: input.originalPrompt || '',
+    characterCompletionPrompt: normalizePrompt(input.characterCompletionPrompt, DEFAULT_CHARACTER_COMPLETION_PROMPT),
+    adjudicationPrompt: normalizePrompt(input.adjudicationPrompt, DEFAULT_ADJUDICATION_PROMPT),
+    developerLogs: input.developerLogs !== false
+  };
 }
 export function extractJson(content) {
   if (content && typeof content === 'object') return clone(content);
