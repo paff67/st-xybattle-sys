@@ -64,7 +64,7 @@
           </Transition>
 
           <!-- 主内容区域 (按 Tab 切换) -->
-          <div class="xy-content-body xy-custom-scroll" :class="{ 'is-scrollable': currentTab !== 'workbench' }">
+          <div class="xy-content-body xy-custom-scroll" :class="{ 'is-scrollable': currentTab !== 'workbench' || preparingCharacters }">
             <!-- 1. 战场对决主舞台 -->
             <CharacterConfirmationPanel
               v-if="currentTab === 'workbench' && preparingCharacters"
@@ -285,6 +285,7 @@ async function handleStart() {
 
 async function handlePrepareCharacters() {
   characterBusy.value = true;
+  characterPanel.value = null;
   try {
     notification.value = '';
     characterPanel.value = await props.controller.prepareCharacters();
