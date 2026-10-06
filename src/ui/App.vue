@@ -66,8 +66,17 @@
           <!-- 主内容区域 (按 Tab 切换) -->
           <div class="xy-content-body xy-custom-scroll" :class="{ 'is-scrollable': currentTab !== 'workbench' }">
             <!-- 1. 战场对决主舞台 -->
+            <CharacterConfirmationPanel
+              v-if="currentTab === 'workbench' && preparingCharacters"
+              :preparation="characterPanel"
+              :busy="characterBusy"
+              @prepare="handlePrepareCharacters"
+              @retry="handlePrepareCharacters"
+              @confirm="handleConfirmCharacters"
+              @cancel="handleCancelCharacters"
+            />
             <BattleStage 
-              v-show="currentTab === 'workbench'"
+              v-show="currentTab === 'workbench' && !preparingCharacters"
               :view="view"
               :state="state"
               :controller="controller"
@@ -100,6 +109,13 @@
               @import-registry="handleImportRegistry"
               @import-save="handleImportSave"
             />
+            <ContentLibraryPanel
+              v-else-if="currentTab === 'library'"
+              :store="contentStore"
+              @changed="handleContentChanged"
+              @export="handleContentExport"
+              @apply="handleContentApply"
+            />
 
             <!-- 4. 天道秘录与审计 -->
             <DeveloperPanel 
@@ -124,10 +140,13 @@ import BattleStage from './components/BattleStage.vue';
 import SettingsPanel from './components/SettingsPanel.vue';
 import DataPanel from './components/DataPanel.vue';
 import DeveloperPanel from './components/DeveloperPanel.vue';
+import ContentLibraryPanel from './components/ContentLibraryPanel.vue';
+import CharacterConfirmationPanel from './components/CharacterConfirmationPanel.vue';
 import { downloadJson } from '../utils.js';
 import { getAiReadContext } from '../battle-state.js';
 import { stripSecrets } from '../common.js';
 import demoScene from '../../sample-data/demo-scene.json' with { type: 'json' };
+import { ContentStore } from '../content-store.js';
 
 const props = defineProps({
   controller: { type: Object, required: true },
@@ -137,6 +156,10 @@ const props = defineProps({
 const isOpen = ref(false);
 const currentTab = ref('workbench');
 const notification = ref('');
+const contentStore = new ContentStore();
+const preparingCharacters = ref(false);
+const characterBusy = ref(false);
+const characterPanel = shallowRef(null);
 
 // 响应式状态快照
 const view = shallowRef(props.controller.playerView());
@@ -233,6 +256,11 @@ function onKeydown(e) {
 
 onMounted(() => {
   window.addEventListener('keydown', onKeydown);
+  contentStore.ready().then(() => props.controller.hydrateContentStore?.(contentStore)).then(() => {
+    if (contentStore.status().warning) notification.value = contentStore.status().warning;
+  }).catch((error) => {
+    notification.value = `内容库读取失败：${error.message}`;
+  });
 });
 
 onUnmounted(() => {
@@ -243,11 +271,46 @@ onUnmounted(() => {
 async function handleStart() {
   try {
     notification.value = '';
+    if (props.controller.hostAdapter && props.controller.state.characterPreparation?.status !== 'confirmed') {
+      preparingCharacters.value = true;
+      await handlePrepareCharacters();
+      return;
+    }
     props.controller.start();
     updateViews();
   } catch (err) {
     notification.value = err.message;
   }
+}
+
+async function handlePrepareCharacters() {
+  characterBusy.value = true;
+  try {
+    notification.value = '';
+    characterPanel.value = await props.controller.prepareCharacters();
+  } catch (error) {
+    notification.value = error.message;
+  } finally {
+    characterBusy.value = false;
+  }
+}
+
+function handleConfirmCharacters({ edits, removeIds }) {
+  try {
+    props.controller.confirmCharacters(edits, { removeIds });
+    characterPanel.value = null;
+    preparingCharacters.value = false;
+    props.controller.start();
+    updateViews();
+  } catch (error) {
+    notification.value = error.message;
+  }
+}
+
+function handleCancelCharacters() {
+  props.controller.cancelCharacterPreparation();
+  characterPanel.value = null;
+  preparingCharacters.value = false;
 }
 
 async function handleNext() {
@@ -396,6 +459,23 @@ function handleImportSave(json) {
   } catch (err) {
     notification.value = err.message;
   }
+}
+
+function handleContentChanged(result) {
+  notification.value = `内容库已更新；已开始的战斗仍使用各自的 registry snapshot`;
+  if (result?.action === 'delete') updateViews();
+}
+
+function handleContentExport(text) {
+  downloadJson(`xybattle-content-${Date.now()}.json`, text);
+}
+
+function handleContentApply(entries) {
+  try {
+    props.controller.applyContentEntries(entries);
+    notification.value = '已将选中内容应用到本场注册表；正在进行的战斗不会被改写';
+    updateViews();
+  } catch (error) { notification.value = error.message; }
 }
 
 const currentSnapshot = computed(() => {

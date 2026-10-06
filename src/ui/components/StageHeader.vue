@@ -84,6 +84,7 @@ const tabs = [
   { id: 'workbench', label: '战场对决', icon: 'swords' },
   { id: 'settings', label: '独立机枢', icon: 'settings' },
   { id: 'data', label: '演武经卷', icon: 'scroll' },
+  { id: 'library', label: '内容库', icon: 'book-open' },
   { id: 'developer', label: '天道秘录', icon: 'search' }
 ];
 
@@ -379,5 +380,25 @@ const controlTone = computed(() => {
   color: #fca5a5;
   box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.4), 0 6px 18px rgba(244, 63, 94, 0.35);
   transform: translateY(-1px);
+}
+
+@media (max-width: 1200px) {
+  .xy-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 12px 16px; }
+  .xy-header-left, .xy-header-titles { min-width: 0; }
+  .xy-header-right { grid-column: 2; grid-row: 1; }
+  .xy-nav-tabs { grid-column: 1 / -1; grid-row: 2; min-width: 0; overflow-x: auto; border-radius: 8px; }
+  .xy-tab-btn { flex: none; }
+  .xy-kicker { flex-wrap: wrap; letter-spacing: 0; }
+}
+
+@media (max-width: 600px) {
+  .xy-header { padding: 10px 12px; }
+  .xy-header-left { gap: 10px; }
+  .xy-brand-seal { width: 36px; height: 36px; }
+  .xy-kicker { font-size: 9px; }
+  .xy-kicker-dot, .xy-scope-pill, .xy-phase-indicator, .xy-meta-tag { display: none; }
+  .xy-title-text { font-size: 18px; }
+  .xy-subtitle { font-size: 10px; flex-wrap: wrap; gap: 4px; }
+  .xy-tab-btn { font-size: 11px; padding: 7px 9px; gap: 4px; white-space: nowrap; }
 }
 </style>

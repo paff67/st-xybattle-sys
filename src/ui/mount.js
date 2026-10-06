@@ -19,7 +19,7 @@ export function mountBattleSystem({
   documentRef.body.appendChild(root);
 
   try {
-    const cssHref = new URL('../../style.css', import.meta.url).href;
+    const cssHref = new URL(['..', '..', 'style.css'].join('/'), import.meta.url).href;
     if (!documentRef.querySelector(`link[href*="style.css"]`)) {
       const link = documentRef.createElement('link');
       link.rel = 'stylesheet';
@@ -29,6 +29,9 @@ export function mountBattleSystem({
   } catch {}
 
   const host = hostAdapter || (globalThis.SillyTavern?.getContext ? new BattleHostAdapter({ contextProvider: () => globalThis.SillyTavern.getContext() }) : null);
+  // Keep the battle bootstrap opt-in: the default registry is the existing
+  //叠浪玄潮诀 demo only. Catalogue entries are loaded by the content library
+  // and applied to a new battle explicitly by the user.
   const controller = providedController || new BattleController({ storage, chatId, branchId, hostAdapter: host });
 
   const app = createApp(App, {

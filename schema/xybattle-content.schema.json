@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paff67.github.io/st-xybattle-sys/xybattle-content.schema.json",
+  "title": "XY Battle Technique Content Export",
+  "type": "object",
+  "required": ["schema", "protocolVersion", "items"],
+  "properties": {
+    "schema": { "const": "xybattle-content-export-v1" },
+    "protocolVersion": { "const": 1 },
+    "exportedAt": { "type": "string" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["schema", "protocolVersion", "id", "contentType", "name", "version", "createdAt", "updatedAt", "entry"],
+        "properties": {
+          "schema": { "const": "xybattle-content-v1" },
+          "protocolVersion": { "const": 1 },
+          "id": { "type": "string", "pattern": "^(gongfa|fabao)\\.[a-z0-9._-]+$" },
+          "contentType": { "enum": ["technique", "treasure"] },
+          "name": { "type": "string", "minLength": 1 },
+          "version": { "type": "string", "minLength": 1 },
+          "createdAt": { "type": "string" },
+          "updatedAt": { "type": "string" },
+          "entry": { "$ref": "battle-technique.schema.json" }
+        }
+      }
+    }
+  }
+}

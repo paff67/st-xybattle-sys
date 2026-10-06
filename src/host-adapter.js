@@ -1,4 +1,7 @@
 // Contract evidence: docs/host-contract-review.md. Fixtures are not live-host acceptance.
+import { HostInputBridge } from './host-input-bridge.js';
+import { HostDisplayFolding } from './host-display-folding.js';
+import { battlePacketKey, parseBattlePacketMarkers } from './battle-packet-markers.js';
 const clone = (value) => value == null ? value : JSON.parse(JSON.stringify(value));
 const integer = (value) => value != null && value !== '' && Number.isInteger(Number(value)) && Number(value) >= 0 ? Number(value) : null;
 const assistant = (message) => !!message && (message.role === 'assistant' || (message.role == null && message.is_user === false && message.extra?.type !== 'narrator'));
@@ -20,11 +23,13 @@ function messageUid(message) {
 }
 
 export class BattleHostAdapter {
-  constructor({ contextProvider = () => globalThis.SillyTavern?.getContext?.() || {}, helper, eventEmitter, eventTypes, windowRef = globalThis, extensionName = 'st-xybattle-sys' } = {}) {
-    Object.assign(this, { contextProvider, helperDependency: helper, eventEmitterDependency: eventEmitter, eventTypesDependency: eventTypes, windowRef, extensionName });
+  constructor({ contextProvider = () => globalThis.SillyTavern?.getContext?.() || {}, helper, eventEmitter, eventTypes, windowRef = globalThis, documentRef = globalThis.document, inputBridge, displayFolding, extensionName = 'st-xybattle-sys' } = {}) {
+    Object.assign(this, { contextProvider, helperDependency: helper, eventEmitterDependency: eventEmitter, eventTypesDependency: eventTypes, windowRef, documentRef, extensionName });
     this.anchor = null; this.currentScope = null; this.epoch = 0; this.messageUids = new WeakMap();
     this.scopeListeners = new Set(); this.narrativeListeners = new Set(); this.disposers = []; this.boundEmitter = null;
     this.packet = null; this.activePacket = null; this.injected = false; this.lastInjection = null;
+    this.inputBridge = inputBridge || new HostInputBridge({ contextProvider, documentRef, windowRef, bindPageLifecycle: false, getInputElement: (_context, doc) => doc?.querySelector?.('#send_textarea, textarea#send_textarea, textarea[data-testid="send-textarea"]') || null });
+    this.displayFolding = displayFolding || new HostDisplayFolding({ documentRef });
     this.writeQueue = Promise.resolve(); this.uncertainScopes = new Set(); this.disposed = false; this.start();
   }
   context() { return this.contextProvider() || {}; }
@@ -109,7 +114,9 @@ export class BattleHostAdapter {
     const context = this.context(), helper = this.helper();
     const read = typeof helper?.getChatMessages === 'function' ? 'tavern-helper' : Array.isArray(context.chat) ? 'context-chat' : 'unavailable';
     const write = read === 'tavern-helper' && typeof helper?.setChatMessages === 'function' ? 'tavern-helper' : Array.isArray(context.chat) ? 'context-chat' : 'unavailable';
-    return { read, write, save: typeof context.saveChat === 'function' ? 'awaitable-save-chat' : write === 'tavern-helper' ? 'debounced-only' : 'unavailable', injection: typeof helper?.injectPrompts === 'function' && this.boundEmitter ? 'once-generation-event' : 'unavailable', events: !!this.boundEmitter, liveVerified: false };
+    const input = this.inputBridge?.capability?.() || { input: 'unavailable' };
+    const injection = input.input === 'available' && this.boundEmitter ? 'input-box-once-generation-event' : typeof helper?.injectPrompts === 'function' && this.boundEmitter ? 'once-generation-event' : 'unavailable';
+    return { read, write, save: typeof context.saveChat === 'function' ? 'awaitable-save-chat' : write === 'tavern-helper' ? 'debounced-only' : 'unavailable', injection, input: input.input, display: this.displayFolding ? 'dom-projection' : 'unavailable', events: !!this.boundEmitter, liveVerified: false };
   }
   async ready() { this.start(); return { scope: this.scope(), capability: this.capability() }; }
   subscribeScopeChange(listener) { this.scopeListeners.add(listener); return () => this.scopeListeners.delete(listener); }
@@ -185,8 +192,14 @@ export class BattleHostAdapter {
       if (this.uncertainScopes.has(canonical(persistedScope(scope)))) throw new Error('Host persistence is unconfirmed after a failed save');
       if (!receipt || ['prepared', 'judging'].includes(receipt.status)) throw new Error('Scene packet has no persisted committed receipt');
       if (packet.version != null && Number(packet.version) !== store.version) throw new Error('Scene packet version mismatch');
-      this.clearScenePacket(); this.packet = { ...clone(packet), packet: clone(packet), scope, version: store.version };
-      return { queued: true, injected: false, scope, capability: this.capability() };
+      const key = battlePacketKey(packet, { branchId: scope.branchId, version: store.version });
+      if (!key) throw new Error('Scene packet identity is incomplete');
+      if (this.packet?.key === key || this.activePacket?.key === key) return { queued: true, injected: !!this.activePacket, deduplicated: true, scope, capability: this.capability() };
+      this.clearScenePacket();
+      const inputResult = this.inputBridge?.append?.(packet, { ...scope, version: store.version });
+      if (inputResult?.conflict) throw new Error(inputResult.reason || 'Input contains a conflicting XY_BATTLE_PACKET');
+      this.packet = { ...clone(packet), packet: clone(packet), scope, version: store.version, key, transportCandidate: inputResult?.queued ? 'input-box' : null, inputResult };
+      return { queued: true, injected: false, scope, transport: inputResult?.queued ? 'input-box' : 'extension-prompt', pendingVerification: !!inputResult?.queued, capability: this.capability() };
     } catch (error) { this.clearScenePacket(); return { queued: false, injected: false, reason: error.message, stale: true, capability: this.capability() }; }
   }
   beforeGeneration(...args) {
@@ -199,14 +212,24 @@ export class BattleHostAdapter {
       const store = this.readMessageSync(pending.scope.messageId)?.swipes_info?.[pending.scope.swipeId]?.battle_v2;
       if (!store || store.version !== pending.version || !store.receipts?.[pending.packet.actionId]) throw new Error('Scene packet version/scope changed before generation');
       const context = this.context(), baselineId = this.latestAssistantId(context), baselineText = baselineId == null ? null : context.chat[baselineId]?.mes;
-      const result = this.helper().injectPrompts([{ id: `${this.extensionName}:battle_v2:${pending.packet.actionId}`, role: 'system', position: 'in_chat', depth: 0, should_scan: false, content: JSON.stringify(pending.packet), filter: () => { try { this.validateScope(pending.scope); return this.readMessageSync(pending.scope.messageId)?.swipes_info?.[pending.scope.swipeId]?.battle_v2?.version === pending.version; } catch { return false; } } }], { once: true });
+      const inputResult = pending.transportCandidate === 'input-box' ? this.inputBridge?.verify?.(pending.packet, { ...pending.scope, version: pending.version }) : { valid: false };
+      if (inputResult?.valid) {
+        this.activePacket = { ...pending, baselineId, baselineText, transport: 'input-box', inputResult }; this.packet = null; this.injected = true;
+        this.lastInjection = { injected: true, transport: 'input-box', verified: false, pendingVerification: true, deduplicated: !!inputResult.deduplicated, actionId: pending.packet.actionId, scope: pending.scope };
+        return;
+      }
+      this.inputBridge?.clear?.();
+      const helper = this.helper();
+      if (typeof helper?.injectPrompts !== 'function') throw new Error(inputResult?.reason || 'injectPrompts is unavailable');
+      const result = helper.injectPrompts([{ id: `${this.extensionName}:battle_v2:${pending.packet.actionId}`, role: 'system', position: 'in_chat', depth: 0, should_scan: false, content: JSON.stringify(pending.packet), filter: () => { try { this.validateScope(pending.scope); return this.readMessageSync(pending.scope.messageId)?.swipes_info?.[pending.scope.swipeId]?.battle_v2?.version === pending.version; } catch { return false; } } }], { once: true });
       if (typeof result?.uninject !== 'function') throw new Error('injectPrompts did not return its documented uninject handle');
-      this.activePacket = { ...pending, uninject: result.uninject, baselineId, baselineText }; this.packet = null; this.injected = true;
-      this.lastInjection = { injected: true, actionId: pending.packet.actionId, scope: pending.scope };
+      this.activePacket = { ...pending, uninject: result.uninject, baselineId, baselineText, transport: 'extension-prompt' }; this.packet = null; this.injected = true;
+      this.lastInjection = { injected: true, transport: 'extension-prompt', actionId: pending.packet.actionId, scope: pending.scope };
     } catch (error) { this.clearScenePacket(); this.lastInjection = { injected: false, reason: error.message }; }
   }
   async finishGeneration(status) {
     const active = this.activePacket; this.clearScenePacket(); if (!active) return;
+    if (active.transport === 'input-box' && active.inputVerified !== true) this.lastInjection = { ...this.lastInjection, transport: 'input-box', verified: false, pendingVerification: false, reason: 'The rendered user message was not observed with an exact XY_BATTLE_PACKET' };
     try {
       this.validateScope(active.scope);
       if (this.readMessageSync(active.scope.messageId)?.swipes_info?.[active.scope.swipeId]?.battle_v2?.version !== active.version) throw new Error('Scene packet version changed during generation');
@@ -218,9 +241,35 @@ export class BattleHostAdapter {
       for (const listener of this.narrativeListeners) await listener(event);
     } catch (error) { this.lastInjection = { injected: false, reason: error.message, stale: true }; }
   }
+  verifyRenderedUserMessage(messageId) {
+    const active = this.activePacket;
+    if (!active || active.transport !== 'input-box') return;
+    const context = this.context();
+    const id = integer(messageId) ?? (Array.isArray(context.chat) ? context.chat.reduce((found, item, index) => item?.is_user || item?.role === 'user' ? index : found, null) : null);
+    const raw = id == null ? null : context.chat?.[id];
+    const text = raw?.mes ?? raw?.message ?? '';
+    const exact = parseBattlePacketMarkers(String(text)).some((entry) => entry.key === active.key);
+    active.inputVerified = exact;
+    if (exact) { this.lastInjection = { ...this.lastInjection, transport: 'input-box', verified: true, pendingVerification: false }; return; }
+    // The host created a user message without the marker. The input transport
+    // is therefore not authoritative; add one extension prompt before prompt
+    // assembly, with no simultaneous input marker transport.
+    const helper = this.helper();
+    try {
+      if (typeof helper?.injectPrompts !== 'function') throw new Error('injectPrompts is unavailable after input verification failed');
+      const result = helper.injectPrompts([{ id: `${this.extensionName}:battle_v2:${active.packet.actionId}`, role: 'system', position: 'in_chat', depth: 0, should_scan: false, content: JSON.stringify(active.packet), filter: () => { try { this.validateScope(active.scope); return this.readMessageSync(active.scope.messageId)?.swipes_info?.[active.scope.swipeId]?.battle_v2?.version === active.version; } catch { return false; } } }], { once: true });
+      if (typeof result?.uninject !== 'function') throw new Error('injectPrompts did not return its documented uninject handle');
+      active.uninject = result.uninject;
+      active.transport = 'extension-prompt';
+      this.lastInjection = { injected: true, transport: 'extension-prompt', fallback: true, actionId: active.packet.actionId, scope: active.scope, reason: 'Rendered user message did not retain exact XY_BATTLE_PACKET' };
+    } catch (error) {
+      this.lastInjection = { injected: false, transport: 'input-box', verified: false, reason: error.message };
+    }
+  }
   clearScenePacket() {
-    const active = this.activePacket; this.activePacket = null; this.packet = null; this.injected = false;
+    const active = this.activePacket, pending = this.packet; this.activePacket = null; this.packet = null; this.injected = false;
     if (active?.uninject) active.uninject();
+    if (active?.transport === 'input-box' || pending?.transportCandidate === 'input-box') this.inputBridge?.clear?.();
   }
   start() {
     if (this.disposed) return this.capability();
@@ -242,10 +291,13 @@ export class BattleHostAdapter {
         if (name === 'MESSAGE_SWIPED' && integer(messageId) != null && this.anchor) this.anchor = { ...this.anchor, messageId: integer(messageId), raw: null };
         this.scope();
       });
+      on(events.USER_MESSAGE_RENDERED || 'USER_MESSAGE_RENDERED', (messageId) => { this.displayFolding?.apply?.(); this.verifyRenderedUserMessage(messageId); });
+      for (const name of ['CHARACTER_MESSAGE_RENDERED', 'MESSAGE_RENDERED']) on(events[name] || name, () => this.displayFolding?.apply?.());
     }
+    this.displayFolding?.observe?.();
     if (this.windowRef?.addEventListener) { const handler = () => this.clearScenePacket(); this.windowRef.addEventListener('pagehide', handler); this.disposers.push(() => this.windowRef.removeEventListener?.('pagehide', handler)); }
     return this.capability();
   }
-  dispose() { this.clearScenePacket(); for (const dispose of this.disposers.splice(0)) dispose(); this.boundEmitter = null; this.scopeListeners.clear(); this.narrativeListeners.clear(); this.disposed = true; }
+  dispose() { this.clearScenePacket(); this.inputBridge?.dispose?.(); this.displayFolding?.dispose?.(); for (const dispose of this.disposers.splice(0)) dispose(); this.boundEmitter = null; this.scopeListeners.clear(); this.narrativeListeners.clear(); this.disposed = true; }
 }
 export function createHostAdapter(contextProvider) { return new BattleHostAdapter(typeof contextProvider === 'function' ? { contextProvider } : contextProvider); }

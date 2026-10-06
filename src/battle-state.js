@@ -1,14 +1,16 @@
 import { clone, stableStringify, abortIfNeeded } from './common.js';
 import { TechniqueRegistry } from './battle-registry.js';
 import { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, buildAdjudicationPrompt, formatScenePacketForStoryAI } from './battle-adjudicator-prompt.js';
+import { applyCausalChanges, advanceCausalState, createCausalState, restoreCausalState, publicCausalState } from './causal-state.js';
 export { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, buildAdjudicationPrompt, formatScenePacketForStoryAI };
 export const PHASES = Object.freeze(['idle','active','awaiting_player','judging','committed','narrating','awaiting_next','ended','rewrite']);
 const fixedKeys = ['statuses','effects','positions','control'];
-export function createInitialState({ sessionId = `battle-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, chatId = 'default-chat', branchId = 'main', location = '未设定地点', time = '未设定时间', player, enemies = [], registrySnapshot = [], semanticState, resourceRules = [], scene = {} } = {}) {
+export function createInitialState({ sessionId = `battle-${Date.now()}-${Math.random().toString(36).slice(2,7)}`, chatId = 'default-chat', branchId = 'main', location = '未设定地点', time = '未设定时间', player, enemies = [], registrySnapshot = [], semanticState, resourceRules = [], scene = {}, causalState } = {}) {
+  const scope = { chatId: String(chatId), branchId: String(branchId) };
   return { schema: 'battle_v2', version: 1, sessionId, scope: { chatId: String(chatId), branchId: String(branchId), extension: 'st-xybattle-sys' }, phase: 'idle', round: 0, roundId: null, actionSeq: 0,
     scene: { location, time, turn: 0, initiative: 'pending', positions: {}, publicEvents: [], ...clone(scene) },
     actors: { player: clone(player || { id: 'player', name: '主角', visibleInfo: '可见', resources: {}, techniques: [] }), enemies: clone(enemies) },
-    semanticState: { statuses: [], effects: [], positions: {}, control: '均势', ...clone(semanticState || {}) }, resourceRules: clone(resourceRules), registrySnapshot: clone(registrySnapshot), history: [], pending: null, lastError: null, updatedAt: new Date().toISOString() };
+    semanticState: { statuses: [], effects: [], positions: {}, control: '均势', ...clone(semanticState || {}) }, causalState: causalState ? restoreCausalState(causalState, { scope }) : createCausalState({ scope }), resourceRules: clone(resourceRules), registrySnapshot: clone(registrySnapshot), history: [], pending: null, lastError: null, updatedAt: new Date().toISOString() };
 }
 function transition(state, phase, patch = {}) { return { ...state, ...patch, phase, version: state.version + 1, updatedAt: new Date().toISOString() }; }
 function assertPhase(state, phases) { if (!phases.includes(state.phase)) throw new Error(`当前状态 ${state.phase} 不允许此操作，需要 ${phases.join('/')}`); }
@@ -16,7 +18,8 @@ export function startBattle(state) { assertPhase(state, ['idle','ended']); retur
 export function stopBattle(state, reason = '用户停止') { return transition(state, 'ended', { lastError: reason }); }
 export function restoreBattle(raw) {
   if (!raw || raw.schema !== 'battle_v2' || !PHASES.includes(raw.phase) || !raw.scope || !raw.actors || !raw.semanticState || !Array.isArray(raw.history) || !Array.isArray(raw.registrySnapshot)) throw new Error('无法恢复：不是有效 battle_v2 会话');
-  const state = clone(raw); new TechniqueRegistry(state.registrySnapshot); state.resourceRules ||= [];
+  const state = clone(raw); new TechniqueRegistry(state.registrySnapshot); state.resourceRules ||= []; state.causalState = restoreCausalState(state.causalState, { scope: state.scope });
+  if (state.characterPreparation && state.characterPreparation.status !== 'confirmed') state.characterPreparation = clone(state.characterPreparation);
   if (['judging','narrating','rewrite','active','committed'].includes(state.phase)) {
     const last = state.history.at(-1); const committed = last && ['committed','complete'].includes(last.status);
     if (state.phase === 'judging' && state.pending) { const attempt = state.history.find((item) => item.actionId === state.pending.actionId); if (attempt) attempt.status = 'interrupted'; }
@@ -25,12 +28,13 @@ export function restoreBattle(raw) {
   return state;
 }
 export function advanceEffects(effects = []) { return effects.flatMap((effect) => typeof effect === 'string' || !Number.isInteger(effect.remainingRounds) ? [effect] : effect.remainingRounds > 1 ? [{ ...effect, remainingRounds: effect.remainingRounds - 1 }] : []); }
-export function nextRound(state) { assertPhase(state, ['awaiting_next','committed']); const semanticState = { ...state.semanticState, effects: advanceEffects(state.semanticState.effects) }; return startBattle({ ...state, phase: 'ended', semanticState }); }
+export function nextRound(state, { elapsedStoryHours = 0, storyTime } = {}) { assertPhase(state, ['awaiting_next','committed']); const semanticState = { ...state.semanticState, effects: advanceEffects(state.semanticState.effects) }; const causalState = advanceCausalState(state.causalState, { roundId: state.roundId, scope: state.scope, elapsedStoryHours, storyTime }); return startBattle({ ...state, phase: 'ended', semanticState, causalState }); }
 function publicSemantic(state) { return { ...clone(state), effects: (state.effects || []).filter((effect) => typeof effect === 'string' || ['public','player',undefined].includes(effect.visibility)) }; }
-export function getPlayerView(state) { return { schema: state.schema, version: state.version, scope: clone(state.scope), phase: state.phase, round: state.round, roundId: state.roundId, scene: clone(state.scene), semanticState: publicSemantic(state.semanticState), player: clone(state.actors.player), enemies: state.actors.enemies.map((enemy) => ({ id: enemy.id, name: enemy.name, visibleInfo: clone(enemy.visibleInfo || {}) })), timeline: state.history.filter((record) => ['committed','complete'].includes(record.status)).slice(-12).map((record) => ({ actionId: record.actionId, roundId: record.roundId, label: record.action?.label, outcome: record.adjudication?.summary, narrative: record.narrative?.text, status: record.status })) }; }
-export function getAiReadContext(state) { return { session: { id: state.sessionId, version: state.version, round: state.round, phase: state.phase, scope: clone(state.scope) }, scene: clone(state.scene), actors: clone(state.actors), semanticState: clone(state.semanticState), resourceRules: clone(state.resourceRules), registry: clone(state.registrySnapshot), priorCommittedFacts: state.history.filter((r) => ['committed','complete'].includes(r.status)).map((r) => clone(r.adjudication)) }; }
+export function getPlayerView(state) { return { schema: state.schema, version: state.version, scope: clone(state.scope), phase: state.phase, round: state.round, roundId: state.roundId, scene: clone(state.scene), semanticState: publicSemantic(state.semanticState), causalState: publicCausalState(state.causalState), player: clone(state.actors.player), enemies: state.actors.enemies.map((enemy) => ({ id: enemy.id, name: enemy.name, visibleInfo: clone(enemy.visibleInfo || {}) })), timeline: state.history.filter((record) => ['committed','complete'].includes(record.status)).slice(-12).map((record) => ({ actionId: record.actionId, roundId: record.roundId, label: record.action?.label, outcome: record.adjudication?.summary, narrative: record.narrative?.text, status: record.status })) }; }
+export function getAiReadContext(state) { const actors = clone(state.actors); if (state.characterPreparation && state.characterPreparation.status !== 'confirmed') actors.enemies = []; return { session: { id: state.sessionId, version: state.version, round: state.round, phase: state.phase, scope: clone(state.scope) }, scene: clone(state.scene), actors, semanticState: clone(state.semanticState), causalState: clone(state.causalState), resourceRules: clone(state.resourceRules), registry: clone(state.registrySnapshot), priorCommittedFacts: state.history.filter((r) => ['committed','complete'].includes(r.status)).map((r) => clone(r.adjudication)) }; }
 export function buildAdjudicationRequest(state, action, settings = {}) {
   assertPhase(state, ['awaiting_player']); if (!action || typeof action.label !== 'string' || !action.label.trim()) throw new Error('行动需要非空 label');
+  if (state.characterPreparation && state.characterPreparation.status !== 'confirmed') throw new Error('敌方人物资料尚未确认，禁止进入裁定器');
   const context = getAiReadContext(state);
   if (action.techniqueId) { const registry = new TechniqueRegistry(state.registrySnapshot); const found = registry.findTechnique(action.techniqueId); if (!found) throw new Error('行动功法未注册'); const owns = (state.actors.player.techniques || []).some((group) => group.registryId === found.entry.id && group.techniqueIds?.includes(action.techniqueId)); if (!owns) throw new Error('主角未拥有该词条'); const available = registry.availability(found.entry.id, action.techniqueId, state.semanticState); if (!available.available) throw new Error(`本轮词条条件不足：${available.reason}`); }
   const config = settings.adjudicator || settings;
@@ -64,7 +68,10 @@ export function validateAdjudication(result, state, { allowMock = false } = {}) 
     if (typeof change.reason !== 'string' || !change.reason.trim() || !Array.isArray(change.ruleRefs) || !change.ruleRefs.length || !change.ruleRefs.some((ref) => rule.ruleRefs.includes(ref)) || change.ruleRefs.some((ref) => !known.has(ref))) throw new Error('资源变化缺少权威reason/ruleRefs');
   }
   const publiclyVisible = JSON.stringify({ summary: result.summary, publicEvents: result.publicEvents, after: publicSemantic(result.after) }); for (const leaf of state.actors.enemies.flatMap((enemy) => hiddenLeaves(enemy.hidden))) if (publiclyVisible.includes(leaf)) throw new Error('裁定公开结果包含敌方隐藏信息，拒绝发布');
-  return { summary: result.summary, before: clone(result.before), after: clone(result.after), reason: result.reason, ruleRefs: clone(result.ruleRefs), publicEvents: result.publicEvents.map(String), ...(result.resourceChanges === undefined ? {} : {resourceChanges: clone(resourceChanges)}), confidence: Number.isFinite(result.confidence) ? result.confidence : null };
+  const causalChanges = result.causalChanges === undefined ? [] : result.causalChanges;
+  if (!Array.isArray(causalChanges) || causalChanges.some((change) => !change || typeof change !== 'object' || Array.isArray(change) || !(change.operation || change.type))) throw new Error('causalChanges 必须是带 operation/type 的对象数组');
+  if (causalChanges.some((change) => change.scope && (String(change.scope.chatId) !== String(state.scope.chatId) || String(change.scope.branchId) !== String(state.scope.branchId)))) throw new Error('因果变更作用域不匹配');
+  return { summary: result.summary, before: clone(result.before), after: clone(result.after), reason: result.reason, ruleRefs: clone(result.ruleRefs), publicEvents: result.publicEvents.map(String), ...(result.resourceChanges === undefined ? {} : {resourceChanges: clone(resourceChanges)}), ...(result.causalChanges === undefined ? {} : {causalChanges: clone(causalChanges)}), confidence: Number.isFinite(result.confidence) ? result.confidence : null };
 }
 export function buildNarrativePacket(state, record, request) {
   const packet = { type: 'BATTLE_SCENE_PACKET', schema: 'battle_v2', scope: clone(state.scope), sessionId: state.sessionId, roundId: record.roundId, actionId: record.actionId, preserveUserPrompt: true, committedFacts: [record.adjudication.summary,...record.adjudication.publicEvents], location: state.scene.location, time: state.scene.time, publicEvents: clone(state.scene.publicEvents), descriptionRequirements: ['细致描写本轮交锋对敌手造成的物理与灵力实质创伤/制约','生动描写本轮交锋对周围地形与天地气象造成的剧烈冲击','保持修者境界与功法机理特色，严守敌我可见信息边界'], prohibitions: ['禁止复判本轮行动胜负','禁止新增未提交数值结算','禁止泄露隐藏敌情'], nextDecisionPoint: '等待玩家选择下一步行动', playerVisibleContext: getPlayerView(state), originalAction: clone(request.action) };
@@ -75,20 +82,31 @@ function normalizeNarrative(value) { return typeof value === 'string' ? { text: 
 export async function judgeAndCommit(state, action, { adjudicator, narrator, settings = {}, signal, save = () => {}, logger = () => {}, onCommit = () => {} } = {}) {
   const existing = action?.actionId ? state.history.find((record) => record.actionId === action.actionId) : null; if (existing) return { state, record: clone(existing), deduplicated: true };
   const request = buildAdjudicationRequest(state, action, settings); const allowMock = adjudicator?.isMock === true || (settings.adjudicator?.mode || settings.mode) === 'mock';
-  const attempt = { actionId: request.actionId, roundId: request.roundId, action: clone(request.action), status: 'prepared', version: state.version, before: clone(state.semanticState) };
+  const attempt = { actionId: request.actionId, roundId: request.roundId, action: clone(request.action), status: 'prepared', version: state.version, before: clone(state.semanticState), causalBefore: clone(state.causalState) };
   let next = transition(state, 'judging', { actionSeq: state.actionSeq + 1, pending: { actionId: request.actionId, roundId: request.roundId }, history: [...state.history,attempt] });
   logger({ kind: 'adjudication_request', actionId: request.actionId, roundId: request.roundId, aiRead: clone(request.context), playerVisible: request.playerVisibleContext, request: clone(request), internal: { requestMetadata: { type: request.type, actionId: request.actionId, roundId: request.roundId, version: request.version, settings: request.settings } } }); await save(next);
   let raw, adjudication; const repairLimit = request.settings.repairAttempts;
   try {
     for (let attemptIndex = 0; ; attemptIndex += 1) {
-      try { raw = attemptIndex === 0 ? await adjudicator.judge(request, { signal, logger }) : await adjudicator.repair(request, raw, adjudication, { signal, logger }); abortIfNeeded(signal); logger({ kind: 'ai_raw_response', actionId: request.actionId, rawResponse: clone(raw), repairAttempt: attemptIndex }); adjudication = validateAdjudication(raw, state, { allowMock }); logger({ kind: 'program_validation', actionId: request.actionId, validation: { valid: true, repairAttempt: attemptIndex } }); break; }
+      try { raw = attemptIndex === 0 ? await adjudicator.judge(request, { signal, logger }) : await adjudicator.repair(request, raw, adjudication, { signal, logger }); abortIfNeeded(signal); logger({ kind: 'ai_raw_response', actionId: request.actionId, rawResponse: clone(raw), repairAttempt: attemptIndex }); adjudication = validateAdjudication(raw, state, { allowMock, actionId: request.actionId, roundId: request.roundId }); logger({ kind: 'program_validation', actionId: request.actionId, validation: { valid: true, repairAttempt: attemptIndex } }); break; }
       catch (error) { abortIfNeeded(signal); logger({ kind: 'program_validation', actionId: request.actionId, validation: { valid: false, error: error.message, repairAttempt: attemptIndex } }); raw = error.rawContent ?? raw; if (attemptIndex >= repairLimit || typeof adjudicator.repair !== 'function' || raw === undefined) throw error; adjudication = error; }
     }
   } catch (error) { next = transition(next, 'awaiting_player', { pending: null, lastError: error.message, history: next.history.map((item) => item.actionId === request.actionId ? { ...item, status: error.name === 'AbortError' ? 'interrupted' : 'rejected', error: error.message } : item) }); if (!signal?.aborted) await save(next); throw error; }
   const actors = clone(next.actors);
   for (const change of adjudication.resourceChanges || []) { const actor = [actors.player,...actors.enemies].find((item) => item.id === change.actorId); actor.resources[change.resource] = change.after; }
-  next = transition(next, 'committed', { actors, semanticState: clone(adjudication.after), scene: { ...next.scene, publicEvents: [...next.scene.publicEvents,...adjudication.publicEvents] }, pending: null });
-  const record = { ...attempt, status: 'committed', version: next.version, adjudication, before: clone(state.semanticState), after: clone(next.semanticState), createdAt: new Date().toISOString() };
+  let causalState = next.causalState;
+  try {
+    if ((adjudication.causalChanges || []).length) {
+      const knownRuleRefs = state.registrySnapshot.flatMap((entry) => [...entry.ruleRefs, ...entry.techniques.flatMap((technique) => technique.ruleRefs)]).concat((state.resourceRules || []).flatMap((rule) => rule.ruleRefs || []));
+      causalState = applyCausalChanges(causalState, adjudication.causalChanges, { actionId: request.actionId, roundId: request.roundId, scope: state.scope, version: next.version, knownRuleRefs, allowMock, requireRuleRefs: true }).state;
+    }
+  } catch (error) {
+    next = transition(next, 'awaiting_player', { pending: null, lastError: error.message, history: next.history.map((item) => item.actionId === request.actionId ? { ...item, status: 'rejected', error: error.message } : item) });
+    await save(next);
+    throw error;
+  }
+  next = transition(next, 'committed', { actors, semanticState: clone(adjudication.after), causalState, scene: { ...next.scene, publicEvents: [...next.scene.publicEvents,...adjudication.publicEvents] }, pending: null });
+  const record = { ...attempt, status: 'committed', version: next.version, adjudication, before: clone(state.semanticState), after: clone(next.semanticState), causalAfter: clone(next.causalState), createdAt: new Date().toISOString() };
   record.narrativePacket = buildNarrativePacket(next,record,request); next = { ...next, history: next.history.map((item) => item.actionId === record.actionId ? record : item) }; abortIfNeeded(signal); await save(next);
   logger({ kind: 'commit', actionId: record.actionId, playerVisible: getPlayerView(next), record: clone(record), internal: { programValidation: { valid: true }, aiRawResponse: clone(raw) } });
   const durability = await onCommit(clone(record),next); abortIfNeeded(signal);

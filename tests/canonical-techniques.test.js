@@ -4,6 +4,8 @@ import { TechniqueRegistry, assertRegistryEntry } from '../src/battle-registry.j
 import {
   SIX_HEAVENLY_TECHNIQUES,
   THREE_HEAVENLY_TREASURES,
+  FORMAL_HEAVENLY_TREASURES,
+  EXCLUDED_CANONICAL_REGISTRIES,
   ALL_CANONICAL_REGISTRIES
 } from '../src/canonical-techniques.js';
 
@@ -28,11 +30,11 @@ test('all six heavenly techniques conform to registry schema and pass assertions
   }
 });
 
-test('all three heavenly treasures conform to registry schema and pass assertions', () => {
-  assert.equal(THREE_HEAVENLY_TREASURES.length, 3);
+test('formal heavenly treasures exclude the retired mirror and retain the historical export alias', () => {
+  assert.equal(FORMAL_HEAVENLY_TREASURES.length, 2);
+  assert.equal(THREE_HEAVENLY_TREASURES, FORMAL_HEAVENLY_TREASURES);
   const expectedTreasureIds = [
     'fabao.cangxian-chaoyin',
-    'fabao.chengjie-wuxiangjing',
     'fabao.chaochen-xinglv'
   ];
 
@@ -43,11 +45,13 @@ test('all three heavenly treasures conform to registry schema and pass assertion
     assert.ok(treasure.techniques.length > 0);
     assert.ok(treasure.synergies.length > 0);
   }
+  assert.equal(EXCLUDED_CANONICAL_REGISTRIES[0].id, 'fabao.chengjie-wuxiangjing');
+  assert.ok(!ALL_CANONICAL_REGISTRIES.some((entry) => entry.id === 'fabao.chengjie-wuxiangjing'));
 });
 
 test('canonical registry instantiates cleanly and provides lookup across all entries', () => {
   const registry = new TechniqueRegistry(ALL_CANONICAL_REGISTRIES);
-  assert.equal(registry.list().length, 9);
+  assert.equal(registry.list().length, 8);
 
   // Test finding technique across entries
   const foundTaiyi = registry.findTechnique('chengyuan-qihaihuiliu');
@@ -56,9 +60,7 @@ test('canonical registry instantiates cleanly and provides lookup across all ent
   assert.equal(foundTaiyi.technique.name, '澄渊·气海回流');
 
   const foundMirror = registry.findTechnique('shijie-maoding');
-  assert.ok(foundMirror);
-  assert.equal(foundMirror.entry.id, 'fabao.chengjie-wuxiangjing');
-  assert.equal(foundMirror.technique.name, '视界锚定');
+  assert.equal(foundMirror, undefined);
 
   const foundFootwear = registry.findTechnique('tianyayikui');
   assert.ok(foundFootwear);

@@ -96,15 +96,19 @@ export function buildAdjudicationPrompt(context, action) {
     '【5. 交锋前战局语义状态 (before)】',
     JSON.stringify(currentSemantic, null, 2),
     '',
-    '【6. 权威功法注册表与可用规则库】',
+    '【6. 因果级生命周期状态（只允许通过 causalChanges 改变；正文重写不得改写）】',
+    JSON.stringify(context.causalState || {}, null, 2),
+    '因果期限只能按 storyClock / elapsedStoryHours 推进；不得使用现实时间。支持可配置 15 日冷却、一个月影响、22 小时死亡等期限；缺少明确规则时标记待定，不得凭空补境界细则。',
+    '',
+    '【7. 权威功法注册表与可用规则库】',
     JSON.stringify(context.registry || {}, null, 2),
     '',
-    '【7. 裁定要求】',
+    '【8. 裁定要求】',
     '1. 依据【主角招式机理】与【敌方功法防备】，深度推演功法碰撞与生克因果。',
     '2. 明确给出【对敌人的实质影响】（受制、破防、身法脱节、经脉反噬、破绽）。',
     '3. 明确给出【对战场环境的天地剧变】（地形破坏、水汽激荡、灵气屏风、气象冲击）。',
     '4. 确立节奏转移并更新 semanticState（before 必须原样一致，after 必须为完整更新对象）。',
-    '5. 输出标准 JSON，字段包含 summary, before, after, reason, ruleRefs, publicEvents, confidence。'
+    '5. 输出标准 JSON，字段包含 summary, before, after, reason, ruleRefs, publicEvents, confidence；如因果状态改变，增加 causalChanges 数组，每个操作必须有 operationId、scope、ruleRefs（仅引用权威规则），不得直接回写 causalState。'
   ];
 
   return lines.join('\n');
