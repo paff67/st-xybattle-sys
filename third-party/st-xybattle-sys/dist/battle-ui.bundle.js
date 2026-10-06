@@ -8978,29 +8978,37 @@ async function sg(e = {}, { mvu: t, database: n, inference: r, ai: i, maxCandida
 				"techniques",
 				"abilities",
 				"skills"
-			].filter((e) => f.fields?.[e] == null), n = await m({
-				candidate: Y(f.fields),
-				knownFields: Y(f.fields),
-				missingFields: t,
-				context: Y(e),
-				signal: o
-			}, {
-				context: Y(e),
-				signal: o
-			}), r = n?.data ?? n;
-			if (r && typeof r == "object" && n?.status !== "read_failed") {
-				let e = r.fields || r.inferred || r;
-				f = eg(f, {
-					mvu: s.value,
-					database: u.value,
-					inference: e,
-					aiExtracted: a.explicit
-				});
+			].filter((e) => f.fields?.[e] == null);
+			try {
+				let n = await m({
+					candidate: Y(f.fields),
+					knownFields: Y(f.fields),
+					missingFields: t,
+					context: Y(e),
+					signal: o
+				}, {
+					context: Y(e),
+					signal: o
+				}), r = n?.data ?? n;
+				if (r && typeof r == "object" && n?.status !== "read_failed") {
+					let e = r.fields || r.inferred || r;
+					f = eg(f, {
+						mvu: s.value,
+						database: u.value,
+						inference: e,
+						aiExtracted: a.explicit
+					});
+				}
+				p = n?.status ? {
+					status: n.status,
+					...n.error || n.reason ? { error: n.error || n.reason } : {}
+				} : { status: r ? "matched" : "missing" };
+			} catch (e) {
+				p = {
+					status: "read_failed",
+					error: String(e?.message || e)
+				};
 			}
-			p = n?.status ? {
-				status: n.status,
-				...n.error || n.reason ? { error: n.error || n.reason } : {}
-			} : { status: r ? "matched" : "missing" };
 		}
 		f.sourceStatus = {
 			mvu_dynamic: {
@@ -9199,10 +9207,10 @@ async function Sg(e) {
 	}
 	return n;
 }
-function Cg({ endpoint: e, model: t, apiKey: n = "", fetchImpl: r = globalThis.fetch, timeoutMs: i = 6e4 } = {}) {
+function Cg({ endpoint: e, model: t, apiKey: n = "", fetchImpl: r = globalThis.fetch, timeoutMs: i = 6e4, fillTimeoutMs: a = 15e3 } = {}) {
 	if (!e || typeof r != "function") throw Error("人物 AI 需要 endpoint 与 fetch");
-	let a = async (a, o) => {
-		let s = new AbortController(), c = setTimeout(() => s.abort(), i);
+	let o = async (a, o, s = i) => {
+		let c = new AbortController(), l = setTimeout(() => c.abort(), s);
 		try {
 			return await Sg(await r(gd(e), {
 				method: "POST",
@@ -9222,23 +9230,23 @@ function Cg({ endpoint: e, model: t, apiKey: n = "", fetchImpl: r = globalThis.f
 						content: `${a}\n上下文：${JSON.stringify(o)}`
 					}]
 				}),
-				signal: s.signal
+				signal: c.signal
 			}));
 		} finally {
-			clearTimeout(c);
+			clearTimeout(l);
 		}
 	};
 	return {
 		async inferCandidates(e) {
-			let t = await a("提取敌方候选人物，返回 {\"candidates\":[{\"id\":\"...\",\"name\":\"...\",\"explicitFacts\":{},\"inferred\":{}}]}。明确事实放 explicitFacts；不确定的补全放 inferred，不得把推断当作事实。", Y(e));
+			let t = await o("提取敌方候选人物，返回 {\"candidates\":[{\"id\":\"...\",\"name\":\"...\",\"explicitFacts\":{},\"inferred\":{}}]}。明确事实放 explicitFacts；不确定的补全放 inferred，不得把推断当作事实。", Y(e));
 			return Array.isArray(t) ? t : t?.candidates || [];
 		},
 		async fillMissingFields({ candidate: e, knownFields: t, context: n }) {
-			let r = await a("仅补全明确缺失字段，返回 {\"fields\":{...},\"inferred\":true}，不得覆盖已有字段。", {
+			let r = await o("仅补全明确缺失字段，返回 {\"fields\":{...},\"inferred\":true}，不得覆盖已有字段。", {
 				candidate: e,
 				knownFields: t,
 				context: n
-			});
+			}, a);
 			return r?.fields || r || {};
 		}
 	};

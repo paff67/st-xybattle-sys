@@ -322,13 +322,18 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
     const fillFn = aiSource && (typeof aiSource.fill === 'function' ? aiSource.fill.bind(aiSource) : typeof aiSource.fillMissingFields === 'function' ? aiSource.fillMissingFields.bind(aiSource) : null);
     if (fillFn) {
       const missingFields = ['realm', '境界', 'visibleInfo', 'resources', 'techniques', 'abilities', 'skills'].filter((key) => merged.fields?.[key] == null);
-      const fill = await fillFn({ candidate: clone(merged.fields), knownFields: clone(merged.fields), missingFields, context: clone(context), signal }, { context: clone(context), signal });
-      const fillData = fill?.data ?? fill;
-      if (fillData && typeof fillData === 'object' && fill?.status !== 'read_failed') {
-        const patch = fillData.fields || fillData.inferred || fillData;
-        merged = mergeCharacterCandidate(merged, { mvu: mvuResult.value, database: databaseResult.value, inference: patch, aiExtracted: aiParts.explicit });
+      try {
+        const fill = await fillFn({ candidate: clone(merged.fields), knownFields: clone(merged.fields), missingFields, context: clone(context), signal }, { context: clone(context), signal });
+        const fillData = fill?.data ?? fill;
+        if (fillData && typeof fillData === 'object' && fill?.status !== 'read_failed') {
+          const patch = fillData.fields || fillData.inferred || fillData;
+          merged = mergeCharacterCandidate(merged, { mvu: mvuResult.value, database: databaseResult.value, inference: patch, aiExtracted: aiParts.explicit });
+        }
+        fillStatus = fill?.status ? { status: fill.status, ...(fill.error || fill.reason ? { error: fill.error || fill.reason } : {}) } : { status: fillData ? 'matched' : 'missing' };
+      } catch (error) {
+        // A slow optional fill must not discard already extracted, reviewable facts.
+        fillStatus = { status: 'read_failed', error: String(error?.message || error) };
       }
-      fillStatus = fill?.status ? { status: fill.status, ...(fill.error || fill.reason ? { error: fill.error || fill.reason } : {}) } : { status: fillData ? 'matched' : 'missing' };
     }
     merged.sourceStatus = { mvu_dynamic: { status: mvuResult.status, ...(mvuResult.error ? { error: mvuResult.error } : {}), ...(mvuResult.metadata || {}) }, database: { status: databaseResult.status, ...(databaseResult.error ? { error: databaseResult.error } : {}), ...(databaseResult.metadata || {}) }, ai_extract: inferred ? { status: 'matched' } : { status: aiSource ? 'missing' : 'not_configured' }, ai_fill: fillStatus };
     candidates.push(merged);

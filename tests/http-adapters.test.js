@@ -42,3 +42,15 @@ test('character inference defaults to the configured long request timeout', asyn
   await inference.inferCandidates({});
   assert.equal(timeoutSignal.aborted, false);
 });
+
+test('character field fill uses a shorter optional timeout than candidate extraction', async () => {
+  const fetchImpl = async (_url, options) => {
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(resolve, 20);
+      options.signal.addEventListener('abort', () => { clearTimeout(timer); reject(new DOMException('The operation was aborted', 'AbortError')); }, { once: true });
+    });
+    return new Response(JSON.stringify({ fields: { realm: '未知' }, inferred: true }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  const inference = createHttpCharacterInference({ endpoint: 'https://api.example.test/v1', model: 'judge', fetchImpl, fillTimeoutMs: 5 });
+  await assert.rejects(inference.fillMissingFields({ candidate: { id: 'enemy-1' }, knownFields: { id: 'enemy-1' }, context: {} }), /aborted|AbortError|The operation was aborted/i);
+});

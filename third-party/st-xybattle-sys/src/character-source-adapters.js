@@ -58,11 +58,11 @@ async function readResponse(response) {
   return content;
 }
 
-export function createHttpCharacterInference({ endpoint, model, apiKey = '', fetchImpl = globalThis.fetch, timeoutMs = 60000 } = {}) {
+export function createHttpCharacterInference({ endpoint, model, apiKey = '', fetchImpl = globalThis.fetch, timeoutMs = 60000, fillTimeoutMs = 15000 } = {}) {
   if (!endpoint || typeof fetchImpl !== 'function') throw new Error('人物 AI 需要 endpoint 与 fetch');
-  const request = async (instruction, context) => {
+  const request = async (instruction, context, requestTimeoutMs = timeoutMs) => {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const timer = setTimeout(() => controller.abort(), requestTimeoutMs);
     try {
       const response = await fetchImpl(normalizeChatCompletionsEndpoint(endpoint), { method: 'POST', headers: { 'content-type': 'application/json', ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}) }, body: JSON.stringify({ model: model || '', temperature: 0, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: '你是战斗前人物资料辅助器。只返回JSON；不得创造未给出的事实；推断字段必须标记 inferred。' }, { role: 'user', content: `${instruction}\n上下文：${JSON.stringify(context)}` }] }), signal: controller.signal });
       return await readResponse(response);
@@ -70,7 +70,7 @@ export function createHttpCharacterInference({ endpoint, model, apiKey = '', fet
   };
   return {
     async inferCandidates(context) { const result = await request('提取敌方候选人物，返回 {"candidates":[{"id":"...","name":"...","explicitFacts":{},"inferred":{}}]}。明确事实放 explicitFacts；不确定的补全放 inferred，不得把推断当作事实。', clone(context)); return Array.isArray(result) ? result : result?.candidates || []; },
-    async fillMissingFields({ candidate, knownFields, context }) { const result = await request('仅补全明确缺失字段，返回 {"fields":{...},"inferred":true}，不得覆盖已有字段。', { candidate, knownFields, context }); return result?.fields || result || {}; }
+    async fillMissingFields({ candidate, knownFields, context }) { const result = await request('仅补全明确缺失字段，返回 {"fields":{...},"inferred":true}，不得覆盖已有字段。', { candidate, knownFields, context }, fillTimeoutMs); return result?.fields || result || {}; }
   };
 }
 

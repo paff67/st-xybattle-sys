@@ -59,3 +59,16 @@ test('controller cancels stale character reads and rejects duplicate confirmed i
   controller.confirmCharacters({ enemy: { name: '已确认' } });
   assert.equal(controller.state.actors.enemies[0].name, '已确认');
 });
+
+test('failed optional field fill keeps the extracted candidate reviewable', async () => {
+  const preparation = await prepareEnemyCandidates({ scope, enemies: [{ id: 'enemy', name: '敌人' }] }, {
+    inference: {
+      inferCandidates: async () => [{ id: 'enemy', name: '敌人', explicitFacts: { cultivation: '假丹境' } }],
+      fillMissingFields: async () => { throw new Error('补全服务超时'); }
+    }
+  });
+  assert.equal(preparation.candidates.length, 1);
+  assert.equal(preparation.candidates[0].fields.cultivation, '假丹境');
+  assert.equal(preparation.candidates[0].sourceStatus.ai_fill.status, 'read_failed');
+  assert.match(preparation.candidates[0].sourceStatus.ai_fill.error, /补全服务超时/);
+});
