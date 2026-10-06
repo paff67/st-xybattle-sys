@@ -9,3 +9,4 @@ export * from './battle-packet-markers.js';
 export { HostInputBridge } from './host-input-bridge.js';
 export { HostDisplayFolding, foldBattlePacketDom } from './host-display-folding.js';
 export { createCausalState, restoreCausalState, validateCausalState, applyCausalChanges, advanceCausalState } from './causal-state.js';
+export { DEFAULT_CHARACTER_COMPLETION_PROMPT, DEFAULT_ADJUDICATION_PROMPT } from './character-prompts.js';

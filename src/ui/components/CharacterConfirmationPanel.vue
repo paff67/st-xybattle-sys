@@ -72,6 +72,10 @@
             @input="updateDraft(candidate.id, $event.target.value)"
           ></textarea>
         </label>
+        <label class="xy-character-candidate__ack">
+          <input type="checkbox" :checked="confirmedIds.has(candidate.id)" :disabled="busy || preparation.status === 'confirmed' || removedIds.has(candidate.id)" @change="toggleConfirmed(candidate.id, $event.target.checked)" />
+          <span>我已逐项核对并确定此人物的全部字段、功法、招式与隐藏信息</span>
+        </label>
         <p v-if="draftErrors[candidate.id]" class="xy-character-candidate__error" role="alert">
           {{ draftErrors[candidate.id] }}
         </p>
@@ -82,10 +86,11 @@
             <code class="xy-character-field__value">{{ displayValue(field.value) }}</code>
             <span class="xy-character-field__source">来源：{{ sourceLabel(field.source) }}</span>
           </div>
-          <div v-for="conflict in candidate.conflicts || []" :key="`${candidate.id}:${conflict.path}:${conflict.ignored}`" class="xy-character-conflict" :data-conflict-path="conflict.path">
-            <b>冲突 · {{ conflict.path }}</b>
-            <span>采用（{{ sourceLabel(conflict.kept) }}）：<code>{{ displayValue(conflict.keptValue) }}</code></span>
-            <span>未采用（{{ sourceLabel(conflict.ignored) }}）：<code>{{ displayValue(conflict.ignoredValue) }}</code></span>
+          <div v-for="conflict in candidate.conflicts || []" :key="`${candidate.id}:${conflict.path}`" class="xy-character-conflict" :data-conflict-path="conflict.path">
+            <b>资料冲突 · {{ conflict.path }}</b>
+            <span>当前草稿值：<code>{{ displayValue(conflict.draftValue ?? conflict.keptValue) }}</code></span>
+            <span>全部候选来源（无自动优先级，请在上方 JSON 中手动决定）：</span>
+            <span v-for="item in conflict.values || legacyConflictValues(conflict)" :key="`${item.source}:${displayValue(item.value)}`"><code>{{ sourceLabel(item.source) }}：{{ displayValue(item.value) }}</code></span>
           </div>
         </div>
       </article>
@@ -123,6 +128,7 @@ const emit = defineEmits(['prepare', 'retry', 'confirm', 'cancel']);
 const drafts = reactive({});
 const draftErrors = reactive({});
 const removedIds = reactive(new Set());
+const confirmedIds = reactive(new Set());
 
 const sourceNames = {
   mvu_dynamic: 'MVU 动态值',
@@ -130,6 +136,7 @@ const sourceNames = {
   context_explicit: '上下文明确事实',
   ai_extracted: 'AI 提取',
   ai_inferred: 'AI 推断',
+  ai_completed: 'AI 构造草稿',
   user_confirmed: '用户确认'
 };
 
@@ -137,6 +144,7 @@ function resetDrafts(preparation) {
   for (const key of Object.keys(drafts)) delete drafts[key];
   for (const key of Object.keys(draftErrors)) delete draftErrors[key];
   removedIds.clear();
+  confirmedIds.clear();
   for (const candidate of preparation?.candidates || []) drafts[candidate.id] = JSON.stringify(candidate.fields || {}, null, 2);
 }
 
@@ -158,6 +166,13 @@ function displayValue(value) {
   if (value === undefined) return '未提供';
   if (typeof value === 'string') return value;
   try { return JSON.stringify(value); } catch { return String(value); }
+}
+
+function legacyConflictValues(conflict) {
+  return [
+    { source: conflict.ignored, value: conflict.ignoredValue },
+    { source: conflict.kept, value: conflict.keptValue }
+  ].filter((item) => item.source);
 }
 
 function sourceStatusText(item) {
@@ -182,6 +197,7 @@ const sourceStatuses = computed(() => {
     ['mvu_dynamic', 'MVU 动态值', aggregate('mvu_dynamic')],
     ['database', '数据库资料', aggregate('database')],
     ['ai_extract', 'AI 提取', aggregate('ai_extract')],
+    ['ai_complete', 'AI 构造', aggregate('ai_complete')],
     ['ai_fill', 'AI 补全', aggregate('ai_fill')]
   ];
   return rows.map(([key, label, item]) => {
@@ -210,11 +226,16 @@ function updateDraft(id, value) {
 
 function toggleRemoved(id) {
   if (removedIds.has(id)) removedIds.delete(id); else removedIds.add(id);
+  confirmedIds.delete(id);
+}
+
+function toggleConfirmed(id, value) {
+  if (value) confirmedIds.add(id); else confirmedIds.delete(id);
 }
 
 const confirmDisabled = computed(() => {
   const preparation = props.preparation;
-  return props.busy || !preparation || preparation.status !== 'awaiting_confirmation' || !preparation.candidates?.length || [...removedIds].length >= preparation.candidates.length;
+  return props.busy || !preparation || preparation.status !== 'awaiting_confirmation' || !preparation.candidates?.length || [...removedIds].length >= preparation.candidates.length || preparation.candidates.some((candidate) => !removedIds.has(candidate.id) && !confirmedIds.has(candidate.id));
 });
 
 function confirm() {
@@ -255,6 +276,7 @@ function confirm() {
 .xy-character-confirmation button:disabled { opacity: .45; cursor: not-allowed; }
 .xy-character-candidate__json { display: flex; flex-direction: column; gap: 6px; color: #cbd5e1; font-size: 12px; }
 .xy-character-candidate__json textarea { width: 100%; min-height: 100px; color: #e2e8f0; background: rgba(2, 6, 23, .75); border: 1px solid rgba(148,163,184,.3); border-radius: 7px; padding: 9px; font: 12px/1.5 var(--xy-font-mono, monospace); box-sizing: border-box; resize: vertical; }
+.xy-character-candidate__ack { display: flex; gap: 8px; align-items: center; color: #bae6fd; font-size: 12px; }
 .xy-character-candidate__error { margin: 0; color: #fda4af; font-size: 12px; }
 .xy-character-candidate__fields { display: grid; gap: 7px; }
 .xy-character-field, .xy-character-conflict { display: grid; grid-template-columns: minmax(100px, .7fr) minmax(120px, 1.2fr) minmax(140px, 1fr); gap: 8px; align-items: baseline; padding: 7px 8px; background: rgba(2,6,23,.35); border-radius: 6px; font-size: 11px; }

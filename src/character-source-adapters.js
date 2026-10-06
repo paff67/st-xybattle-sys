@@ -1,4 +1,5 @@
 import { clone, normalizeChatCompletionsEndpoint } from './common.js';
+import { DEFAULT_CHARACTER_COMPLETION_PROMPT, normalizePrompt } from './character-prompts.js';
 
 const text = (value) => value == null ? '' : String(value).trim();
 const isObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
@@ -58,19 +59,23 @@ async function readResponse(response) {
   return content;
 }
 
-export function createHttpCharacterInference({ endpoint, model, apiKey = '', fetchImpl = globalThis.fetch, timeoutMs = 60000, fillTimeoutMs = 15000 } = {}) {
+export function createHttpCharacterInference({ endpoint, model, apiKey = '', fetchImpl = globalThis.fetch, timeoutMs = 60000, fillTimeoutMs = 15000, maxOutput = 5000, temperature = 0.4, characterCompletionPrompt = DEFAULT_CHARACTER_COMPLETION_PROMPT } = {}) {
   if (!endpoint || typeof fetchImpl !== 'function') throw new Error('人物 AI 需要 endpoint 与 fetch');
-  const request = async (instruction, context, requestTimeoutMs = timeoutMs) => {
+  const request = async (instruction, context, requestTimeoutMs = timeoutMs, signal) => {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), requestTimeoutMs);
+    const abort = () => controller.abort();
+    if (signal?.aborted) throw new DOMException('人物 AI 请求已取消', 'AbortError');
+    signal?.addEventListener('abort', abort, { once: true });
+    const timer = setTimeout(abort, requestTimeoutMs);
     try {
-      const response = await fetchImpl(normalizeChatCompletionsEndpoint(endpoint), { method: 'POST', headers: { 'content-type': 'application/json', ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}) }, body: JSON.stringify({ model: model || '', temperature: 0, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: '你是战斗前人物资料辅助器。只返回JSON；不得创造未给出的事实；推断字段必须标记 inferred。' }, { role: 'user', content: `${instruction}\n上下文：${JSON.stringify(context)}` }] }), signal: controller.signal });
+      const response = await fetchImpl(normalizeChatCompletionsEndpoint(endpoint), { method: 'POST', headers: { 'content-type': 'application/json', ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}) }, body: JSON.stringify({ model: model || '', temperature, max_tokens: maxOutput, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: instruction }, { role: 'user', content: `上下文：${JSON.stringify(context)}` }] }), signal: controller.signal });
       return await readResponse(response);
-    } finally { clearTimeout(timer); }
+    } finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
   };
   return {
-    async inferCandidates(context) { const result = await request('提取敌方候选人物，返回 {"candidates":[{"id":"...","name":"...","explicitFacts":{},"inferred":{}}]}。明确事实放 explicitFacts；不确定的补全放 inferred，不得把推断当作事实。', clone(context)); return Array.isArray(result) ? result : result?.candidates || []; },
-    async fillMissingFields({ candidate, knownFields, context }) { const result = await request('仅补全明确缺失字段，返回 {"fields":{...},"inferred":true}，不得覆盖已有字段。', { candidate, knownFields, context }, fillTimeoutMs); return result?.fields || result || {}; }
+    async inferCandidates(context, { signal } = {}) { const result = await request('只提取敌方候选人物，返回 {"candidates":[{"id":"...","name":"...","explicitFacts":{},"inferred":{}}]}。明确事实放 explicitFacts；不确定的内容放 inferred；不要构造完整人物。', clone(context), timeoutMs, signal); return Array.isArray(result) ? result : result?.candidates || []; },
+    async completeCandidate({ candidate, knownFields, context, signal } = {}) { const result = await request(normalizePrompt(characterCompletionPrompt, DEFAULT_CHARACTER_COMPLETION_PROMPT), { task: 'complete_enemy_candidate', candidate, knownFields, context }, timeoutMs, signal); return result?.candidate || result?.fields || result; },
+    async fillMissingFields({ candidate, knownFields, context, signal }) { const result = await request('仅补全明确缺失字段，返回 {"fields":{...},"inferred":true}，不得覆盖已有字段。', { candidate, knownFields, context }, fillTimeoutMs, signal); return result?.fields || result || {}; }
   };
 }
 

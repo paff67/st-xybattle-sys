@@ -57,7 +57,7 @@ export class BattleController {
     const recentMessages = Array.isArray(hostContext.chat) ? hostContext.chat.slice(-20).map((message) => ({ role: message.role || (message.is_user ? 'user' : 'assistant'), text: String(message.mes || message.message || '').slice(0, 4000) })) : [];
     const sourceContext = { ...clone(context || {}), scope, recentMessages, enemies: clone(context?.enemies || this.state.actors.enemies) };
     const configured = this.settings.adjudicator;
-    const ai = inference || (configured.mode === 'http' && configured.endpoint && configured.model ? createHttpCharacterInference({ endpoint: configured.endpoint, model: configured.model, apiKey: configured.apiKey || '', timeoutMs: configured.timeoutMs }) : null);
+    const ai = inference || (configured.mode === 'http' && configured.endpoint && configured.model ? createHttpCharacterInference({ endpoint: configured.endpoint, model: configured.model, apiKey: configured.apiKey || '', timeoutMs: configured.timeoutMs, maxOutput: configured.maxOutput, temperature: configured.temperature, characterCompletionPrompt: this.settings.characterCompletionPrompt }) : null);
     const adapters = createReadOnlyCharacterSourceAdapters({ mvu, database, inference: ai });
     const epoch = this.epoch;
     const request = ++this.characterPreparationRequest;
@@ -79,7 +79,7 @@ export class BattleController {
     return this.state;
   }
   cancelCharacterPreparation(){this.characterPreparationRequest+=1;this.characterPreparation=null;}
-  start(){this.assertIdleRequest();const scope=this.hostAdapter?.scope?.();if(scope?.available===false)throw new Error('当前聊天没有可用的助手消息锚点；请先生成新的正文消息。');this.state=startBattle(this.state);this.emit();return this.state;}
+  start(){this.assertIdleRequest();if(this.characterPreparation?.status && this.characterPreparation.status !== 'confirmed')throw new Error('请先在人物确认页逐项确认全部候选人物');const scope=this.hostAdapter?.scope?.();if(scope?.available===false)throw new Error('当前聊天没有可用的助手消息锚点；请先生成新的正文消息。');this.state=startBattle(this.state);this.emit();return this.state;}
   cancelPending(){this.epoch+=1;this.inFlight?.abort();this.inFlight=null;this.bridgeQueuedAction=null;}
   stop(reason='用户停止'){this.cancelPending();this.hostAdapter?.clearScenePacket?.();this.state=stopBattle({...this.state,history:this.state.history.map((record)=>record.status==='prepared'?{...record,status:'interrupted',error:reason}:record)},reason);this.emit();return this.state;}
   continueNext(options = {}){this.assertIdleRequest();if(this.bridgeQueuedAction)throw new Error('本轮场景包仍等待主剧情生成；请先生成正文或跳过本轮正文');this.state=nextRound(this.state, options);this.emit();return this.state;}

@@ -12,10 +12,11 @@ export const CHARACTER_PREPARATION_SCHEMA = 'battle_character_preparation_v1';
 export const CHARACTER_SOURCE_PRIORITY = Object.freeze({
   ai_extracted: 0,
   ai_inferred: 0,
-  context_explicit: 1,
-  database: 2,
-  mvu_dynamic: 3,
-  user_confirmed: 4
+  ai_completed: 0,
+  context_explicit: 0,
+  database: 0,
+  mvu_dynamic: 0,
+  user_confirmed: 0
 });
 
 const PRIVATE_KEYS = new Set(['apiKey', 'api_key', 'authorization', 'token', 'password', 'secret']);
@@ -146,7 +147,10 @@ export function extractEnemyCandidates(context = {}, { maxCandidates = 32 } = {}
 
 function sourceRecord(candidate, source, value) {
   if (value == null) return null;
-  const data = isObject(value) ? redactCharacterSource(value) : { value: redactCharacterSource(value) };
+  const payload = source === 'ai_extracted' ? value.explicitFacts || value.explicit || value.facts || value
+    : source === 'ai_inferred' ? value.inferred || value.inference || value.guess || value.predicted || (value.inferred === true ? value.fields : value)
+      : source === 'ai_completed' ? value.candidate || value.fields || value.profile || value : value;
+  const data = isObject(payload) ? redactCharacterSource(payload) : { value: redactCharacterSource(payload) };
   return { source: normalizeSource(source), priority: sourcePriority(normalizeSource(source)), data };
 }
 
@@ -180,19 +184,22 @@ function setPath(target, path, value) {
   });
 }
 
-function getSourceValues(candidate, { mvu, database, inference, aiExtracted } = {}) {
+function getSourceValues(candidate, { mvu, database, inference, aiExtracted, aiCompleted } = {}) {
   return [
     sourceRecord(candidate, 'ai_extracted', aiExtracted),
     sourceRecord(candidate, 'ai_inferred', inference),
     sourceRecord(candidate, candidate.source || 'context_explicit', candidate.fields || candidate),
     sourceRecord(candidate, 'database', database),
-    sourceRecord(candidate, 'mvu_dynamic', mvu)
+    sourceRecord(candidate, 'mvu_dynamic', mvu),
+    sourceRecord(candidate, 'ai_completed', aiCompleted)
   ].filter(Boolean);
 }
 
 /** Merge one candidate by leaf field and retain provenance/conflict information. */
 export function mergeCharacterCandidate(candidate, sources = {}) {
-  const records = getSourceValues(candidate, sources).sort((a, b) => a.priority - b.priority);
+  // Sources are review material, not authoritative state. The final value is
+  // only a draft; the user must edit and confirm every candidate before use.
+  const records = getSourceValues(candidate, sources);
   const fields = {};
   const provenance = {};
   const conflicts = [];
@@ -200,11 +207,23 @@ export function mergeCharacterCandidate(candidate, sources = {}) {
     for (const [path, value] of leaves(record.data)) {
       const previous = provenance[path];
       const current = pathValue(fields, path);
-      if (previous && JSON.stringify(current) !== JSON.stringify(value)) conflicts.push({ path, kept: record.source, ignored: previous.source, keptValue: clone(value), ignoredValue: clone(current) });
-      if (!previous || record.priority >= previous.priority) {
-        setPath(fields, path, value);
-        provenance[path] = { source: record.source, priority: record.priority };
+      if (previous && JSON.stringify(current) !== JSON.stringify(value)) {
+        const existing = conflicts.find((conflict) => conflict.path === path);
+        const values = existing?.values || [
+          { source: previous.source, value: clone(current) },
+          { source: record.source, value: clone(value) }
+        ];
+        if (existing) {
+          if (!values.some((item) => item.source === record.source && JSON.stringify(item.value) === JSON.stringify(value))) values.push({ source: record.source, value: clone(value) });
+          existing.draftValue = clone(value);
+          existing.kept = record.source;
+          existing.ignored = previous.source;
+          existing.keptValue = clone(value);
+          existing.ignoredValue = clone(current);
+        } else conflicts.push({ path, values, draftValue: clone(value), kept: record.source, ignored: previous.source, keptValue: clone(value), ignoredValue: clone(current) });
       }
+      setPath(fields, path, value);
+      provenance[path] = { source: record.source, priority: 0 };
     }
   }
   const id = text(fields.id || candidate.id) || `enemy-${slug(fields.name || candidate.name)}`;
@@ -272,11 +291,11 @@ function pickCharacterFromSource(value, candidate) {
   return text(value.id || value.characterId || value.uid) === candidate.id || text(value.name || value.characterName) === candidate.name ? value : null;
 }
 
-async function inferCandidates(inference, context) {
+async function inferCandidates(inference, context, signal) {
   if (!inference) return [];
   const result = typeof inference === 'function' ? await inference(clone(context))
     : typeof inference.extract === 'function' ? await inference.extract(clone(context))
-    : typeof inference.inferCandidates === 'function' ? await inference.inferCandidates(clone(context))
+    : typeof inference.inferCandidates === 'function' ? await inference.inferCandidates(clone(context), { signal })
       : typeof inference.infer === 'function' ? await inference.infer(clone(context)) : inference;
   const payload = result?.data ?? result;
   return Array.isArray(payload) ? payload : payload?.enemies || payload?.candidates || [];
@@ -305,7 +324,7 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
   if (signal?.aborted) throw new DOMException('人物准备已取消', 'AbortError');
   const explicit = extractEnemyCandidates(context, { maxCandidates });
   const aiSource = ai || inference;
-  const inferredRaw = await inferCandidates(aiSource, context);
+  const inferredRaw = await inferCandidates(aiSource, context, signal);
   const all = [...explicit];
   inferredRaw.forEach((item, index) => { const match = matchingCandidate(all, item, index); if (match && !all.includes(match)) all.push(match); });
   const candidates = [];
@@ -317,17 +336,32 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
       readSource(mvu, candidate, context, 'mvu_dynamic'),
       readSource(database, candidate, context, 'database')
     ]);
-    let merged = mergeCharacterCandidate(candidate, { mvu: mvuResult.value, database: databaseResult.value, inference: aiParts.inferred, aiExtracted: aiParts.explicit });
+    const aiExtracted = inferred ? { ...aiParts.explicit, id: inferred.id || inferred.characterId || candidate.id, name: inferred.name || inferred.characterName || candidate.name } : null;
+    let merged = mergeCharacterCandidate(candidate, { mvu: mvuResult.value, database: databaseResult.value, inference: aiParts.inferred, aiExtracted });
+    let completionStatus = { status: aiSource ? 'not_requested' : 'not_configured' };
+    const completionFn = aiSource && typeof aiSource.completeCandidate === 'function' ? aiSource.completeCandidate.bind(aiSource) : null;
+    if (completionFn) {
+      try {
+        const completed = await completionFn({ candidate: clone(merged.fields), knownFields: clone(merged.fields), context: clone(context), signal });
+        const completedData = completed?.data ?? completed?.candidate ?? completed?.fields ?? completed;
+        if (completedData && typeof completedData === 'object') {
+          merged = mergeCharacterCandidate(merged, { mvu: mvuResult.value, database: databaseResult.value, inference: aiParts.inferred, aiExtracted, aiCompleted: completedData });
+          completionStatus = { status: 'matched' };
+        } else completionStatus = { status: 'missing' };
+      } catch (error) {
+        completionStatus = { status: 'read_failed', error: String(error?.message || error) };
+      }
+    }
     let fillStatus = { status: aiSource ? 'not_requested' : 'not_configured' };
     const fillFn = aiSource && (typeof aiSource.fill === 'function' ? aiSource.fill.bind(aiSource) : typeof aiSource.fillMissingFields === 'function' ? aiSource.fillMissingFields.bind(aiSource) : null);
-    if (fillFn) {
+    if (fillFn && !completionFn) {
       const missingFields = ['realm', '境界', 'visibleInfo', 'resources', 'techniques', 'abilities', 'skills'].filter((key) => merged.fields?.[key] == null);
       try {
         const fill = await fillFn({ candidate: clone(merged.fields), knownFields: clone(merged.fields), missingFields, context: clone(context), signal }, { context: clone(context), signal });
         const fillData = fill?.data ?? fill;
         if (fillData && typeof fillData === 'object' && fill?.status !== 'read_failed') {
           const patch = fillData.fields || fillData.inferred || fillData;
-          merged = mergeCharacterCandidate(merged, { mvu: mvuResult.value, database: databaseResult.value, inference: patch, aiExtracted: aiParts.explicit });
+          merged = mergeCharacterCandidate(merged, { mvu: mvuResult.value, database: databaseResult.value, inference: patch, aiExtracted });
         }
         fillStatus = fill?.status ? { status: fill.status, ...(fill.error || fill.reason ? { error: fill.error || fill.reason } : {}) } : { status: fillData ? 'matched' : 'missing' };
       } catch (error) {
@@ -335,7 +369,7 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
         fillStatus = { status: 'read_failed', error: String(error?.message || error) };
       }
     }
-    merged.sourceStatus = { mvu_dynamic: { status: mvuResult.status, ...(mvuResult.error ? { error: mvuResult.error } : {}), ...(mvuResult.metadata || {}) }, database: { status: databaseResult.status, ...(databaseResult.error ? { error: databaseResult.error } : {}), ...(databaseResult.metadata || {}) }, ai_extract: inferred ? { status: 'matched' } : { status: aiSource ? 'missing' : 'not_configured' }, ai_fill: fillStatus };
+    merged.sourceStatus = { mvu_dynamic: { status: mvuResult.status, ...(mvuResult.error ? { error: mvuResult.error } : {}), ...(mvuResult.metadata || {}) }, database: { status: databaseResult.status, ...(databaseResult.error ? { error: databaseResult.error } : {}), ...(databaseResult.metadata || {}) }, ai_extract: inferred ? { status: 'matched' } : { status: aiSource ? 'missing' : 'not_configured' }, ai_complete: completionStatus, ai_fill: fillStatus };
     candidates.push(merged);
   }
   return {

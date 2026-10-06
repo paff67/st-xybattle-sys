@@ -150,6 +150,16 @@
         <span class="xy-field-label">独立 HTTP 模式下的原始 Prompt（主剧情模式自动保留宿主日常输入）</span>
         <textarea v-model="form.originalPrompt" rows="2" class="xy-input-textarea" placeholder="我抬起弦弓，观察水面与对手的节奏。"></textarea>
       </label>
+
+      <label class="xy-form-field xy-mt-3">
+        <span class="xy-field-label">候选人物补全提示词（AI 只生成待确认的完整人物草稿）</span>
+        <textarea v-model="form.characterCompletionPrompt" rows="12" class="xy-input-textarea xy-prompt-editor"></textarea>
+      </label>
+
+      <label class="xy-form-field xy-mt-3">
+        <span class="xy-field-label">战斗裁定提示词（保存后作为独立裁定 AI 的 system prompt）</span>
+        <textarea v-model="form.adjudicationPrompt" rows="16" class="xy-input-textarea xy-prompt-editor"></textarea>
+      </label>
     </div>
 
     <!-- 底部操作按钮 -->
@@ -200,7 +210,9 @@ const form = reactive({
     timeoutMs: 60000
   },
   autoNarrative: true,
-  originalPrompt: ''
+  originalPrompt: '',
+  characterCompletionPrompt: '',
+  adjudicationPrompt: ''
 });
 
 watch(() => props.settings, (s) => {
@@ -209,6 +221,8 @@ watch(() => props.settings, (s) => {
   if (s.narrator) Object.assign(form.narrator, s.narrator);
   form.autoNarrative = !!s.autoNarrative;
   form.originalPrompt = s.originalPrompt || '';
+  form.characterCompletionPrompt = s.characterCompletionPrompt || '';
+  form.adjudicationPrompt = s.adjudicationPrompt || '';
 }, { immediate: true, deep: true });
 
 function onSave() {
@@ -216,7 +230,9 @@ function onSave() {
     adjudicator: { ...form.judge },
     narrator: { ...form.narrator },
     autoNarrative: form.autoNarrative,
-    originalPrompt: form.originalPrompt
+    originalPrompt: form.originalPrompt,
+    characterCompletionPrompt: form.characterCompletionPrompt,
+    adjudicationPrompt: form.adjudicationPrompt
   });
 }
 </script>
