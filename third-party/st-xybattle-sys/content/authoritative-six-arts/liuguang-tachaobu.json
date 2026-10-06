@@ -1,0 +1,482 @@
+{
+  "schema": "xybattle-content-v1",
+  "protocolVersion": 1,
+  "id": "gongfa.liuguang-tachaobu",
+  "contentType": "technique",
+  "name": "流光踏潮步",
+  "version": "2026.10.06-source.1",
+  "createdAt": "2026-10-06T00:00:00+08:00",
+  "updatedAt": "2026-10-06T00:00:00+08:00",
+  "entry": {
+    "id": "gongfa.liuguang-tachaobu",
+    "name": "流光踏潮步",
+    "rank": "天",
+    "element": "水属空间身法",
+    "version": "2026.10.06-source.1",
+    "visibility": "player",
+    "corePrinciple": "水行不问来路，光落之处皆可为渡；一步踏出，去处先于道路成立。",
+    "mechanics": [
+      "《流光踏潮步》不是普通加速术，天阶步法真正改变的是抵达方式。",
+      "它让修炼者借水意、镜界节点和潮痕完成跨距换位。许多情况下，修炼者不需要沿两点之间的道路移动，而是直接从一个被水意承认的位置出现在另一个位置。",
+      "它的战斗价值不是让修炼者更快地跑向敌人，而是让敌人无法确定修炼者下一刻会从哪里出现，也无法仅靠封锁道路和封闭飞行路线限制行动。"
+    ],
+    "techniques": [
+      {
+        "id": "gongfa.liuguang-tachaobu.tachao-jiejie",
+        "name": "踏潮·借界",
+        "school": "流光踏潮步",
+        "category": "身法、跨距、换位、先手",
+        "originalDefinition": "借水意把两个落点暂时接通。近处可以瞬息换位，远处可以跨越山河，但距离越远，越需要清晰的水意、镜界节点或预先留下的潮痕。\n\n借界完成后不会留下完整飞行轨迹。敌人可以封锁落点，却不能只靠封锁两点之间的空间阻止换位。",
+        "mechanics": [
+          "借水意把两个落点暂时接通。近处可以瞬息换位，远处可以跨越山河，但距离越远，越需要清晰的水意、镜界节点或预先留下的潮痕。",
+          "借界完成后不会留下完整飞行轨迹。敌人可以封锁落点，却不能只靠封锁两点之间的空间阻止换位。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.liuguang-tachaobu.tachao-jiejie.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "踏潮·借界",
+          "group": "流光踏潮步",
+          "summary": "借水意把两个落点暂时接通。近处可以瞬息换位，远处可以跨越山河，但距离越远，越需要清晰的水意、镜界节点或预先留下的潮痕。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.liuguang-tachaobu.tachao-jiejie.definition",
+            "gongfa.liuguang-tachaobu.source.section-8",
+            "gongfa.liuguang-tachaobu.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.liuguang-tachaobu.tachao-jiejie.definition",
+            "gongfa.liuguang-tachaobu.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.liuguang-tachaobu.chaohen-huishen",
+        "name": "潮痕·回身",
+        "school": "流光踏潮步",
+        "category": "身法、跨距、换位、先手",
+        "originalDefinition": "回到任意一道潮痕，也可以让两道潮痕交换位置。它适合绕后、脱离包围、避开锁定和把敌人的攻击引到错误方向。\n\n回身不是无限回溯。潮痕被摧毁、被绝灵力量覆盖或失去水意联系后，就不能继续作为落点。",
+        "mechanics": [
+          "回到任意一道潮痕，也可以让两道潮痕交换位置。它适合绕后、脱离包围、避开锁定和把敌人的攻击引到错误方向。",
+          "回身不是无限回溯。潮痕被摧毁、被绝灵力量覆盖或失去水意联系后，就不能继续作为落点。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.liuguang-tachaobu.chaohen-huishen.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "潮痕·回身",
+          "group": "流光踏潮步",
+          "summary": "回到任意一道潮痕，也可以让两道潮痕交换位置。它适合绕后、脱离包围、避开锁定和把敌人的攻击引到错误方向。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.liuguang-tachaobu.chaohen-huishen.definition",
+            "gongfa.liuguang-tachaobu.source.section-8",
+            "gongfa.liuguang-tachaobu.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.liuguang-tachaobu.chaohen-huishen.definition",
+            "gongfa.liuguang-tachaobu.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.liuguang-tachaobu.liuguang-liuying",
+        "name": "流光·留影",
+        "school": "流光踏潮步",
+        "category": "身法、跨距、换位、先手",
+        "originalDefinition": "留下多道水光身影，本体可以在影与影之间移换。影子可以完成短暂攻击、诱导和承接，但不能像真正分身一样长期施法。\n\n如果敌人同时抹去大片水意，部分影子会消失，本体可用的换位范围也会缩小。",
+        "mechanics": [
+          "留下多道水光身影，本体可以在影与影之间移换。影子可以完成短暂攻击、诱导和承接，但不能像真正分身一样长期施法。",
+          "如果敌人同时抹去大片水意，部分影子会消失，本体可用的换位范围也会缩小。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.liuguang-tachaobu.liuguang-liuying.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "流光·留影",
+          "group": "流光踏潮步",
+          "summary": "留下多道水光身影，本体可以在影与影之间移换。影子可以完成短暂攻击、诱导和承接，但不能像真正分身一样长期施法。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.liuguang-tachaobu.liuguang-liuying.definition",
+            "gongfa.liuguang-tachaobu.source.section-8",
+            "gongfa.liuguang-tachaobu.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.liuguang-tachaobu.liuguang-liuying.definition",
+            "gongfa.liuguang-tachaobu.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.liuguang-tachaobu.huanba-zhuchao",
+        "name": "换把·逐潮",
+        "school": "流光踏潮步",
+        "category": "身法、跨距、换位、先手",
+        "originalDefinition": "在连续跨距之间改变落点层次。前一步出现在敌人面前，后一步可以出现在敌人攻击起点，再下一步从水镜节点切入侧后。\n\n换把·逐潮适合与叠浪配合，使弓弦动作不必在固定位置完成；也适合与共鸣配合，在敌方法宝和阵法最难防守的位置完成接触。",
+        "mechanics": [
+          "在连续跨距之间改变落点层次。前一步出现在敌人面前，后一步可以出现在敌人攻击起点，再下一步从水镜节点切入侧后。",
+          "换把·逐潮适合与叠浪配合，使弓弦动作不必在固定位置完成；也适合与共鸣配合，在敌方法宝和阵法最难防守的位置完成接触。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.liuguang-tachaobu.huanba-zhuchao.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "换把·逐潮",
+          "group": "流光踏潮步",
+          "summary": "在连续跨距之间改变落点层次。前一步出现在敌人面前，后一步可以出现在敌人攻击起点，再下一步从水镜节点切入侧后。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.liuguang-tachaobu.huanba-zhuchao.definition",
+            "gongfa.liuguang-tachaobu.source.section-8",
+            "gongfa.liuguang-tachaobu.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.liuguang-tachaobu.huanba-zhuchao.definition",
+            "gongfa.liuguang-tachaobu.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.liuguang-tachaobu.yibu-xiansheng",
+        "name": "一步·先声",
+        "school": "流光踏潮步",
+        "category": "身法、跨距、换位、先手",
+        "originalDefinition": "将听澜得到的敌方意图转化为落点优势。敌人刚起念，修炼者已经处于最适合出手的位置。\n\n它夺走的是行动先后，而不是强行冻结敌人。敌人仍然可以变招，但变招往往会暴露新的潮痕和气机。",
+        "mechanics": [
+          "将听澜得到的敌方意图转化为落点优势。敌人刚起念，修炼者已经处于最适合出手的位置。",
+          "它夺走的是行动先后，而不是强行冻结敌人。敌人仍然可以变招，但变招往往会暴露新的潮痕和气机。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.liuguang-tachaobu.yibu-xiansheng.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "一步·先声",
+          "group": "流光踏潮步",
+          "summary": "将听澜得到的敌方意图转化为落点优势。敌人刚起念，修炼者已经处于最适合出手的位置。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.liuguang-tachaobu.yibu-xiansheng.definition",
+            "gongfa.liuguang-tachaobu.source.section-8",
+            "gongfa.liuguang-tachaobu.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.liuguang-tachaobu.yibu-xiansheng.definition",
+            "gongfa.liuguang-tachaobu.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.liuguang-tachaobu.liuguang-wudingmen",
+        "name": "流光·无定门",
+        "school": "流光踏潮步",
+        "category": "身法、跨距、换位、先手",
+        "originalDefinition": "短时间内同时开启多个水意落点，使战场上出现多条可能的抵达路径。\n\n敌人必须同时防备多个方向，无法只封锁一条道路。无定门越复杂，对神魂和水元的要求越高，也越需要听澜协助判断真正落点。",
+        "mechanics": [
+          "短时间内同时开启多个水意落点，使战场上出现多条可能的抵达路径。",
+          "敌人必须同时防备多个方向，无法只封锁一条道路。无定门越复杂，对神魂和水元的要求越高，也越需要听澜协助判断真正落点。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.liuguang-tachaobu.liuguang-wudingmen.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "流光·无定门",
+          "group": "流光踏潮步",
+          "summary": "短时间内同时开启多个水意落点，使战场上出现多条可能的抵达路径。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.liuguang-tachaobu.liuguang-wudingmen.definition",
+            "gongfa.liuguang-tachaobu.source.section-8",
+            "gongfa.liuguang-tachaobu.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.liuguang-tachaobu.liuguang-wudingmen.definition",
+            "gongfa.liuguang-tachaobu.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      }
+    ],
+    "synergies": [
+      "听澜判断落点和敌意；水镜提供镜界节点；叠浪在移动中完成弓法和变奏；共鸣可以让敌方拦截术式失去原本方向；太一提供连续换位所需的水元。"
+    ],
+    "narrativeGuidance": [],
+    "ruleRefs": [
+      "gongfa.liuguang-tachaobu.source.section-1",
+      "gongfa.liuguang-tachaobu.source.section-2",
+      "gongfa.liuguang-tachaobu.source.section-3",
+      "gongfa.liuguang-tachaobu.source.section-4",
+      "gongfa.liuguang-tachaobu.source.section-5",
+      "gongfa.liuguang-tachaobu.source.section-6",
+      "gongfa.liuguang-tachaobu.source.section-7",
+      "gongfa.liuguang-tachaobu.source.section-8",
+      "gongfa.liuguang-tachaobu.source.section-9",
+      "gongfa.liuguang-tachaobu.source.section-10"
+    ],
+    "authority": {
+      "kind": "user-designated-source",
+      "sourceFile": "自定义全能.json",
+      "sourceFileSha256": "81b29ca747e51ebe594aec40d0cdd5a85b4230bb3591996b52622558af491c0d",
+      "entryKey": "17",
+      "uid": 17,
+      "sourceComment": "流光踏潮步 new",
+      "sourceDisabled": true,
+      "contentSha256": "48bda5104bf4d424ad9f8f60fc5361db5116217edd14011711d89a8491d351b0",
+      "status": "source-backed-template; runtime-v2-integration-pending"
+    },
+    "combatSpec": {
+      "schema": "xybattle-combat-spec-v2-draft",
+      "role": "跨距换位与落点",
+      "glossary": [
+        {
+          "term": "踏潮借界",
+          "definition": "水面、水雾、水镜、雨滴和自身潮痕都可以成为落点。修炼者可以一步跨过山海、墙垣、峡谷和混乱灵力。\n\n踏潮借界不是御空飞行。御空仍然需要从起点经过中间空间，而踏潮借界是在两个已经被水意承认的位置之间建立短暂连接。\n\n落点越清晰，换位越稳定；落点越遥远、越陌生或被高阶力量遮蔽，越需要提前留下水痕或借助镜界节点。",
+          "sourceRef": "gongfa.liuguang-tachaobu.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "潮痕节点",
+          "definition": "每次踏步都会留下短暂潮痕。潮痕记录的不是移动轨迹，而是修炼者曾经站立的位置。\n\n潮痕可以作为返回点、转向点和突然出现在敌人侧后的攻击点。多个潮痕连接后，战场上会出现多条可供选择的抵达路径。",
+          "sourceRef": "gongfa.liuguang-tachaobu.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "水光留影",
+          "definition": "水光残影不是普通幻象。每一道残影都能承接下一步真身，也可以短暂承接一次攻击或动作，使敌人无法只靠锁定本体判断位置。\n\n残影不能长期独立作战，不能替代真正的分身，也不能无限制造。它的意义是让“本体在哪里”变成一个会不断变化的问题。",
+          "sourceRef": "gongfa.liuguang-tachaobu.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "一步先声",
+          "definition": "配合听澜诀，修炼者可以在敌人招式完成之前抵达关键位置。敌人刚开始蓄力，修炼者已经站到阵眼、侧后、攻击起点或法宝回转路线之上。\n\n一步先声不是预知未来。它依赖对敌方意图和气机的判断，若敌人没有明确前兆或故意制造多重假动作，落点选择也会受到影响。",
+          "sourceRef": "gongfa.liuguang-tachaobu.source.section-4",
+          "uiKind": "concept-or-state"
+        }
+      ],
+      "rules": [
+        {
+          "id": "gongfa.liuguang-tachaobu.source.section-1",
+          "heading": "功法档案",
+          "text": "名称：流光踏潮步\n类型：身法、跨距、换位、先手\n属性：水属空间身法\n品阶：天\n定位：踏潮借界、潮痕节点、水光留影、一步先声\n核心理念：水行不问来路，光落之处皆可为渡；一步踏出，去处先于道路成立。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.source.section-2",
+          "heading": "总体定位",
+          "text": "《流光踏潮步》不是普通加速术，天阶步法真正改变的是抵达方式。\n\n它让修炼者借水意、镜界节点和潮痕完成跨距换位。许多情况下，修炼者不需要沿两点之间的道路移动，而是直接从一个被水意承认的位置出现在另一个位置。\n\n它的战斗价值不是让修炼者更快地跑向敌人，而是让敌人无法确定修炼者下一刻会从哪里出现，也无法仅靠封锁道路和封闭飞行路线限制行动。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.source.section-3",
+          "heading": "修炼方式与弦乐适配",
+          "text": "修炼者通过观潮、逐光、听水落点和在复杂地形中行走来修炼。弦乐中的换把、跳弓、快速换弦和突然停顿，适合表现步法的落点变化。\n\n乐器不是步法的必要媒介。水意、潮痕、镜界节点和修炼者自身的空间感才是身法成立的基础。音乐可以帮助修炼者把连续落点整理成有秩序的移动乐句。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.source.section-4",
+          "heading": "核心战斗结构",
+          "text": "### 一、踏潮借界\n\n水面、水雾、水镜、雨滴和自身潮痕都可以成为落点。修炼者可以一步跨过山海、墙垣、峡谷和混乱灵力。\n\n踏潮借界不是御空飞行。御空仍然需要从起点经过中间空间，而踏潮借界是在两个已经被水意承认的位置之间建立短暂连接。\n\n落点越清晰，换位越稳定；落点越遥远、越陌生或被高阶力量遮蔽，越需要提前留下水痕或借助镜界节点。\n\n### 二、潮痕节点\n\n每次踏步都会留下短暂潮痕。潮痕记录的不是移动轨迹，而是修炼者曾经站立的位置。\n\n潮痕可以作为返回点、转向点和突然出现在敌人侧后的攻击点。多个潮痕连接后，战场上会出现多条可供选择的抵达路径。\n\n### 三、水光留影\n\n水光残影不是普通幻象。每一道残影都能承接下一步真身，也可以短暂承接一次攻击或动作，使敌人无法只靠锁定本体判断位置。\n\n残影不能长期独立作战，不能替代真正的分身，也不能无限制造。它的意义是让“本体在哪里”变成一个会不断变化的问题。\n\n### 四、一步先声\n\n配合听澜诀，修炼者可以在敌人招式完成之前抵达关键位置。敌人刚开始蓄力，修炼者已经站到阵眼、侧后、攻击起点或法宝回转路线之上。\n\n一步先声不是预知未来。它依赖对敌方意图和气机的判断，若敌人没有明确前兆或故意制造多重假动作，落点选择也会受到影响。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.source.section-5",
+          "heading": "主要术式",
+          "text": "### 《踏潮·借界》\n\n借水意把两个落点暂时接通。近处可以瞬息换位，远处可以跨越山河，但距离越远，越需要清晰的水意、镜界节点或预先留下的潮痕。\n\n借界完成后不会留下完整飞行轨迹。敌人可以封锁落点，却不能只靠封锁两点之间的空间阻止换位。\n\n### 《潮痕·回身》\n\n回到任意一道潮痕，也可以让两道潮痕交换位置。它适合绕后、脱离包围、避开锁定和把敌人的攻击引到错误方向。\n\n回身不是无限回溯。潮痕被摧毁、被绝灵力量覆盖或失去水意联系后，就不能继续作为落点。\n\n### 《流光·留影》\n\n留下多道水光身影，本体可以在影与影之间移换。影子可以完成短暂攻击、诱导和承接，但不能像真正分身一样长期施法。\n\n如果敌人同时抹去大片水意，部分影子会消失，本体可用的换位范围也会缩小。\n\n### 《换把·逐潮》\n\n在连续跨距之间改变落点层次。前一步出现在敌人面前，后一步可以出现在敌人攻击起点，再下一步从水镜节点切入侧后。\n\n换把·逐潮适合与叠浪配合，使弓弦动作不必在固定位置完成；也适合与共鸣配合，在敌方法宝和阵法最难防守的位置完成接触。\n\n### 《一步·先声》\n\n将听澜得到的敌方意图转化为落点优势。敌人刚起念，修炼者已经处于最适合出手的位置。\n\n它夺走的是行动先后，而不是强行冻结敌人。敌人仍然可以变招，但变招往往会暴露新的潮痕和气机。\n\n### 《流光·无定门》\n\n短时间内同时开启多个水意落点，使战场上出现多条可能的抵达路径。\n\n敌人必须同时防备多个方向，无法只封锁一条道路。无定门越复杂，对神魂和水元的要求越高，也越需要听澜协助判断真正落点。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.source.section-6",
+          "heading": "同境界优势",
+          "text": "同境界敌人很难依靠速度、地形和包围限制踏潮步。只要战场上还有水意、潮痕或镜界节点，修炼者就有改变位置的选择。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.source.section-7",
+          "heading": "越级挑战能力",
+          "text": "面对高一个小境界的普通修士，踏潮步可以避免正面承受高境界招式，持续取得侧后、上方、攻击起点和阵法薄弱处的位置，为叠浪和共鸣制造稳定的反击窗口。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.source.section-8",
+          "heading": "境界表现",
+          "text": "炼气期可在短距离水意间换位；筑基期可以连续使用潮痕节点；金丹期能跨越大范围战场；元婴期可借虚空和镜界远距离换位；出窍期后可在短暂没有外界水意时以自身水元开门；更高境界可以把整片水行区域作为可抵达的步法范围。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.source.section-9",
+          "heading": "功法弱点",
+          "text": "1. 完全绝灵、无映照、无水意的区域会压缩落点。\n2. 被彻底抹去的潮痕不能继续使用。\n3. 高阶封界可以限制跨距换位。\n4. 连续开启过多落点会增加神魂负荷。\n5. 踏潮步改变抵达方式，但不能替代攻击和防御本身。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.source.section-10",
+          "heading": "与其他功法的关系",
+          "text": "听澜判断落点和敌意；水镜提供镜界节点；叠浪在移动中完成弓法和变奏；共鸣可以让敌方拦截术式失去原本方向；太一提供连续换位所需的水元。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.tachao-jiejie.definition",
+          "heading": "《踏潮·借界》",
+          "text": "借水意把两个落点暂时接通。近处可以瞬息换位，远处可以跨越山河，但距离越远，越需要清晰的水意、镜界节点或预先留下的潮痕。\n\n借界完成后不会留下完整飞行轨迹。敌人可以封锁落点，却不能只靠封锁两点之间的空间阻止换位。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.chaohen-huishen.definition",
+          "heading": "《潮痕·回身》",
+          "text": "回到任意一道潮痕，也可以让两道潮痕交换位置。它适合绕后、脱离包围、避开锁定和把敌人的攻击引到错误方向。\n\n回身不是无限回溯。潮痕被摧毁、被绝灵力量覆盖或失去水意联系后，就不能继续作为落点。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.liuguang-liuying.definition",
+          "heading": "《流光·留影》",
+          "text": "留下多道水光身影，本体可以在影与影之间移换。影子可以完成短暂攻击、诱导和承接，但不能像真正分身一样长期施法。\n\n如果敌人同时抹去大片水意，部分影子会消失，本体可用的换位范围也会缩小。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.huanba-zhuchao.definition",
+          "heading": "《换把·逐潮》",
+          "text": "在连续跨距之间改变落点层次。前一步出现在敌人面前，后一步可以出现在敌人攻击起点，再下一步从水镜节点切入侧后。\n\n换把·逐潮适合与叠浪配合，使弓弦动作不必在固定位置完成；也适合与共鸣配合，在敌方法宝和阵法最难防守的位置完成接触。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.yibu-xiansheng.definition",
+          "heading": "《一步·先声》",
+          "text": "将听澜得到的敌方意图转化为落点优势。敌人刚起念，修炼者已经处于最适合出手的位置。\n\n它夺走的是行动先后，而不是强行冻结敌人。敌人仍然可以变招，但变招往往会暴露新的潮痕和气机。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.liuguang-tachaobu.liuguang-wudingmen.definition",
+          "heading": "《流光·无定门》",
+          "text": "短时间内同时开启多个水意落点，使战场上出现多条可能的抵达路径。\n\n敌人必须同时防备多个方向，无法只封锁一条道路。无定门越复杂，对神魂和水元的要求越高，也越需要听澜协助判断真正落点。",
+          "authority": "source-verbatim"
+        }
+      ],
+      "realmProgression": {
+        "text": "炼气期可在短距离水意间换位；筑基期可以连续使用潮痕节点；金丹期能跨越大范围战场；元婴期可借虚空和镜界远距离换位；出窍期后可在短暂没有外界水意时以自身水元开门；更高境界可以把整片水行区域作为可抵达的步法范围。",
+        "sourceRef": "gongfa.liuguang-tachaobu.source.section-8"
+      },
+      "limitations": {
+        "text": "1. 完全绝灵、无映照、无水意的区域会压缩落点。\n2. 被彻底抹去的潮痕不能继续使用。\n3. 高阶封界可以限制跨距换位。\n4. 连续开启过多落点会增加神魂负荷。\n5. 踏潮步改变抵达方式，但不能替代攻击和防御本身。",
+        "sourceRef": "gongfa.liuguang-tachaobu.source.section-9"
+      },
+      "integrationPorts": {
+        "authority": "engineering-classification",
+        "accepts": [
+          "water.intent",
+          "mirror.node",
+          "movement.trace",
+          "perception.warning"
+        ],
+        "provides": [
+          "movement.position",
+          "movement.trace",
+          "movement.afterimage"
+        ],
+        "semantics": "可交互对象类型，不是每招的强制前提，也不表示每次施法同时生成全部效果。"
+      },
+      "ownership": "由人物实例引用，不由此模板决定",
+      "numericPolicy": "未规定的成本、倍率、槽位、回合、层数与成功率不做数值补全"
+    }
+  }
+}

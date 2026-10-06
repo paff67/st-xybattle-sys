@@ -1,4 +1,5 @@
 import { clone } from './common.js';
+import { bindLearnedRules } from './authoritative-rules.js';
 
 export const COMBAT_PROFILE_SCHEMA = 'battle_combat_profile_v2';
 const object = (value) => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -29,7 +30,7 @@ export function publicCharacterTraits(raw = {}) {
   return result;
 }
 
-export function normalizeCombatProfile(raw = {}, { id, side = 'enemy' } = {}) {
+export function normalizeCombatProfile(raw = {}, { id, side = 'enemy', registry = [] } = {}) {
   const data = object(raw.candidate || raw.profile || raw.fields || raw);
   const visible = publicCharacterTraits(data.visibleInfo || data.可见情报 || {});
   const generated = object(data.generated);
@@ -52,7 +53,8 @@ export function normalizeCombatProfile(raw = {}, { id, side = 'enemy' } = {}) {
     triggeredState: words(item.triggeredState), visibility: visibility(item.visibility, side === 'player' ? 'player' : 'internal')
   }));
   const behavior = typeof data.behavior === 'string' ? { preference: data.behavior } : object(data.behavior);
-  return {
+  const profile = {
+    learnedTechniqueRefs: (side === 'player' ? list(data.learnedTechniqueRefs) : []).map((ref) => ({ registryId: text(ref.registryId), techniqueIds: words(ref.techniqueIds), version: text(ref.version), contentSha256: text(ref.contentSha256), proficiency: text(ref.proficiency), evidence: text(ref.evidence) })),
     profileSchema: COMBAT_PROFILE_SCHEMA, id: id || text(data.id), name: text(data.name || data.姓名),
     identity: text(data.identity || data.身份 || visible.identity),
     cultivationRealm: text(data.cultivationRealm || data.realm || data.境界 || visible.cultivationRealm),
@@ -64,6 +66,7 @@ export function normalizeCombatProfile(raw = {}, { id, side = 'enemy' } = {}) {
     behavior: { preference: text(behavior.preference || behavior.preferredRange || behavior.style), opening: text(behavior.opening || behavior.openingMove), tactics: words(behavior.tactics || behavior.priorities), retreat: text(behavior.retreat || behavior.retreatConditions) },
     weaknesses: words(data.weaknesses || data.弱点), hidden: clone(object(data.hidden))
   };
+  return side === 'player' && registry.length ? bindLearnedRules(profile, registry) : profile;
 }
 
 const uncertain = /^(?:未知|不明|待定|待补充|未提供|待裁定|unknown|tbd|player|主角|演示主角)$/i;
@@ -86,7 +89,7 @@ export function combatProfileIssues(profile) {
     if (move.availability?.requires?.some((requirement) => !defined(requirement?.path) || !['includes', 'truthy', 'equals', 'not'].includes(requirement?.op))) issues.push(`${move.name || '招式'}的解锁条件无效`);
     if (!(profile.martialArts || []).some((method) => method.name === move.school)) issues.push(`${move.name || '招式'}的所属功法未定义`);
   }
-  if (!profile.resourceDefinitions?.length) issues.push('请定义至少一种战斗资源及其边界');
+  if (!profile.resourceDefinitions?.length && !profile.learnedTechniqueRefs?.length) issues.push('请定义至少一种战斗资源及其边界');
   const keys = new Set();
   for (const resource of profile.resourceDefinitions || []) {
     if (!defined(resource.name) || !defined(resource.definition) || !Number.isFinite(resource.current) || !Number.isFinite(resource.min) || !Number.isFinite(resource.max) || resource.current < resource.min || resource.current > resource.max || resource.min > resource.max || keys.has(resource.key)) issues.push(`${resource.name || '资源'}的名称、定义、当前值或边界无效`);
@@ -97,12 +100,13 @@ export function combatProfileIssues(profile) {
 }
 
 /** Compile confirmed definitions into the same registry/rule surface as adjudication. */
-export function compileCombatProfile(input, side) {
-  const profile = normalizeCombatProfile(input, { id: input.id, side });
+export function compileCombatProfile(input, side, registry = []) {
+  const profile = normalizeCombatProfile(input, { id: input.id, side, registry });
   const issues = combatProfileIssues(profile);
   if (issues.length) throw new Error(`${profile.name || '人物'}资料不完整：${issues.join('；')}`);
   const prefix = `combat-profile.${encodeURIComponent(profile.id)}`;
-  const techniques = profile.techniques.map((move, index) => ({ ...move, id: `${prefix}.move-${index + 1}`, ruleRefs: [`${prefix}.move-${index + 1}.definition`] }));
+  const boundIds = new Set(profile.learnedTechniqueRefs.flatMap((ref) => ref.techniqueIds));
+  const techniques = profile.techniques.filter((move) => !boundIds.has(move.id)).map((move, index) => ({ ...move, id: `${prefix}.move-${index + 1}`, ruleRefs: [`${prefix}.move-${index + 1}.definition`] }));
   const entry = {
     id: prefix, name: `${profile.name}·战斗功法`, rank: profile.cultivationRealm, element: '人物已确认设定',
     corePrinciple: profile.martialArts.map((method) => `${method.name}：${method.description}；${method.principle}`).join('\n'),
@@ -110,7 +114,7 @@ export function compileCombatProfile(input, side) {
     version: '1', visibility: side === 'player' ? 'player' : 'internal', characterProfileId: profile.id
   };
   const resourceRules = profile.resourceDefinitions.map((resource) => ({ actorId: profile.id, resource: resource.key, min: resource.min, max: resource.max, name: resource.name, definition: resource.definition, recovery: resource.recovery, visibility: resource.visibility, ruleRefs: [`${prefix}.resource.${encodeURIComponent(resource.key)}`] }));
-  const actor = { ...profile, techniques: side === 'player' ? [{ registryId: prefix, techniqueIds: techniques.map((move) => move.id) }] : techniques };
+  const actor = { ...profile, techniques: side === 'player' ? [...(techniques.length ? [{ registryId: prefix, techniqueIds: techniques.map((move) => move.id) }] : []), ...profile.learnedTechniqueRefs.map((ref) => ({ registryId: ref.registryId, techniqueIds: clone(ref.techniqueIds) }))] : techniques };
   actor.visibleInfo = { ...profile.visibleInfo, identity: profile.identity, cultivationRealm: profile.cultivationRealm, currentState: profile.currentState };
   return { actor, entry, resourceRules };
 }

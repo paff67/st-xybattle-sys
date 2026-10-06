@@ -1,3 +1,4 @@
+import { authoritativeEntries } from '../src/authoritative-rules.js';
 import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, writeFile, mkdir, unlink } from 'node:fs/promises';
@@ -184,4 +185,33 @@ test('complete profile review hides internal fields and requires both protagonis
   await inputValue(root.querySelector('[data-candidate-id="e"] [data-field-path="techniques.0.originalDefinition"] textarea'), '');
   assert.equal(button().disabled, true);
   assert.match(root.textContent, /平川断澜缺少完整定义/);
+});
+
+
+test('authority selector changes learned references, revokes acknowledgment and never requires raw JSON editing', async (t) => {
+  const registry = authoritativeEntries();
+  const entry = registry.find((item) => item.name === '叠浪玄潮诀');
+  const first = entry.techniques[0], second = entry.techniques[2];
+  const player = { ...fullCombatProfile('许妍'), martialArts: [], techniques: [], resourceDefinitions: [],
+    learnedTechniqueRefs: [{ registryId: entry.id, techniqueIds: [first.id], evidence: '已修成' }] };
+  const preparation = await prepareEnemyCandidates({ registry, scope, playerCandidate: player, enemies: [{ id: 'e', name: '敌人' }] }, {
+    includePlayer: true, requireProfiles: true, inference: { completeCandidate: async ({ side }) => side === 'player' ? player : fullCombatProfile() }
+  });
+  let emitted;
+  const { root, button } = mount(t, preparation, (value) => { emitted = value; });
+  const actor = root.querySelector('[data-candidate-id="player"]');
+  const choice = actor.querySelector(`[data-learned-technique="${second.id}"]`);
+  assert.equal(choice.checked, false);
+  choice.checked = true; choice.dispatchEvent(new dom.window.Event('change', { bubbles: true })); await nextTick();
+  assert.match(actor.textContent, /跳弓·碎潮/);
+  const initial = actor.querySelector(`[data-learned-technique="${first.id}"]`);
+  initial.checked = false; initial.dispatchEvent(new dom.window.Event('change', { bubbles: true })); await nextTick();
+  for (const input of root.querySelectorAll('.xy-character-candidate > .xy-character-candidate__ack input')) {
+    input.checked = true; input.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+  }
+  await nextTick();
+  assert.equal(button().disabled, false);
+  button().click(); await nextTick();
+  assert.deepEqual(emitted.edits.player.learnedTechniqueRefs[0].techniqueIds, [second.id]);
+  assert.equal(actor.querySelector('[data-field-path="techniques.0.originalDefinition"] .xy-character-tree__edit'), null);
 });

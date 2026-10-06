@@ -20,6 +20,7 @@ behavior:{preference:战斗偏好,opening:起手选择,tactics:[具体战术],re
 严禁把结构包在 observed、generated、battleResourceModel 里，严禁把“待裁定”“未知”“可能具备”当作已完成的定义。不要生成内部 id、规则引用、来源追踪和确认元数据，程序会生成这些字段。
 敌人：根据境界与证据构造自洽的功法和固定招式（通常3~6招），缺乏证据的细节允许构造，但不是已公开事实；未暴露招式 visibility=internal。已观察到的招式可以 public，并补齐它确定的完整规则。
 主角（side=player）：必须依据聊天、用户人设、导入档案和已拥有功法还原，不能凭空添加功法或提升境界。上下文 registry 的定义可供精确匹配引用，不能因为库中有某功法就视为主角拥有。关键资料缺失则留空，交由用户补充，绝不能代入演示主角。
+权威绑定优先契约：主角已掌握的 registry 中 authority.kind=user-designated-source 功法只输出 learnedTechniqueRefs:[{registryId,techniqueIds:[确实已修成的招式ID],proficiency:修炼程度,evidence:掌握依据}]；不要重写这些功法的 martialArts/techniques，程序会从权威模板展开展示和绑定。这个契约是上文不输出引用字段的明确例外。仅功法名称不能推出已学会全部招式；证据不足留待用户确认。原文未规定资源数值时不得伪造主角资源上限；权威绑定主角可以 resourceDefinitions=[]，以定性资源占用裁定。
 来源冲突在本次构造中形成一个一致草稿，供用户审核。不要丢掉已知的限制、弱点或完整功法定义。`;
 
 export const DEFAULT_CHARACTER_COMPLETION_PROMPT = `你是独立战斗系统的人物档案构造器。请先读取上下文证据，再生成一份可由用户核对、确认并用于实际战斗裁定的完整档案。

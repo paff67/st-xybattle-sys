@@ -83,6 +83,17 @@
             <strong>资料尚未完整，补齐后才能开始战斗</strong>
             <ul><li v-for="issue in profileIssues[candidate.id]" :key="issue">{{ issue }}</li></ul>
           </div>
+          <details v-if="candidate.role === 'player' && authorityCatalogue.length" class="xy-character-section">
+            <summary>核对已掌握的功法与招式</summary>
+            <p>只勾选已经修成的招式。招式定义来自固定功法资料，施展是否成功仍取决于本轮条件。</p>
+            <details v-for="entry in authorityCatalogue" :key="entry.id" class="xy-character-section">
+              <summary>{{ entry.name }}</summary>
+              <label v-for="move in entry.techniques" :key="move.id" class="xy-character-candidate__ack">
+                <input type="checkbox" :data-learned-technique="move.id" :checked="hasLearned(candidate, entry.id, move.id)" :disabled="editingDisabled(candidate)" @change="toggleLearned(candidate, entry, move.id, $event.target.checked)" />
+                {{ move.name }}
+              </label>
+            </details>
+          </details>
           <div v-if="!removedIds.has(candidate.id)" class="xy-character-candidate__sections" aria-label="人物资料">
             <details v-for="section in sectionsById[candidate.id]" :key="section.id" class="xy-character-section" :data-section="section.id">
               <summary>{{ section.label }}</summary>
@@ -194,13 +205,33 @@ function parsedFields(candidate) {
   }
 }
 
-const sectionsById = computed(() => Object.fromEntries((props.preparation?.candidates || []).map((candidate) => [
-  candidate.id, characterTree(parsedFields(candidate), candidate.provenance, candidate.fields)
-])));
-
-const profileIssues = computed(() => Object.fromEntries((props.preparation?.candidates || []).map((candidate) => [candidate.id,
-  props.preparation.requiresCompleteProfiles ? combatProfileIssues(normalizeCombatProfile(parsedFields(candidate), { id: candidate.id, side: candidate.role || 'enemy' })) : []
-])));
+const authorityCatalogue = computed(() => (props.preparation?.registrySnapshot || []).filter((entry) => entry.authority?.kind === 'user-designated-source'));
+function resolvedFields(candidate) {
+  return normalizeCombatProfile(parsedFields(candidate), { id: candidate.id, side: candidate.role || 'enemy', registry: props.preparation?.registrySnapshot || [] });
+}
+function hasLearned(candidate, registryId, techniqueId) {
+  return parsedFields(candidate).learnedTechniqueRefs?.some((ref) => ref.registryId === registryId && ref.techniqueIds.includes(techniqueId));
+}
+function toggleLearned(candidate, entry, techniqueId, checked) {
+  const fields = parsedFields(candidate);
+  const refs = fields.learnedTechniqueRefs || [];
+  let ref = refs.find((item) => item.registryId === entry.id);
+  if (!ref) { ref = { registryId: entry.id, techniqueIds: [], evidence: '用户核对选择', proficiency: '' }; refs.push(ref); }
+  ref.techniqueIds = checked ? [...new Set([...ref.techniqueIds, techniqueId])] : ref.techniqueIds.filter((id) => id !== techniqueId);
+  fields.learnedTechniqueRefs = refs.filter((item) => item.techniqueIds.length);
+  fields.techniques = (fields.techniques || []).filter((move) => move.school !== entry.name);
+  fields.martialArts = (fields.martialArts || []).filter((method) => method.name !== entry.name);
+  updateDraft(candidate.id, JSON.stringify(fields, null, 2));
+}
+const sectionsById = computed(() => Object.fromEntries((props.preparation?.candidates || []).map((candidate) => {
+  let fields = parsedFields(candidate);
+  try { if (props.preparation.requiresCompleteProfiles) fields = resolvedFields(candidate); } catch { /* Show editable draft alongside the validation error. */ }
+  return [candidate.id, characterTree(fields, candidate.provenance, candidate.fields)];
+})));
+const profileIssues = computed(() => Object.fromEntries((props.preparation?.candidates || []).map((candidate) => {
+  try { return [candidate.id, props.preparation.requiresCompleteProfiles ? combatProfileIssues(resolvedFields(candidate)) : []]; }
+  catch (error) { return [candidate.id, [error.message]]; }
+})));
 
 function addFieldItem(candidate, node) {
   const fields = parsedFields(candidate);
@@ -230,7 +261,7 @@ function updateField(candidate, field, input) {
   confirmedIds.delete(candidate.id);
   fieldErrors[candidate.id] ||= {};
   try {
-    drafts[candidate.id] = JSON.stringify(editCharacterField(parsedFields(candidate), field.keys, input), null, 2);
+    drafts[candidate.id] = JSON.stringify(editCharacterField(props.preparation.requiresCompleteProfiles ? resolvedFields(candidate) : parsedFields(candidate), field.keys, input), null, 2);
     delete fieldErrors[candidate.id][field.path];
   } catch (error) {
     fieldErrors[candidate.id][field.path] = error.message;

@@ -1,6 +1,7 @@
 import { publicCharacterTraits } from './combat-profile.js';
 // Presentation only: never rewrite AI/source fields to translate their labels.
 const names = {
+  learnedTechniqueRefs: '已修功法绑定', proficiency: '修炼程度', evidence: '掌握依据',
   id: '内部编号', name: '名称', identity: '身份', cultivationRealm: '修为境界', cultivation: '修为', realm: '境界',
   currentState: '当前状态', combatStyle: '战斗方式', weapon: '武器', weapons: '武器', stance: '姿态', position: '站位',
   visibleInfo: '可见情报', resources: '灵力与资源', techniques: '功法与招式', abilities: '能力', skills: '技能',
@@ -57,7 +58,7 @@ export function characterValueLabel(value, key = '') {
 const definitions = [
   { id: 'identity', label: '身份与当前状态', keys: ['id', 'name', 'identity', 'cultivationRealm', 'cultivation', 'realm', 'currentState', 'combatStyle', 'weapon', 'weapons', 'stance', 'position', '身份', '境界', '修为', '当前状态', '武器', '姿态', '站位'] },
   { id: 'visible', label: '可见情报与行动倾向', keys: ['visibleInfo', 'observed', 'behavior', '公开表现', '可观察招式', '可能特征'] },
-  { id: 'techniques', label: '功法、招式与能力', keys: ['martialArts', 'techniques', 'skills', 'abilities', '功法', '招式', '技能', '能力'] },
+  { id: 'techniques', label: '功法、招式与能力', keys: ['learnedTechniqueRefs', 'martialArts', 'techniques', 'skills', 'abilities', '功法', '招式', '技能', '能力'] },
   { id: 'resources', label: '资源、装备与弱点', keys: ['resourceDefinitions', 'resources', 'weaknesses', 'equipment', 'artifacts', '资源', '弱点', '装备', '法宝'] },
   { id: 'hidden', label: '构造补充与裁定专用资料', keys: ['hidden', 'generated', '隐藏信息'] },
   { id: 'other', label: '补充资料', keys: [] }
@@ -72,12 +73,14 @@ export function characterTree(fields, provenance = {}, original = fields) {
     if (internalKeys.has(normalize(key))) return null;
     if (!/^\d+$/.test(key) && !normalizedNames[normalize(key)] && !/\p{Script=Han}/u.test(key)) return null;
     const path = keys.join('.');
+    const boundNames = new Set((fields.learnedTechniqueRefs || []).map((ref) => ref.name));
+    const locked = keys[0] === 'techniques' && boundNames.has(fields.techniques?.[Number(keys[1])]?.school) || keys[0] === 'martialArts' && boundNames.has(fields.martialArts?.[Number(keys[1])]?.name);
     const label = /^\d+$/.test(key) && value && typeof value === 'object' ? textName(value) || characterFieldLabel(key) : characterFieldLabel(key, index);
     if (value && typeof value === 'object') {
       const children = Object.entries(value).map(([childKey, child], childIndex) => node(child, [...keys, childKey], childIndex)).filter(Boolean);
-      return { path, keys, label, children, group: true, canAdd: Array.isArray(value) && ['martialArts', 'techniques', 'resourceDefinitions', 'weaknesses', 'tactics', 'mechanics', 'triggeredState', 'conditions'].includes(key) };
+      return { path, keys, label, children, group: true, canAdd: !locked && Array.isArray(value) && ['martialArts', 'techniques', 'resourceDefinitions', 'weaknesses', 'tactics', 'mechanics', 'triggeredState', 'conditions'].includes(key) };
     }
-    return { ...rows.find((row) => row.path === path), path, keys, label, value, display: characterValueLabel(value, key), ...(key === 'default' ? { options: { available: '可用', conditional: '满足条件后可用', unavailable: '不可用' } } : {}) };
+    return { ...rows.find((row) => row.path === path), path, keys, label, value, display: characterValueLabel(value, key), ...(locked ? { editable: false } : {}), ...(key === 'default' ? { options: { available: '可用', conditional: '满足条件后可用', unavailable: '不可用' } } : {}) };
   }
   return definitions.filter((section) => !['other', 'hidden'].includes(section.id)).map((section) => ({
     ...section,

@@ -1,3 +1,4 @@
+import { createRuleMemory } from './authoritative-rules.js';
 import { clone } from './common.js';
 import { COMBAT_PROFILE_SCHEMA, normalizeCombatProfile, combatProfileIssues, compileCombatProfile } from './combat-profile.js';
 import { TechniqueRegistry } from './battle-registry.js';
@@ -385,9 +386,15 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
     merged.sourceStatus = { mvu_dynamic: { status: mvuResult.status, ...(mvuResult.error ? { error: mvuResult.error } : {}), ...(mvuResult.metadata || {}) }, database: { status: databaseResult.status, ...(databaseResult.error ? { error: databaseResult.error } : {}), ...(databaseResult.metadata || {}) }, ai_extract: inferred ? { status: 'matched' } : { status: aiSource ? 'missing' : 'not_configured' }, ai_complete: completionStatus, ai_fill: fillStatus };
     merged.role = candidate.role || 'enemy';
     if (strictProfiles) {
-      merged.fields = normalizeCombatProfile(merged.fields, { id: candidate.id, side: merged.role });
+      const originalFields = merged.fields;
+      try {
+        merged.fields = normalizeCombatProfile(originalFields, { id: candidate.id, side: merged.role, registry: context.registry || [] });
+        merged.validationIssues = combatProfileIssues(merged.fields);
+      } catch (error) {
+        merged.fields = normalizeCombatProfile(originalFields, { id: candidate.id, side: merged.role });
+        merged.validationIssues = [error.message, ...combatProfileIssues(merged.fields)];
+      }
       merged.name = merged.fields.name;
-      merged.validationIssues = combatProfileIssues(merged.fields);
     }
     candidates.push(merged);
   }
@@ -395,6 +402,7 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
     schema: CHARACTER_PREPARATION_SCHEMA,
     version: 1,
     status: 'awaiting_confirmation',
+    registrySnapshot: clone(context.registry || []),
     requiresCompleteProfiles: strictProfiles,
     requiresPlayer: includePlayer,
     ...(strictProfiles ? { profileSchema: COMBAT_PROFILE_SCHEMA } : {}),
@@ -422,7 +430,7 @@ export function confirmEnemyCandidates(preparation, edits = {}, { removeIds = []
     let fields = redactCharacterSource(clone(candidate.fields));
     for (const [path, value] of leaves(patch)) setPath(fields, path, value);
     if (preparation.requiresCompleteProfiles) {
-      fields = normalizeCombatProfile(fields, { id: candidate.id, side: candidate.role || 'enemy' });
+      fields = normalizeCombatProfile(fields, { id: candidate.id, side: candidate.role || 'enemy', registry: preparation.registrySnapshot || [] });
       const issues = combatProfileIssues(fields);
       if (issues.length) throw new Error(`${fields.name || '人物'}资料不完整：${issues.join('；')}`);
     }
@@ -473,17 +481,18 @@ export function applyConfirmedEnemies(state, preparation) {
     if (String(preparation.scope.chatId) !== String(state.scope?.chatId) || String(preparation.scope.branchId) !== String(state.scope?.branchId)) throw new Error('人物准备作用域与当前聊天/分支不一致');
   }
   if (preparation.requiresCompleteProfiles) {
-    const compiled = preparation.candidates.map((candidate) => compileCombatProfile(candidate.fields, candidate.role || 'enemy'));
+    const sourceRegistry = preparation.registrySnapshot?.length ? preparation.registrySnapshot : state.registrySnapshot;
+    const compiled = preparation.candidates.map((candidate) => compileCombatProfile(candidate.fields, candidate.role || 'enemy', sourceRegistry));
     const player = compiled.find((item) => preparation.candidates.find((candidate) => candidate.id === item.actor.id)?.role === 'player')?.actor || clone(state.actors.player);
     if (preparation.candidates.some((candidate) => candidate.role !== 'player' && candidate.id === player.id)) throw new Error('敌方人物 id 与主角重复');
     const enemies = compiled.filter((item) => item.actor.id !== player.id).map((item) => item.actor);
     if (new Set([player.id, ...enemies.map((enemy) => enemy.id)]).size !== enemies.length + 1) throw new Error('敌方人物 id 与主角重复');
-    const registrySnapshot = [...state.registrySnapshot.filter((entry) => !entry.characterProfileId), ...compiled.map((item) => item.entry)];
+    const registrySnapshot = [...sourceRegistry.filter((entry) => !entry.characterProfileId), ...compiled.map((item) => item.entry)];
     new TechniqueRegistry(registrySnapshot);
     const ids = new Set([...compiled.map((item) => item.actor.id), ...state.actors.enemies.map((enemy) => enemy.id)]);
     const resourceRules = [...(state.resourceRules || []).filter((rule) => !ids.has(rule.actorId)), ...compiled.flatMap((item) => item.resourceRules)];
     const positions = Object.fromEntries([player, ...enemies].filter((actor) => actor.visibleInfo?.position).map((actor) => [actor.id, actor.visibleInfo.position]));
-    return { ...clone(state), actors: { player, enemies }, registrySnapshot, resourceRules, semanticState: { ...clone(state.semanticState), positions }, characterPreparation: clone(preparation), version: Number(state.version || 0) + 1, updatedAt: new Date().toISOString() };
+    return { ...clone(state), actors: { player, enemies }, registrySnapshot, ruleMemory: createRuleMemory(registrySnapshot), resourceRules, semanticState: { ...clone(state.semanticState), positions }, characterPreparation: clone(preparation), version: Number(state.version || 0) + 1, updatedAt: new Date().toISOString() };
   }
   const enemies = confirmedEnemyActors(preparation);
   if (enemies.some((enemy) => enemy.id === state.actors?.player?.id)) throw new Error('敌方人物 id 与主角重复');
@@ -496,6 +505,7 @@ export function buildCharacterConfirmationPanel(preparation) {
   return {
     schema: CHARACTER_PREPARATION_SCHEMA,
     status: preparation.status,
+    registrySnapshot: clone(preparation.registrySnapshot || []),
     scope: clone(preparation.scope),
     requiresCompleteProfiles: preparation.requiresCompleteProfiles,
     requiresPlayer: preparation.requiresPlayer,

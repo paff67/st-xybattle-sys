@@ -1,0 +1,534 @@
+{
+  "schema": "xybattle-content-v1",
+  "protocolVersion": 1,
+  "id": "gongfa.wuxiang-shuijingfa",
+  "contentType": "technique",
+  "name": "无相水镜法",
+  "version": "2026.10.06-source.1",
+  "createdAt": "2026-10-06T00:00:00+08:00",
+  "updatedAt": "2026-10-06T00:00:00+08:00",
+  "entry": {
+    "id": "gongfa.wuxiang-shuijingfa",
+    "name": "无相水镜法",
+    "rank": "天",
+    "element": "水属镜界法",
+    "version": "2026.10.06-source.1",
+    "visibility": "player",
+    "corePrinciple": "镜不是复制世界，而是让世界暂时承认另一种位置关系。",
+    "mechanics": [
+      "《无相水镜法》是一部建立局部主场的天阶水镜道法。它不只是制造水墙和反弹攻击，而是让战场中的距离、方向、映照和落点获得新的排列方式。",
+      "水镜法的核心单位是“镜界节点”。节点可以是水面、雾气、雨滴、镜光、法宝表面或修炼者留下的水印。多个节点互相映照后，才会形成真正的镜界。",
+      "敌人进入镜界后，不能再只依靠直线、速度和力量判断攻击效果。看似近在眼前的攻击可能被拉远，看似已经命中的招式可能落在镜身，看似从正面而来的力量可能从另一侧出现。"
+    ],
+    "techniques": [
+      {
+        "id": "gongfa.wuxiang-shuijingfa.shuijing-jiejie-jiedian",
+        "name": "水镜·镜界节点",
+        "school": "无相水镜法",
+        "category": "镜界、主场、映照、空间关系",
+        "originalDefinition": "在水面、雾气、雨滴、镜光和水印中建立节点。\n\n节点建立后，可以承接一道术式、记录一个落点或为踏潮提供换位入口。节点越稳定，越能承接强力攻击和远距离换位。",
+        "mechanics": [
+          "在水面、雾气、雨滴、镜光和水印中建立节点。",
+          "节点建立后，可以承接一道术式、记录一个落点或为踏潮提供换位入口。节点越稳定，越能承接强力攻击和远距离换位。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.wuxiang-shuijingfa.shuijing-jiejie-jiedian.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "水镜·镜界节点",
+          "group": "无相水镜法",
+          "summary": "在水面、雾气、雨滴、镜光和水印中建立节点。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.shuijing-jiejie-jiedian.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-8",
+            "gongfa.wuxiang-shuijingfa.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.shuijing-jiejie-jiedian.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.wuxiang-shuijingfa.chengjie-chaotianmu",
+        "name": "澄界·潮天幕",
+        "school": "无相水镜法",
+        "category": "镜界、主场、映照、空间关系",
+        "originalDefinition": "将多个镜界节点连接成主场。主场展开后，敌人的攻击距离、飞行方向和神识判断都会受到镜界安排。\n\n潮天幕不是静止护罩。节点会随战斗移动和变化，修炼者可以主动关闭旧节点，在新的位置重新建立映照。",
+        "mechanics": [
+          "将多个镜界节点连接成主场。主场展开后，敌人的攻击距离、飞行方向和神识判断都会受到镜界安排。",
+          "潮天幕不是静止护罩。节点会随战斗移动和变化，修炼者可以主动关闭旧节点，在新的位置重新建立映照。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.wuxiang-shuijingfa.chengjie-chaotianmu.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "澄界·潮天幕",
+          "group": "无相水镜法",
+          "summary": "将多个镜界节点连接成主场。主场展开后，敌人的攻击距离、飞行方向和神识判断都会受到镜界安排。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.chengjie-chaotianmu.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-8",
+            "gongfa.wuxiang-shuijingfa.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.chengjie-chaotianmu.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.wuxiang-shuijingfa.jingjie-zhichi-qianxun",
+        "name": "镜界·咫尺千寻",
+        "school": "无相水镜法",
+        "category": "镜界、主场、映照、空间关系",
+        "originalDefinition": "把看似很近的攻击拉长，使飞剑、拳罡、火焰和术法在抵达前经过更多镜界路径。\n\n它不减慢整个世界，只作用于进入镜界并被节点捕捉的攻击。大范围无差别攻击可以绕过部分节点，因此不能被简单理解成绝对防御。",
+        "mechanics": [
+          "把看似很近的攻击拉长，使飞剑、拳罡、火焰和术法在抵达前经过更多镜界路径。",
+          "它不减慢整个世界，只作用于进入镜界并被节点捕捉的攻击。大范围无差别攻击可以绕过部分节点，因此不能被简单理解成绝对防御。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.wuxiang-shuijingfa.jingjie-zhichi-qianxun.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "镜界·咫尺千寻",
+          "group": "无相水镜法",
+          "summary": "把看似很近的攻击拉长，使飞剑、拳罡、火焰和术法在抵达前经过更多镜界路径。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.jingjie-zhichi-qianxun.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-8",
+            "gongfa.wuxiang-shuijingfa.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.jingjie-zhichi-qianxun.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.wuxiang-shuijingfa.jingjie-yihua-yinsha",
+        "name": "镜界·移花引煞",
+        "school": "无相水镜法",
+        "category": "镜界、主场、映照、空间关系",
+        "originalDefinition": "将单点攻击从一个节点引向另一个节点。攻击可以被导向空处、地面、敌方侧后，甚至被引到敌人自己暴露的防御位置。\n\n偏转角度取决于节点数量、攻击性质和修炼者的控制。越是集中、方向明确的攻击，越容易被引泄；越是覆盖整个区域的攻击，越难完全转移。",
+        "mechanics": [
+          "将单点攻击从一个节点引向另一个节点。攻击可以被导向空处、地面、敌方侧后，甚至被引到敌人自己暴露的防御位置。",
+          "偏转角度取决于节点数量、攻击性质和修炼者的控制。越是集中、方向明确的攻击，越容易被引泄；越是覆盖整个区域的攻击，越难完全转移。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.wuxiang-shuijingfa.jingjie-yihua-yinsha.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "镜界·移花引煞",
+          "group": "无相水镜法",
+          "summary": "将单点攻击从一个节点引向另一个节点。攻击可以被导向空处、地面、敌方侧后，甚至被引到敌人自己暴露的防御位置。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.jingjie-yihua-yinsha.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-8",
+            "gongfa.wuxiang-shuijingfa.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.jingjie-yihua-yinsha.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.wuxiang-shuijingfa.jingjie-shuiyue-zhenshen",
+        "name": "镜界·水月真身",
+        "school": "无相水镜法",
+        "category": "镜界、主场、映照、空间关系",
+        "originalDefinition": "在节点中凝聚与本体气机相近的水月法身。水月法身可以短暂移动、承受攻击和模仿本体的部分动作。\n\n敌人击中水月时，真身可以借另一节点离开。但如果敌人先破坏全部节点，水月真身就无法继续替劫。",
+        "mechanics": [
+          "在节点中凝聚与本体气机相近的水月法身。水月法身可以短暂移动、承受攻击和模仿本体的部分动作。",
+          "敌人击中水月时，真身可以借另一节点离开。但如果敌人先破坏全部节点，水月真身就无法继续替劫。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.wuxiang-shuijingfa.jingjie-shuiyue-zhenshen.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "镜界·水月真身",
+          "group": "无相水镜法",
+          "summary": "在节点中凝聚与本体气机相近的水月法身。水月法身可以短暂移动、承受攻击和模仿本体的部分动作。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.jingjie-shuiyue-zhenshen.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-8",
+            "gongfa.wuxiang-shuijingfa.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.jingjie-shuiyue-zhenshen.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.wuxiang-shuijingfa.jingjie-fanzhao-guitu",
+        "name": "镜界·反照归途",
+        "school": "无相水镜法",
+        "category": "镜界、主场、映照、空间关系",
+        "originalDefinition": "利用攻击留下的镜界回波，把后续反击送回攻击最初进入镜界的位置。\n\n它不是无条件反弹，也不会自动把高阶攻击原样送回。反照的意义是重新安排攻击的落点，让敌人必须面对自己招式留下的空隙。",
+        "mechanics": [
+          "利用攻击留下的镜界回波，把后续反击送回攻击最初进入镜界的位置。",
+          "它不是无条件反弹，也不会自动把高阶攻击原样送回。反照的意义是重新安排攻击的落点，让敌人必须面对自己招式留下的空隙。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.wuxiang-shuijingfa.jingjie-fanzhao-guitu.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "镜界·反照归途",
+          "group": "无相水镜法",
+          "summary": "利用攻击留下的镜界回波，把后续反击送回攻击最初进入镜界的位置。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.jingjie-fanzhao-guitu.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-8",
+            "gongfa.wuxiang-shuijingfa.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.jingjie-fanzhao-guitu.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.wuxiang-shuijingfa.wuxiang-jingjie-chongdie",
+        "name": "无相·镜界重叠",
+        "school": "无相水镜法",
+        "category": "镜界、主场、映照、空间关系",
+        "originalDefinition": "短时间内让多个节点重叠，使一个术式拥有多个可能落点。叠浪可以从不同节点同时出现，共鸣可以借重叠节点触碰目标的多个联系。\n\n镜界重叠对神魂负担很大。节点越多，重叠越复杂，越需要提前规划。",
+        "mechanics": [
+          "短时间内让多个节点重叠，使一个术式拥有多个可能落点。叠浪可以从不同节点同时出现，共鸣可以借重叠节点触碰目标的多个联系。",
+          "镜界重叠对神魂负担很大。节点越多，重叠越复杂，越需要提前规划。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.wuxiang-shuijingfa.wuxiang-jingjie-chongdie.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "无相·镜界重叠",
+          "group": "无相水镜法",
+          "summary": "短时间内让多个节点重叠，使一个术式拥有多个可能落点。叠浪可以从不同节点同时出现，共鸣可以借重叠节点触碰目标的多个联系。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.wuxiang-jingjie-chongdie.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-8",
+            "gongfa.wuxiang-shuijingfa.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.wuxiang-shuijingfa.wuxiang-jingjie-chongdie.definition",
+            "gongfa.wuxiang-shuijingfa.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      }
+    ],
+    "synergies": [
+      "水镜为踏潮提供落点，为叠浪保存潮势，为共鸣限制敌方力量范围，也能把听澜找出的破绽固定在镜界之中。"
+    ],
+    "narrativeGuidance": [],
+    "ruleRefs": [
+      "gongfa.wuxiang-shuijingfa.source.section-1",
+      "gongfa.wuxiang-shuijingfa.source.section-2",
+      "gongfa.wuxiang-shuijingfa.source.section-3",
+      "gongfa.wuxiang-shuijingfa.source.section-4",
+      "gongfa.wuxiang-shuijingfa.source.section-5",
+      "gongfa.wuxiang-shuijingfa.source.section-6",
+      "gongfa.wuxiang-shuijingfa.source.section-7",
+      "gongfa.wuxiang-shuijingfa.source.section-8",
+      "gongfa.wuxiang-shuijingfa.source.section-9",
+      "gongfa.wuxiang-shuijingfa.source.section-10"
+    ],
+    "authority": {
+      "kind": "user-designated-source",
+      "sourceFile": "自定义全能.json",
+      "sourceFileSha256": "81b29ca747e51ebe594aec40d0cdd5a85b4230bb3591996b52622558af491c0d",
+      "entryKey": "16",
+      "uid": 16,
+      "sourceComment": "无相水镜法 new",
+      "sourceDisabled": true,
+      "contentSha256": "2bc1496ae88784813c8c1e08bf8d534d81ebfef59e640961c30f02974f11560a",
+      "status": "source-backed-template; runtime-v2-integration-pending"
+    },
+    "combatSpec": {
+      "schema": "xybattle-combat-spec-v2-draft",
+      "role": "镜界节点与局部空间关系",
+      "glossary": [
+        {
+          "term": "镜界节点",
+          "definition": "节点负责储存映照、承接水元和转移落点。单个节点只能完成有限作用，多个节点连接后才能形成镜界网络。\n\n节点可以附着在地面、墙壁、水面、兵刃、护盾甚至敌人正在使用的术式边缘。节点越接近目标，水镜法越容易影响攻击落点；节点越远，维持联系所需的神念越多。",
+          "sourceRef": "gongfa.wuxiang-shuijingfa.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "镜界主场",
+          "definition": "镜界主场不是完全独立的小世界，而是一个局部范围内的空间关系改变。\n\n在主场中，修炼者可以把某些距离拉长，把某些方向折回，把攻击引向其他节点，或者让同一术式在多个节点留下回波。镜界不能无条件改写所有天地规则，但可以优先安排进入其中的水行和外来力量。",
+          "sourceRef": "gongfa.wuxiang-shuijingfa.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "镜身与真身",
+          "definition": "镜身是用水元和映照凝成的承受体，主要作用是替本体承受一次攻击、误导敌人的判断或拖延对方的锁定。\n\n真身换位则属于主动移动。镜身被击碎不代表真身移动成功，真身从节点出现也不代表一定留下可供敌人追踪的路径。",
+          "sourceRef": "gongfa.wuxiang-shuijingfa.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "镜界回波",
+          "definition": "攻击、法宝和灵力进入镜界后，会在节点之间留下回波。回波可以显示攻击经过的位置，也可以在后续术式中成为新的落点。\n\n回波不是自动反弹。修炼者必须重新引导，才能让它转化为偏转、回返或反击。",
+          "sourceRef": "gongfa.wuxiang-shuijingfa.source.section-4",
+          "uiKind": "concept-or-state"
+        }
+      ],
+      "rules": [
+        {
+          "id": "gongfa.wuxiang-shuijingfa.source.section-1",
+          "heading": "功法档案",
+          "text": "名称：无相水镜法\n类型：镜界、主场、映照、空间关系\n属性：水属镜界法\n品阶：天\n定位：镜界节点、远近改写、攻击偏转、受击转移\n核心理念：镜不是复制世界，而是让世界暂时承认另一种位置关系。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.source.section-2",
+          "heading": "总体定位",
+          "text": "《无相水镜法》是一部建立局部主场的天阶水镜道法。它不只是制造水墙和反弹攻击，而是让战场中的距离、方向、映照和落点获得新的排列方式。\n\n水镜法的核心单位是“镜界节点”。节点可以是水面、雾气、雨滴、镜光、法宝表面或修炼者留下的水印。多个节点互相映照后，才会形成真正的镜界。\n\n敌人进入镜界后，不能再只依靠直线、速度和力量判断攻击效果。看似近在眼前的攻击可能被拉远，看似已经命中的招式可能落在镜身，看似从正面而来的力量可能从另一侧出现。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.source.section-3",
+          "heading": "修炼方式与镜界适配",
+          "text": "修炼者通过观镜、观水、观倒影、观虚实变化来修炼。重要的不是记住镜面外形，而是理解同一物体在不同映照中的位置关系。\n\n镜面不是唯一媒介。只要水元能够留下清晰映照，便可以建立临时镜界节点。干燥、绝灵和完全没有反光或水意的环境，会提高建立节点的难度。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.source.section-4",
+          "heading": "核心战斗结构",
+          "text": "### 一、镜界节点\n\n节点负责储存映照、承接水元和转移落点。单个节点只能完成有限作用，多个节点连接后才能形成镜界网络。\n\n节点可以附着在地面、墙壁、水面、兵刃、护盾甚至敌人正在使用的术式边缘。节点越接近目标，水镜法越容易影响攻击落点；节点越远，维持联系所需的神念越多。\n\n### 二、镜界主场\n\n镜界主场不是完全独立的小世界，而是一个局部范围内的空间关系改变。\n\n在主场中，修炼者可以把某些距离拉长，把某些方向折回，把攻击引向其他节点，或者让同一术式在多个节点留下回波。镜界不能无条件改写所有天地规则，但可以优先安排进入其中的水行和外来力量。\n\n### 三、镜身与真身\n\n镜身是用水元和映照凝成的承受体，主要作用是替本体承受一次攻击、误导敌人的判断或拖延对方的锁定。\n\n真身换位则属于主动移动。镜身被击碎不代表真身移动成功，真身从节点出现也不代表一定留下可供敌人追踪的路径。\n\n### 四、镜界回波\n\n攻击、法宝和灵力进入镜界后，会在节点之间留下回波。回波可以显示攻击经过的位置，也可以在后续术式中成为新的落点。\n\n回波不是自动反弹。修炼者必须重新引导，才能让它转化为偏转、回返或反击。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.source.section-5",
+          "heading": "主要术式",
+          "text": "### 《水镜·镜界节点》\n\n在水面、雾气、雨滴、镜光和水印中建立节点。\n\n节点建立后，可以承接一道术式、记录一个落点或为踏潮提供换位入口。节点越稳定，越能承接强力攻击和远距离换位。\n\n### 《澄界·潮天幕》\n\n将多个镜界节点连接成主场。主场展开后，敌人的攻击距离、飞行方向和神识判断都会受到镜界安排。\n\n潮天幕不是静止护罩。节点会随战斗移动和变化，修炼者可以主动关闭旧节点，在新的位置重新建立映照。\n\n### 《镜界·咫尺千寻》\n\n把看似很近的攻击拉长，使飞剑、拳罡、火焰和术法在抵达前经过更多镜界路径。\n\n它不减慢整个世界，只作用于进入镜界并被节点捕捉的攻击。大范围无差别攻击可以绕过部分节点，因此不能被简单理解成绝对防御。\n\n### 《镜界·移花引煞》\n\n将单点攻击从一个节点引向另一个节点。攻击可以被导向空处、地面、敌方侧后，甚至被引到敌人自己暴露的防御位置。\n\n偏转角度取决于节点数量、攻击性质和修炼者的控制。越是集中、方向明确的攻击，越容易被引泄；越是覆盖整个区域的攻击，越难完全转移。\n\n### 《镜界·水月真身》\n\n在节点中凝聚与本体气机相近的水月法身。水月法身可以短暂移动、承受攻击和模仿本体的部分动作。\n\n敌人击中水月时，真身可以借另一节点离开。但如果敌人先破坏全部节点，水月真身就无法继续替劫。\n\n### 《镜界·反照归途》\n\n利用攻击留下的镜界回波，把后续反击送回攻击最初进入镜界的位置。\n\n它不是无条件反弹，也不会自动把高阶攻击原样送回。反照的意义是重新安排攻击的落点，让敌人必须面对自己招式留下的空隙。\n\n### 《无相·镜界重叠》\n\n短时间内让多个节点重叠，使一个术式拥有多个可能落点。叠浪可以从不同节点同时出现，共鸣可以借重叠节点触碰目标的多个联系。\n\n镜界重叠对神魂负担很大。节点越多，重叠越复杂，越需要提前规划。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.source.section-6",
+          "heading": "同境界优势",
+          "text": "同境界敌人进入镜界后，不能只依靠速度和直线攻击解决战斗。近身攻击可能被拉远，远程攻击可能改变方向，绝杀可能击中镜身，逃跑也可能误入另一个节点。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.source.section-7",
+          "heading": "越级挑战能力",
+          "text": "面对高一个小境界的普通修士，水镜法不要求正面承受全部力量，而是让高境界攻击难以准确落在本体上，再由听澜找出破绽，由踏潮取得位置，由叠浪或共鸣完成反击。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.source.section-8",
+          "heading": "境界表现",
+          "text": "炼气期可以制造少量镜光；筑基期能够布置连续镜界节点；金丹期节点可以跨越战场；元婴期镜界能覆盖山谷、城池或大型阵法；出窍期后镜界可以短暂脱离地面存在；化神期以上可以把镜界发展为短暂独立的水镜天地。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.source.section-9",
+          "heading": "功法弱点",
+          "text": "1. 需要水意、映照面或自身水元建立节点。\n2. 大范围无差别攻击可以同时摧毁多个节点。\n3. 绝灵、破界和遮蔽映照的法术会削弱镜界。\n4. 镜界改变局部关系，不是无边界的天地改写。\n5. 节点越多，越依赖神魂和多相并行。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.source.section-10",
+          "heading": "与其他功法的关系",
+          "text": "水镜为踏潮提供落点，为叠浪保存潮势，为共鸣限制敌方力量范围，也能把听澜找出的破绽固定在镜界之中。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.shuijing-jiejie-jiedian.definition",
+          "heading": "《水镜·镜界节点》",
+          "text": "在水面、雾气、雨滴、镜光和水印中建立节点。\n\n节点建立后，可以承接一道术式、记录一个落点或为踏潮提供换位入口。节点越稳定，越能承接强力攻击和远距离换位。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.chengjie-chaotianmu.definition",
+          "heading": "《澄界·潮天幕》",
+          "text": "将多个镜界节点连接成主场。主场展开后，敌人的攻击距离、飞行方向和神识判断都会受到镜界安排。\n\n潮天幕不是静止护罩。节点会随战斗移动和变化，修炼者可以主动关闭旧节点，在新的位置重新建立映照。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.jingjie-zhichi-qianxun.definition",
+          "heading": "《镜界·咫尺千寻》",
+          "text": "把看似很近的攻击拉长，使飞剑、拳罡、火焰和术法在抵达前经过更多镜界路径。\n\n它不减慢整个世界，只作用于进入镜界并被节点捕捉的攻击。大范围无差别攻击可以绕过部分节点，因此不能被简单理解成绝对防御。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.jingjie-yihua-yinsha.definition",
+          "heading": "《镜界·移花引煞》",
+          "text": "将单点攻击从一个节点引向另一个节点。攻击可以被导向空处、地面、敌方侧后，甚至被引到敌人自己暴露的防御位置。\n\n偏转角度取决于节点数量、攻击性质和修炼者的控制。越是集中、方向明确的攻击，越容易被引泄；越是覆盖整个区域的攻击，越难完全转移。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.jingjie-shuiyue-zhenshen.definition",
+          "heading": "《镜界·水月真身》",
+          "text": "在节点中凝聚与本体气机相近的水月法身。水月法身可以短暂移动、承受攻击和模仿本体的部分动作。\n\n敌人击中水月时，真身可以借另一节点离开。但如果敌人先破坏全部节点，水月真身就无法继续替劫。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.jingjie-fanzhao-guitu.definition",
+          "heading": "《镜界·反照归途》",
+          "text": "利用攻击留下的镜界回波，把后续反击送回攻击最初进入镜界的位置。\n\n它不是无条件反弹，也不会自动把高阶攻击原样送回。反照的意义是重新安排攻击的落点，让敌人必须面对自己招式留下的空隙。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.wuxiang-shuijingfa.wuxiang-jingjie-chongdie.definition",
+          "heading": "《无相·镜界重叠》",
+          "text": "短时间内让多个节点重叠，使一个术式拥有多个可能落点。叠浪可以从不同节点同时出现，共鸣可以借重叠节点触碰目标的多个联系。\n\n镜界重叠对神魂负担很大。节点越多，重叠越复杂，越需要提前规划。",
+          "authority": "source-verbatim"
+        }
+      ],
+      "realmProgression": {
+        "text": "炼气期可以制造少量镜光；筑基期能够布置连续镜界节点；金丹期节点可以跨越战场；元婴期镜界能覆盖山谷、城池或大型阵法；出窍期后镜界可以短暂脱离地面存在；化神期以上可以把镜界发展为短暂独立的水镜天地。",
+        "sourceRef": "gongfa.wuxiang-shuijingfa.source.section-8"
+      },
+      "limitations": {
+        "text": "1. 需要水意、映照面或自身水元建立节点。\n2. 大范围无差别攻击可以同时摧毁多个节点。\n3. 绝灵、破界和遮蔽映照的法术会削弱镜界。\n4. 镜界改变局部关系，不是无边界的天地改写。\n5. 节点越多，越依赖神魂和多相并行。",
+        "sourceRef": "gongfa.wuxiang-shuijingfa.source.section-9"
+      },
+      "integrationPorts": {
+        "authority": "engineering-classification",
+        "accepts": [
+          "water.intent",
+          "water.taiyi",
+          "external.force"
+        ],
+        "provides": [
+          "mirror.node",
+          "mirror.field",
+          "mirror.echo",
+          "mirror.decoy"
+        ],
+        "semantics": "可交互对象类型，不是每招的强制前提，也不表示每次施法同时生成全部效果。"
+      },
+      "ownership": "由人物实例引用，不由此模板决定",
+      "numericPolicy": "未规定的成本、倍率、槽位、回合、层数与成功率不做数值补全"
+    }
+  }
+}

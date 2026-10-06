@@ -1,0 +1,543 @@
+{
+  "schema": "xybattle-content-v1",
+  "protocolVersion": 1,
+  "id": "gongfa.xianhai-gongmingpian",
+  "contentType": "technique",
+  "name": "弦海共鸣篇",
+  "version": "2026.10.06-source.1",
+  "createdAt": "2026-10-06T00:00:00+08:00",
+  "updatedAt": "2026-10-06T00:00:00+08:00",
+  "entry": {
+    "id": "gongfa.xianhai-gongmingpian",
+    "name": "弦海共鸣篇",
+    "rank": "天",
+    "element": "水属弦律",
+    "version": "2026.10.06-source.1",
+    "visibility": "player",
+    "corePrinciple": "万法皆有联系；能听见联系，便能断开、改接或倒转它。",
+    "mechanics": [
+      "《弦海共鸣篇》不是普通破盾术，也不是简单的全体系增幅。它负责处理“法术、法宝、阵法和肉身为什么能够继续运转”。",
+      "法宝与主人、阵眼与阵法、护盾与经脉、招式与下一招之间都存在联系。共鸣篇能够找到这些联系，使其短暂失效、改变方向或按照错误顺序运行。",
+      "它的独立价值是让敌人的强大力量失去协调，而不是把修炼者自己的攻击单纯增加几成。"
+    ],
+    "techniques": [
+      {
+        "id": "gongfa.xianhai-gongmingpian.tingxian-bianluo",
+        "name": "听弦·辨络",
+        "school": "弦海共鸣篇",
+        "category": "干涉、拆解、改接",
+        "originalDefinition": "找出敌方术式、法宝、阵法和肉身之间最重要的联系。\n\n修炼者可以先辨认最外层的联系，再逐渐深入。看清一件法宝由什么控制、什么维持、什么负责回转，是施展其他共鸣术式的前提。",
+        "mechanics": [
+          "找出敌方术式、法宝、阵法和肉身之间最重要的联系。",
+          "修炼者可以先辨认最外层的联系，再逐渐深入。看清一件法宝由什么控制、什么维持、什么负责回转，是施展其他共鸣术式的前提。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.xianhai-gongmingpian.tingxian-bianluo.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "听弦·辨络",
+          "group": "弦海共鸣篇",
+          "summary": "找出敌方术式、法宝、阵法和肉身之间最重要的联系。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.xianhai-gongmingpian.tingxian-bianluo.definition",
+            "gongfa.xianhai-gongmingpian.source.section-8",
+            "gongfa.xianhai-gongmingpian.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.xianhai-gongmingpian.tingxian-bianluo.definition",
+            "gongfa.xianhai-gongmingpian.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.xianhai-gongmingpian.duanxian-shixu",
+        "name": "断弦·失续",
+        "school": "弦海共鸣篇",
+        "category": "干涉、拆解、改接",
+        "originalDefinition": "让一条联系暂时失效。适合打断收招、截断法宝回转、使阵法出现缺口，或让护盾无法及时补上受损处。\n\n失续持续时间取决于联系的强度和敌人的反应。它不是永久封印，但足以让叠浪抓住一瞬间的空档。",
+        "mechanics": [
+          "让一条联系暂时失效。适合打断收招、截断法宝回转、使阵法出现缺口，或让护盾无法及时补上受损处。",
+          "失续持续时间取决于联系的强度和敌人的反应。它不是永久封印，但足以让叠浪抓住一瞬间的空档。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.xianhai-gongmingpian.duanxian-shixu.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "断弦·失续",
+          "group": "弦海共鸣篇",
+          "summary": "让一条联系暂时失效。适合打断收招、截断法宝回转、使阵法出现缺口，或让护盾无法及时补上受损处。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.xianhai-gongmingpian.duanxian-shixu.definition",
+            "gongfa.xianhai-gongmingpian.source.section-8",
+            "gongfa.xianhai-gongmingpian.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.xianhai-gongmingpian.duanxian-shixu.definition",
+            "gongfa.xianhai-gongmingpian.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.xianhai-gongmingpian.jiexian-gaidiao",
+        "name": "借弦·改调",
+        "school": "弦海共鸣篇",
+        "category": "干涉、拆解、改接",
+        "originalDefinition": "把敌人打出的力量接到自己的水势上，改变它的落点、方向或承受对象。\n\n借调最适合处理已经离体、路径明确、与主人联系较强的攻击。敌人若只是挥拳、吐息或直接释放无持续结构的力量，借调效果会明显减弱。",
+        "mechanics": [
+          "把敌人打出的力量接到自己的水势上，改变它的落点、方向或承受对象。",
+          "借调最适合处理已经离体、路径明确、与主人联系较强的攻击。敌人若只是挥拳、吐息或直接释放无持续结构的力量，借调效果会明显减弱。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.xianhai-gongmingpian.jiexian-gaidiao.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "借弦·改调",
+          "group": "弦海共鸣篇",
+          "summary": "把敌人打出的力量接到自己的水势上，改变它的落点、方向或承受对象。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.xianhai-gongmingpian.jiexian-gaidiao.definition",
+            "gongfa.xianhai-gongmingpian.source.section-8",
+            "gongfa.xianhai-gongmingpian.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.xianhai-gongmingpian.jiexian-gaidiao.definition",
+            "gongfa.xianhai-gongmingpian.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.xianhai-gongmingpian.daoxian-nixu",
+        "name": "倒弦·逆序",
+        "school": "弦海共鸣篇",
+        "category": "干涉、拆解、改接",
+        "originalDefinition": "将敌人的法术、护体或法宝运转顺序倒转。\n\n它不一定立刻摧毁目标，却会让目标在最需要稳定的时候出现错位。护盾可能先保护外层再暴露内层，飞剑可能先回主人身边再被自身回势牵住，阵法可能先封住自己的退路。",
+        "mechanics": [
+          "将敌人的法术、护体或法宝运转顺序倒转。",
+          "它不一定立刻摧毁目标，却会让目标在最需要稳定的时候出现错位。护盾可能先保护外层再暴露内层，飞剑可能先回主人身边再被自身回势牵住，阵法可能先封住自己的退路。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.xianhai-gongmingpian.daoxian-nixu.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "倒弦·逆序",
+          "group": "弦海共鸣篇",
+          "summary": "将敌人的法术、护体或法宝运转顺序倒转。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.xianhai-gongmingpian.daoxian-nixu.definition",
+            "gongfa.xianhai-gongmingpian.source.section-8",
+            "gongfa.xianhai-gongmingpian.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.xianhai-gongmingpian.daoxian-nixu.definition",
+            "gongfa.xianhai-gongmingpian.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.xianhai-gongmingpian.jiyin-kongpai",
+        "name": "寂音·空拍",
+        "school": "弦海共鸣篇",
+        "category": "干涉、拆解、改接",
+        "originalDefinition": "在一瞬间抹去某一条联系，使敌人无法完成正在进行的衔接。\n\n空拍适合打断蓄力、合招和阵法转换。它的效果短，却可以让敌人错过最重要的一个节拍。",
+        "mechanics": [
+          "在一瞬间抹去某一条联系，使敌人无法完成正在进行的衔接。",
+          "空拍适合打断蓄力、合招和阵法转换。它的效果短，却可以让敌人错过最重要的一个节拍。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.xianhai-gongmingpian.jiyin-kongpai.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "寂音·空拍",
+          "group": "弦海共鸣篇",
+          "summary": "在一瞬间抹去某一条联系，使敌人无法完成正在进行的衔接。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.xianhai-gongmingpian.jiyin-kongpai.definition",
+            "gongfa.xianhai-gongmingpian.source.section-8",
+            "gongfa.xianhai-gongmingpian.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.xianhai-gongmingpian.jiyin-kongpai.definition",
+            "gongfa.xianhai-gongmingpian.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.xianhai-gongmingpian.xianhai-hezou",
+        "name": "弦海·合奏",
+        "school": "弦海共鸣篇",
+        "category": "干涉、拆解、改接",
+        "originalDefinition": "当多个术式已经互相接触后，把它们接成一片弦海。\n\n听澜找出的破绽、水镜建立的节点、踏潮取得的位置和叠浪留下的潮势，都能成为共鸣篇的连接点。合奏越完整，六法之间的行动越像同一部乐曲，而不是六种术法轮流施放。",
+        "mechanics": [
+          "当多个术式已经互相接触后，把它们接成一片弦海。",
+          "听澜找出的破绽、水镜建立的节点、踏潮取得的位置和叠浪留下的潮势，都能成为共鸣篇的连接点。合奏越完整，六法之间的行动越像同一部乐曲，而不是六种术法轮流施放。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.xianhai-gongmingpian.xianhai-hezou.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "弦海·合奏",
+          "group": "弦海共鸣篇",
+          "summary": "当多个术式已经互相接触后，把它们接成一片弦海。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.xianhai-gongmingpian.xianhai-hezou.definition",
+            "gongfa.xianhai-gongmingpian.source.section-8",
+            "gongfa.xianhai-gongmingpian.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.xianhai-gongmingpian.xianhai-hezou.definition",
+            "gongfa.xianhai-gongmingpian.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.xianhai-gongmingpian.xianhai-zhongzhang-shitiao",
+        "name": "弦海·终章失调",
+        "school": "弦海共鸣篇",
+        "category": "干涉、拆解、改接",
+        "originalDefinition": "同时切断目标内部数条关键联系，使法宝、护盾或阵法在短时间内无法按原本方式运转。\n\n此术需要充分观察和接触，不能对完全陌生的力量直接使用。若强行对高出太多境界的目标施展，最先失调的可能是修炼者自身的神魂连接。",
+        "mechanics": [
+          "同时切断目标内部数条关键联系，使法宝、护盾或阵法在短时间内无法按原本方式运转。",
+          "此术需要充分观察和接触，不能对完全陌生的力量直接使用。若强行对高出太多境界的目标施展，最先失调的可能是修炼者自身的神魂连接。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.xianhai-gongmingpian.xianhai-zhongzhang-shitiao.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "弦海·终章失调",
+          "group": "弦海共鸣篇",
+          "summary": "同时切断目标内部数条关键联系，使法宝、护盾或阵法在短时间内无法按原本方式运转。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.xianhai-gongmingpian.xianhai-zhongzhang-shitiao.definition",
+            "gongfa.xianhai-gongmingpian.source.section-8",
+            "gongfa.xianhai-gongmingpian.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.xianhai-gongmingpian.xianhai-zhongzhang-shitiao.definition",
+            "gongfa.xianhai-gongmingpian.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      }
+    ],
+    "synergies": [
+      "听澜负责发现联系，水镜负责把目标留在可接触范围，踏潮负责取得接触位置，叠浪负责把改道后的力量变成潮势，太一负责承载和回流。",
+      "共鸣篇使六法从并列招式变成互相接续的体系，但它自身仍然是一部独立的干涉道法。"
+    ],
+    "narrativeGuidance": [],
+    "ruleRefs": [
+      "gongfa.xianhai-gongmingpian.source.section-1",
+      "gongfa.xianhai-gongmingpian.source.section-2",
+      "gongfa.xianhai-gongmingpian.source.section-3",
+      "gongfa.xianhai-gongmingpian.source.section-4",
+      "gongfa.xianhai-gongmingpian.source.section-5",
+      "gongfa.xianhai-gongmingpian.source.section-6",
+      "gongfa.xianhai-gongmingpian.source.section-7",
+      "gongfa.xianhai-gongmingpian.source.section-8",
+      "gongfa.xianhai-gongmingpian.source.section-9",
+      "gongfa.xianhai-gongmingpian.source.section-10"
+    ],
+    "authority": {
+      "kind": "user-designated-source",
+      "sourceFile": "自定义全能.json",
+      "sourceFileSha256": "81b29ca747e51ebe594aec40d0cdd5a85b4230bb3591996b52622558af491c0d",
+      "entryKey": "18",
+      "uid": 18,
+      "sourceComment": "弦海共鸣篇 new",
+      "sourceDisabled": true,
+      "contentSha256": "774716fc97c1d717ebb2c04ba90bb22d7472e0999739576660ca459f04a8566e",
+      "status": "source-backed-template; runtime-v2-integration-pending"
+    },
+    "combatSpec": {
+      "schema": "xybattle-combat-spec-v2-draft",
+      "role": "联系辨认、切断、改接与逆序",
+      "glossary": [
+        {
+          "term": "听弦",
+          "definition": "先确认敌人力量之间的联系。没有联系，就没有可以切断和改接的对象。\n\n听弦的对象包括法宝与主人之间的神识牵引、阵法节点之间的灵力输送、护盾内外层之间的承接、连续招式之间的起承关系，以及肉身气血与护体法力之间的配合。",
+          "sourceRef": "gongfa.xianhai-gongmingpian.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "断弦",
+          "definition": "切断一条关键联系，让某一部分力量短暂失去后续。飞剑可能失去回手之势，阵法某处得不到法力，护体法光可能出现无法补上的空缺。\n\n断弦不等于摧毁。联系越重要，切断后的效果越明显；联系越外围，敌人越容易重新接上。",
+          "sourceRef": "gongfa.xianhai-gongmingpian.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "借弦",
+          "definition": "将敌人已经打出的力量接入水镜、潮势或回流，使其改变落点和用途。\n\n借弦不等于吸收，不会夺取敌人的功法、属性和传承。敌人如果及时发现联系变化，也可以主动切断被借用的部分，但这往往会让原本的攻击失去完整性。",
+          "sourceRef": "gongfa.xianhai-gongmingpian.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "倒弦",
+          "definition": "颠倒原本的运转次序。法宝先回后攻、护盾先开后合、阵法先封自身、招式先完成后蓄力，都可能造成短暂破绽。\n\n倒弦尤其适合对付依靠复杂步骤完成的高阶术式。结构越复杂，可被倒转的顺序越多；完全凭本能释放的简单力量，则较难被倒弦影响。",
+          "sourceRef": "gongfa.xianhai-gongmingpian.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "合奏",
+          "definition": "将听澜、水镜、踏潮、叠浪和太一之间的联系接成己方体系。合奏不是固定连招，而是让不同术式能互相找到对方留下的入口。\n\n在合奏状态下，水镜的节点可以成为叠浪的弦势落点，踏潮的换位可以带动共鸣接触，听澜的破绽标记可以直接变成断弦目标，太一则负责承载整个连接。",
+          "sourceRef": "gongfa.xianhai-gongmingpian.source.section-4",
+          "uiKind": "concept-or-state"
+        }
+      ],
+      "rules": [
+        {
+          "id": "gongfa.xianhai-gongmingpian.source.section-1",
+          "heading": "功法档案",
+          "text": "名称：弦海共鸣篇\n类型：干涉、拆解、改接\n属性：水属弦律\n品阶：天\n定位：辨认联系、切断运转、改换落点、倒转次序\n核心理念：万法皆有联系；能听见联系，便能断开、改接或倒转它。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.source.section-2",
+          "heading": "总体定位",
+          "text": "《弦海共鸣篇》不是普通破盾术，也不是简单的全体系增幅。它负责处理“法术、法宝、阵法和肉身为什么能够继续运转”。\n\n法宝与主人、阵眼与阵法、护盾与经脉、招式与下一招之间都存在联系。共鸣篇能够找到这些联系，使其短暂失效、改变方向或按照错误顺序运行。\n\n它的独立价值是让敌人的强大力量失去协调，而不是把修炼者自己的攻击单纯增加几成。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.source.section-3",
+          "heading": "修炼方式与弦乐适配",
+          "text": "修炼者通过辨别不同弦音之间的关系、听出和弦中的单音变化、观察弓弦动作如何影响整段旋律来修炼。\n\n弦乐器适合表现共鸣篇的接续和错位：同一旋律中增加一个音，可以改变整体；一个音突然停止，也可能让整段旋律失去支撑。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.source.section-4",
+          "heading": "核心战斗结构",
+          "text": "### 一、听弦\n\n先确认敌人力量之间的联系。没有联系，就没有可以切断和改接的对象。\n\n听弦的对象包括法宝与主人之间的神识牵引、阵法节点之间的灵力输送、护盾内外层之间的承接、连续招式之间的起承关系，以及肉身气血与护体法力之间的配合。\n\n### 二、断弦\n\n切断一条关键联系，让某一部分力量短暂失去后续。飞剑可能失去回手之势，阵法某处得不到法力，护体法光可能出现无法补上的空缺。\n\n断弦不等于摧毁。联系越重要，切断后的效果越明显；联系越外围，敌人越容易重新接上。\n\n### 三、借弦\n\n将敌人已经打出的力量接入水镜、潮势或回流，使其改变落点和用途。\n\n借弦不等于吸收，不会夺取敌人的功法、属性和传承。敌人如果及时发现联系变化，也可以主动切断被借用的部分，但这往往会让原本的攻击失去完整性。\n\n### 四、倒弦\n\n颠倒原本的运转次序。法宝先回后攻、护盾先开后合、阵法先封自身、招式先完成后蓄力，都可能造成短暂破绽。\n\n倒弦尤其适合对付依靠复杂步骤完成的高阶术式。结构越复杂，可被倒转的顺序越多；完全凭本能释放的简单力量，则较难被倒弦影响。\n\n### 五、合奏\n\n将听澜、水镜、踏潮、叠浪和太一之间的联系接成己方体系。合奏不是固定连招，而是让不同术式能互相找到对方留下的入口。\n\n在合奏状态下，水镜的节点可以成为叠浪的弦势落点，踏潮的换位可以带动共鸣接触，听澜的破绽标记可以直接变成断弦目标，太一则负责承载整个连接。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.source.section-5",
+          "heading": "主要术式",
+          "text": "### 《听弦·辨络》\n\n找出敌方术式、法宝、阵法和肉身之间最重要的联系。\n\n修炼者可以先辨认最外层的联系，再逐渐深入。看清一件法宝由什么控制、什么维持、什么负责回转，是施展其他共鸣术式的前提。\n\n### 《断弦·失续》\n\n让一条联系暂时失效。适合打断收招、截断法宝回转、使阵法出现缺口，或让护盾无法及时补上受损处。\n\n失续持续时间取决于联系的强度和敌人的反应。它不是永久封印，但足以让叠浪抓住一瞬间的空档。\n\n### 《借弦·改调》\n\n把敌人打出的力量接到自己的水势上，改变它的落点、方向或承受对象。\n\n借调最适合处理已经离体、路径明确、与主人联系较强的攻击。敌人若只是挥拳、吐息或直接释放无持续结构的力量，借调效果会明显减弱。\n\n### 《倒弦·逆序》\n\n将敌人的法术、护体或法宝运转顺序倒转。\n\n它不一定立刻摧毁目标，却会让目标在最需要稳定的时候出现错位。护盾可能先保护外层再暴露内层，飞剑可能先回主人身边再被自身回势牵住，阵法可能先封住自己的退路。\n\n### 《寂音·空拍》\n\n在一瞬间抹去某一条联系，使敌人无法完成正在进行的衔接。\n\n空拍适合打断蓄力、合招和阵法转换。它的效果短，却可以让敌人错过最重要的一个节拍。\n\n### 《弦海·合奏》\n\n当多个术式已经互相接触后，把它们接成一片弦海。\n\n听澜找出的破绽、水镜建立的节点、踏潮取得的位置和叠浪留下的潮势，都能成为共鸣篇的连接点。合奏越完整，六法之间的行动越像同一部乐曲，而不是六种术法轮流施放。\n\n### 《弦海·终章失调》\n\n同时切断目标内部数条关键联系，使法宝、护盾或阵法在短时间内无法按原本方式运转。\n\n此术需要充分观察和接触，不能对完全陌生的力量直接使用。若强行对高出太多境界的目标施展，最先失调的可能是修炼者自身的神魂连接。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.source.section-6",
+          "heading": "同境界优势",
+          "text": "同境界敌人不能只依靠法宝品阶、护盾厚度或复杂阵法解决战斗。只要力量之间存在联系，就可能被切断或改接。\n\n敌人的招式越复杂、法宝越依赖主人、阵法越依赖多个节点，共鸣篇能找到的切入点就越多。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.source.section-7",
+          "heading": "越级挑战能力",
+          "text": "面对高一个小境界的普通修士，共鸣篇不与对方比拼法力总量，而是拆掉对方最关键的一条联系，再由叠浪、水镜或踏潮完成击破。\n\n如果对方的力量极其简单、瞬发即散、没有可供借接的结构，共鸣篇会退回为短暂干扰，不能凭空抹除高境界力量。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.source.section-8",
+          "heading": "境界表现",
+          "text": "炼气期只能干扰简单法术衔接；筑基期可以短暂切断法宝和护盾的联系；金丹期能够改接阵法、法宝和多段术式；元婴期可以同时处理多个术式之间的联系；出窍期后能把共鸣扩展到战场范围；化神期以上可以短时间干涉大型阵法和领域内部的运转关系。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.source.section-9",
+          "heading": "功法弱点",
+          "text": "1. 必须先观察、接触或听见目标的运转关系。\n2. 对瞬发即散、结构极少的力量只能造成短暂扰乱。\n3. 高出太多境界的修士可以用自身道域保护关键联系。\n4. 不能直接夺取敌人的功法、法宝、属性和记忆。\n5. 同时干涉过多联系会给神魂带来很大负担。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.source.section-10",
+          "heading": "与其他功法的关系",
+          "text": "听澜负责发现联系，水镜负责把目标留在可接触范围，踏潮负责取得接触位置，叠浪负责把改道后的力量变成潮势，太一负责承载和回流。\n\n共鸣篇使六法从并列招式变成互相接续的体系，但它自身仍然是一部独立的干涉道法。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.tingxian-bianluo.definition",
+          "heading": "《听弦·辨络》",
+          "text": "找出敌方术式、法宝、阵法和肉身之间最重要的联系。\n\n修炼者可以先辨认最外层的联系，再逐渐深入。看清一件法宝由什么控制、什么维持、什么负责回转，是施展其他共鸣术式的前提。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.duanxian-shixu.definition",
+          "heading": "《断弦·失续》",
+          "text": "让一条联系暂时失效。适合打断收招、截断法宝回转、使阵法出现缺口，或让护盾无法及时补上受损处。\n\n失续持续时间取决于联系的强度和敌人的反应。它不是永久封印，但足以让叠浪抓住一瞬间的空档。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.jiexian-gaidiao.definition",
+          "heading": "《借弦·改调》",
+          "text": "把敌人打出的力量接到自己的水势上，改变它的落点、方向或承受对象。\n\n借调最适合处理已经离体、路径明确、与主人联系较强的攻击。敌人若只是挥拳、吐息或直接释放无持续结构的力量，借调效果会明显减弱。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.daoxian-nixu.definition",
+          "heading": "《倒弦·逆序》",
+          "text": "将敌人的法术、护体或法宝运转顺序倒转。\n\n它不一定立刻摧毁目标，却会让目标在最需要稳定的时候出现错位。护盾可能先保护外层再暴露内层，飞剑可能先回主人身边再被自身回势牵住，阵法可能先封住自己的退路。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.jiyin-kongpai.definition",
+          "heading": "《寂音·空拍》",
+          "text": "在一瞬间抹去某一条联系，使敌人无法完成正在进行的衔接。\n\n空拍适合打断蓄力、合招和阵法转换。它的效果短，却可以让敌人错过最重要的一个节拍。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.xianhai-hezou.definition",
+          "heading": "《弦海·合奏》",
+          "text": "当多个术式已经互相接触后，把它们接成一片弦海。\n\n听澜找出的破绽、水镜建立的节点、踏潮取得的位置和叠浪留下的潮势，都能成为共鸣篇的连接点。合奏越完整，六法之间的行动越像同一部乐曲，而不是六种术法轮流施放。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.xianhai-gongmingpian.xianhai-zhongzhang-shitiao.definition",
+          "heading": "《弦海·终章失调》",
+          "text": "同时切断目标内部数条关键联系，使法宝、护盾或阵法在短时间内无法按原本方式运转。\n\n此术需要充分观察和接触，不能对完全陌生的力量直接使用。若强行对高出太多境界的目标施展，最先失调的可能是修炼者自身的神魂连接。",
+          "authority": "source-verbatim"
+        }
+      ],
+      "realmProgression": {
+        "text": "炼气期只能干扰简单法术衔接；筑基期可以短暂切断法宝和护盾的联系；金丹期能够改接阵法、法宝和多段术式；元婴期可以同时处理多个术式之间的联系；出窍期后能把共鸣扩展到战场范围；化神期以上可以短时间干涉大型阵法和领域内部的运转关系。",
+        "sourceRef": "gongfa.xianhai-gongmingpian.source.section-8"
+      },
+      "limitations": {
+        "text": "1. 必须先观察、接触或听见目标的运转关系。\n2. 对瞬发即散、结构极少的力量只能造成短暂扰乱。\n3. 高出太多境界的修士可以用自身道域保护关键联系。\n4. 不能直接夺取敌人的功法、法宝、属性和记忆。\n5. 同时干涉过多联系会给神魂带来很大负担。",
+        "sourceRef": "gongfa.xianhai-gongmingpian.source.section-9"
+      },
+      "integrationPorts": {
+        "authority": "engineering-classification",
+        "accepts": [
+          "relation.observed",
+          "mirror.node",
+          "tide.structure",
+          "movement.position",
+          "mind.capacity"
+        ],
+        "provides": [
+          "relation.interrupted",
+          "force.redirected",
+          "sequence.inverted",
+          "system.connected"
+        ],
+        "semantics": "可交互对象类型，不是每招的强制前提，也不表示每次施法同时生成全部效果。"
+      },
+      "ownership": "由人物实例引用，不由此模板决定",
+      "numericPolicy": "未规定的成本、倍率、槽位、回合、层数与成功率不做数值补全"
+    }
+  }
+}

@@ -1,0 +1,345 @@
+{
+  "schema": "xybattle-system-interactions-v2-draft",
+  "sourceFileSha256": "81b29ca747e51ebe594aec40d0cdd5a85b4230bb3591996b52622558af491c0d",
+  "templateRefs": [
+    {
+      "id": "gongfa.dielang-xuanchaojue",
+      "version": "2026.10.06-source.1"
+    },
+    {
+      "id": "gongfa.taiyi-canglanjing",
+      "version": "2026.10.06-source.1"
+    },
+    {
+      "id": "gongfa.chengxin-tinglanjue",
+      "version": "2026.10.06-source.1"
+    },
+    {
+      "id": "gongfa.wuxiang-shuijingfa",
+      "version": "2026.10.06-source.1"
+    },
+    {
+      "id": "gongfa.liuguang-tachaobu",
+      "version": "2026.10.06-source.1"
+    },
+    {
+      "id": "gongfa.xianhai-gongmingpian",
+      "version": "2026.10.06-source.1"
+    }
+  ],
+  "ownership": "该清单描述六法潜在联动；人物实际掌握情况须另行确认",
+  "edges": [
+    {
+      "id": "six-arts.interaction-01",
+      "from": "gongfa.taiyi-canglanjing",
+      "to": "gongfa.chengxin-tinglanjue",
+      "via": "mind.capacity",
+      "interaction": "太一提供听澜所需神魂承载。",
+      "boundary": "神魂过载时仍可能延迟、误判或术式失控。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.source.section-4",
+        "gongfa.taiyi-canglanjing.source.section-9",
+        "gongfa.taiyi-canglanjing.source.section-10",
+        "gongfa.chengxin-tinglanjue.source.section-4",
+        "gongfa.chengxin-tinglanjue.source.section-9",
+        "gongfa.chengxin-tinglanjue.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-02",
+      "from": "gongfa.taiyi-canglanjing",
+      "to": "gongfa.wuxiang-shuijingfa",
+      "via": "water.taiyi",
+      "interaction": "太一提供节点水元并支撑维持。",
+      "boundary": "正在维持节点的水元不能提前回收。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.source.section-4",
+        "gongfa.taiyi-canglanjing.source.section-9",
+        "gongfa.taiyi-canglanjing.source.section-10",
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-03",
+      "from": "gongfa.taiyi-canglanjing",
+      "to": "gongfa.liuguang-tachaobu",
+      "via": "water.taiyi",
+      "interaction": "太一提供连续换位所需水元与落点联系。",
+      "boundary": "水元供给不代替有效落点或解除封界。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.source.section-4",
+        "gongfa.taiyi-canglanjing.source.section-9",
+        "gongfa.taiyi-canglanjing.source.section-10",
+        "gongfa.liuguang-tachaobu.source.section-4",
+        "gongfa.liuguang-tachaobu.source.section-9",
+        "gongfa.liuguang-tachaobu.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-04",
+      "from": "gongfa.taiyi-canglanjing",
+      "to": "gongfa.dielang-xuanchaojue",
+      "via": "water.taiyi",
+      "interaction": "提高水元纯度、潮势稳定性、持续时间和多线承载。",
+      "boundary": "不自动增加潮势层数或无限回收正在控制的潮势。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.source.section-4",
+        "gongfa.taiyi-canglanjing.source.section-9",
+        "gongfa.taiyi-canglanjing.source.section-10",
+        "gongfa.dielang-xuanchaojue.source.section-4",
+        "gongfa.dielang-xuanchaojue.source.section-9",
+        "gongfa.dielang-xuanchaojue.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-05",
+      "from": "gongfa.taiyi-canglanjing",
+      "to": "gongfa.xianhai-gongmingpian",
+      "via": "mind.capacity",
+      "interaction": "提供稳定的干涉媒介与神魂承载。",
+      "boundary": "承载不产生尚未观察到的敌方联系。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.source.section-4",
+        "gongfa.taiyi-canglanjing.source.section-9",
+        "gongfa.taiyi-canglanjing.source.section-10",
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-06",
+      "from": "gongfa.chengxin-tinglanjue",
+      "to": "gongfa.wuxiang-shuijingfa",
+      "via": "perception.opening",
+      "interaction": "为水镜寻找节点与关键交替。",
+      "boundary": "标记不是已经建成的镜界节点。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.source.section-4",
+        "gongfa.chengxin-tinglanjue.source.section-9",
+        "gongfa.chengxin-tinglanjue.source.section-10",
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-07",
+      "from": "gongfa.chengxin-tinglanjue",
+      "to": "gongfa.liuguang-tachaobu",
+      "via": "perception.warning",
+      "interaction": "判断敌意和落点，支持一步先声。",
+      "boundary": "不预知未来；变招和假动作需要重新辨识。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.source.section-4",
+        "gongfa.chengxin-tinglanjue.source.section-9",
+        "gongfa.chengxin-tinglanjue.source.section-10",
+        "gongfa.liuguang-tachaobu.source.section-4",
+        "gongfa.liuguang-tachaobu.source.section-9",
+        "gongfa.liuguang-tachaobu.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-08",
+      "from": "gongfa.chengxin-tinglanjue",
+      "to": "gongfa.dielang-xuanchaojue",
+      "via": "perception.opening",
+      "interaction": "标记防御节奏，使叠浪沿标记留下弦势。",
+      "boundary": "感知成功不等于自动命中或摧毁防御。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.source.section-4",
+        "gongfa.chengxin-tinglanjue.source.section-9",
+        "gongfa.chengxin-tinglanjue.source.section-10",
+        "gongfa.dielang-xuanchaojue.source.section-4",
+        "gongfa.dielang-xuanchaojue.source.section-9",
+        "gongfa.dielang-xuanchaojue.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-09",
+      "from": "gongfa.chengxin-tinglanjue",
+      "to": "gongfa.xianhai-gongmingpian",
+      "via": "relation.observed",
+      "interaction": "为断弦、借调、倒序确定联系对象。",
+      "boundary": "未观察或接触到的联系不能凭空创建。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.source.section-4",
+        "gongfa.chengxin-tinglanjue.source.section-9",
+        "gongfa.chengxin-tinglanjue.source.section-10",
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-10",
+      "from": "gongfa.wuxiang-shuijingfa",
+      "to": "gongfa.liuguang-tachaobu",
+      "via": "mirror.node",
+      "interaction": "镜界节点为换位提供入口和落点。",
+      "boundary": "节点毁坏、失去联系或落点被封锁时重新评估；镜身替劫不等于换位成功。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10",
+        "gongfa.liuguang-tachaobu.source.section-4",
+        "gongfa.liuguang-tachaobu.source.section-9",
+        "gongfa.liuguang-tachaobu.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-11",
+      "from": "gongfa.wuxiang-shuijingfa",
+      "to": "gongfa.dielang-xuanchaojue",
+      "via": "mirror.node",
+      "interaction": "保存潮势，重叠节点使叠浪获得多个落点。",
+      "boundary": "多个落点不等于凭空复制法力、固定伤害或必中。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10",
+        "gongfa.dielang-xuanchaojue.source.section-4",
+        "gongfa.dielang-xuanchaojue.source.section-9",
+        "gongfa.dielang-xuanchaojue.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-12",
+      "from": "gongfa.wuxiang-shuijingfa",
+      "to": "gongfa.xianhai-gongmingpian",
+      "via": "mirror.node",
+      "interaction": "把目标留在可接触范围，重叠节点支持接触多个联系。",
+      "boundary": "须先具备节点联系与目标联系，不是无范围限制的干涉。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10",
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-13",
+      "from": "gongfa.liuguang-tachaobu",
+      "to": "gongfa.dielang-xuanchaojue",
+      "via": "movement.position",
+      "interaction": "在换位中完成转弓和变奏。",
+      "boundary": "移动与演奏可协同；仍要评估控制、落点和神魂负担。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.liuguang-tachaobu.source.section-4",
+        "gongfa.liuguang-tachaobu.source.section-9",
+        "gongfa.liuguang-tachaobu.source.section-10",
+        "gongfa.dielang-xuanchaojue.source.section-4",
+        "gongfa.dielang-xuanchaojue.source.section-9",
+        "gongfa.dielang-xuanchaojue.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-14",
+      "from": "gongfa.liuguang-tachaobu",
+      "to": "gongfa.xianhai-gongmingpian",
+      "via": "movement.position",
+      "interaction": "取得法宝、阵法联系的接触位置。",
+      "boundary": "到达不等于已辨清联系或必然切断联系。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.liuguang-tachaobu.source.section-4",
+        "gongfa.liuguang-tachaobu.source.section-9",
+        "gongfa.liuguang-tachaobu.source.section-10",
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-15",
+      "from": "gongfa.xianhai-gongmingpian",
+      "to": "gongfa.dielang-xuanchaojue",
+      "via": "force.redirected",
+      "interaction": "借弦将已打出的力量接入水势，叠浪可利用改道后的力量形成潮势。",
+      "boundary": "借用不等于吸收、夺取属性或复制传承。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10",
+        "gongfa.dielang-xuanchaojue.source.section-4",
+        "gongfa.dielang-xuanchaojue.source.section-9",
+        "gongfa.dielang-xuanchaojue.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    },
+    {
+      "id": "six-arts.interaction-16",
+      "from": "gongfa.xianhai-gongmingpian",
+      "to": "gongfa.wuxiang-shuijingfa",
+      "via": "force.redirected",
+      "interaction": "将敌方已离体力量接入水镜，改变落点。",
+      "boundary": "需可接触的联系；瞬发即散、结构少的力量效果弱。",
+      "authority": "source-grounded-summary",
+      "sourceRefs": [
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10",
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10"
+      ],
+      "activation": "本轮相关对象和条件经裁定成立后适用；不是无条件被动增益"
+    }
+  ],
+  "sharedObjectContract": {
+    "authority": "proposed-runtime-design",
+    "fields": [
+      "id",
+      "type",
+      "ownerId",
+      "sourceRuleRefs",
+      "createdByActionId",
+      "positionOrTarget",
+      "lifecycle",
+      "visibility",
+      "controlledBy",
+      "dependsOn",
+      "invalidatedBy"
+    ],
+    "waterLifecycle": [
+      "受控维持",
+      "已散逸可回收",
+      "被隔断",
+      "已湮灭",
+      "已回收"
+    ],
+    "principle": "同一水元不能既维持活跃术式又被回收，已湮灭不可回流；此枚举为工程表达，不增加原文能力。"
+  }
+}

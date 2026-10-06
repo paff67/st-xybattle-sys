@@ -51,6 +51,15 @@
       </div>
     </div>
 
+    <details v-if="view.combatObjects?.length" class="xy-persistent-effects">
+      <summary>持续战况 · {{ view.combatObjects.length }} 项</summary>
+      <details v-for="(object, index) in view.combatObjects" :key="index">
+        <summary>{{ object.label }} · {{ { active: '生效中', dispersed: '已散逸', interrupted: '已中断' }[object.status] }}</summary>
+        <p>{{ object.description }}</p>
+        <p v-if="object.positionOrTarget">位置或目标：{{ object.positionOrTarget }}</p>
+      </details>
+    </details>
+
     <!-- 4. 底部贯穿横条：输入区 (Full-Width Anchored Action Dock / Console) -->
     <ActionDock 
       :phase="view.phase" 
@@ -308,4 +317,10 @@ const hostSyncPending = computed(() => {
   height: 100%;
   min-height: 0;
 }
+</style>
+
+<style scoped>
+.xy-persistent-effects { margin: 12px; padding: 12px; color: #d4e4ef; border: 1px solid #33475b; border-radius: 8px; }
+.xy-persistent-effects summary { padding: 8px; cursor: pointer; }
+.xy-persistent-effects p { padding: 0 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
 </style>

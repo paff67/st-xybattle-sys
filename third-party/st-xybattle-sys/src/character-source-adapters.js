@@ -85,7 +85,8 @@ export function createHttpCharacterInference({ endpoint, model, apiKey = '', fet
       for (let attempt = 0; attempt < 2; attempt += 1) {
         try {
           result = await request(`${normalizePrompt(characterCompletionPrompt, DEFAULT_CHARACTER_COMPLETION_PROMPT)}\n\n以下输出契约优先于上方可编辑风格提示：\n${COMBAT_PROFILE_CONTRACT}`, { task: 'complete_combat_profile', side, candidate, knownFields, context, ...(attempt ? { repair: { issues, previous: result } } : {}) }, timeoutMs, signal);
-          const profile = normalizeCombatProfile(result, { id: candidate?.id, side });
+          partialProfile = normalizeCombatProfile(result, { id: candidate?.id, side });
+          const profile = normalizeCombatProfile(result, { id: candidate?.id, side, registry: context?.registry || [] });
           partialProfile = profile;
           issues = combatProfileIssues(profile);
           if (!issues.length) return profile;

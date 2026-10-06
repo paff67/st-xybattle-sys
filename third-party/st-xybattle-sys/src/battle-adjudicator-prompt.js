@@ -1,3 +1,5 @@
+import { COMBAT_LEDGER_CONTRACT } from './combat-ledger.js';
+import { projectRuleContext } from './authoritative-rules.js';
 // 战斗裁定系统独有预设与提示词模块 (Heavenly Combat Adjudication Preset)
 import { projectScenePacket } from './scene-packet.js';
 
@@ -84,8 +86,8 @@ export function buildAdjudicationPrompt(context, action) {
     '',
     '【1. 修士本轮行止行动】',
     `- 动作招式：${action.label || '自由出招'}`,
-    `- 选用功法词条ID：${action.techniqueId || '无（自由身法）'}`,
-    `- 出招心念与意图：${action.intent || '凝神运劲，克敌制胜'}`,
+    `- 选用功法词条ID：${action.techniqueId || '未指定按钮；按动作文本识别已掌握招式，不能凭名称猜测'}`,
+    `- 出招心念与意图：${action.intent || '以用户动作文本为准，不擅自追加行动'}`,
     '',
     '【2. 主角修者面板】',
     `- 道号姓名：${player.name || '主角'} (#${player.id || 'player'})`,
@@ -118,11 +120,18 @@ export function buildAdjudicationPrompt(context, action) {
     '因果期限只能按 storyClock / elapsedStoryHours 推进；不得使用现实时间。支持可配置 15 日冷却、一个月影响、22 小时死亡等期限；缺少明确规则时标记待定，不得凭空补境界细则。',
     '',
     '【7. 权威功法注册表与可用规则库】',
-    JSON.stringify(context.registry || {}, null, 2),
+    JSON.stringify(projectRuleContext(context.registry || [])),
     '【资源规则：所有消耗/恢复通过 resourceChanges 提交，不修改人物定义】',
     JSON.stringify(context.resourceRules || [], null, 2),
     '',
-    '【8. 裁定要求】',
+    '【8. 固定规则与持久战场对象】',
+    JSON.stringify({ versions: context.ruleMemory?.versions || [], interactions: context.ruleMemory?.interactions || [], combatLedger: { revision: context.combatLedger?.revision || 0, objects: context.combatLedger?.objects || [] } }),
+    '本段来自本场存档，每轮重新构建，不依赖聊天记忆。联动是可能的交互，不是自动增益；全体系仅限人物实际掌握的招式。对原文未定义的数值不得临时编造。',
+    ...(context.authorityBound ? [COMBAT_LEDGER_CONTRACT] : []),
+    '【假设反面案例：仅用于防止误判，不是本场事实，不得照抄错误裁定】',
+    JSON.stringify(context.negativeCases || []),
+    '反例的 correction 是边界提示；以规则原文为准，不能据示例判定本轮已经失败或成功。',
+    '【9. 裁定要求】',
     '人物境界、功法与招式是用户已确认的固定定义，禁止临场补出新能力或重新生成敌人。按已定义的消耗、距离、冷却、条件、弱点与战斗偏好选择和裁定敌方行动；状态变化写入 semanticState，资源结算写入 resourceChanges。',
     '1. 依据【主角招式机理】与【敌方功法防备】，深度推演功法碰撞与生克因果。',
     '2. 明确给出【对敌人的实际影响】；未受伤、未破防、未位移也必须如实记录。',

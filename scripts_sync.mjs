@@ -3,7 +3,7 @@ await mkdir('third-party/st-xybattle-sys', { recursive: true });
 try {
   await cp('dist/st-xybattle-sys.css', 'style.css');
 } catch {}
-for(const directory of ['src','sample-data','schema','dist']) {
+for(const directory of ['src','sample-data','schema','dist','content']) {
   try {
     await cp(directory,`third-party/st-xybattle-sys/${directory}`,{recursive:true,force:true});
   } catch {}
