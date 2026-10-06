@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { HttpJsonAdjudicator, HttpJsonNarrator } from '../src/adapters.js';
+import { createHttpCharacterInference } from '../src/character-source-adapters.js';
 
 test('OpenAI-compatible adapters send structured context and preserve original prompt', async () => {
   const requests = [];
@@ -17,4 +18,16 @@ test('OpenAI-compatible adapters send structured context and preserve original p
     assert.match(requests[0].messages[1].content, /actors/);
     assert.match(requests[1].messages[1].content, /用户原 prompt/);
   } finally { server.close(); }
+});
+
+test('OpenAI-compatible v1 roots resolve to chat completions for adjudication and character inference', async () => {
+  const calls = [];
+  const fetchImpl = async (url, options) => {
+    calls.push({ url: String(url), body: JSON.parse(options.body) });
+    return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ candidates: [{ id: 'enemy-1', name: '厉沧海', explicitFacts: {} }] }) } }] }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  const inference = createHttpCharacterInference({ endpoint: 'https://api.example.test/v1/', model: 'judge', fetchImpl });
+  await inference.inferCandidates({ scope: { chatId: 'chat', branchId: 'branch' } });
+  assert.equal(calls[0].url, 'https://api.example.test/v1/chat/completions');
+  assert.equal(calls[0].body.model, 'judge');
 });

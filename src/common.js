@@ -1,4 +1,9 @@
 export const clone = (value) => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+export function normalizeChatCompletionsEndpoint(endpoint) {
+  const value = String(endpoint || '').trim().replace(/\/+$/, '');
+  if (!value || /\/chat\/completions$/i.test(value)) return value;
+  return /\/v1$/i.test(value) ? `${value}/chat/completions` : value;
+}
 export function stableStringify(value) { if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`; if (value && typeof value === 'object') return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(',')}}`; return JSON.stringify(value); }
 export function abortIfNeeded(signal) { if (signal?.aborted) throw new DOMException('操作已停止或聊天作用域已变化', 'AbortError'); }
 export function stripSecrets(value, secrets = []) {
