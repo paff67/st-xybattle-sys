@@ -194,16 +194,16 @@ const weatherText = computed(() => {
 
 // 站位
 const playerPos = computed(() => {
-  return props.semanticState.positions?.player || props.semanticState['主角站位'] || '近岸';
+  return props.semanticState.positions?.[props.player?.id] || props.player?.visibleInfo?.position || props.semanticState['主角站位'] || '站位未明';
 });
 
 const enemyPos = computed(() => {
   const eId = props.currentEnemy?.id || 'enemy-1';
-  return props.semanticState.positions?.[eId] || props.semanticState['敌方站位'] || '台心';
+  return props.semanticState.positions?.[eId] || props.currentEnemy?.visibleInfo?.position || props.semanticState['敌方站位'] || '站位未明';
 });
 
 const distanceText = computed(() => {
-  return props.currentEnemy?.visibleInfo?.['站位'] || '中距对峙';
+  return props.semanticState['间距'] || props.semanticState.distance || '距离未明';
 });
 
 // 关键语义标签

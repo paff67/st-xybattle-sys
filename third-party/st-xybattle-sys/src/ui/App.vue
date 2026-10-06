@@ -271,7 +271,7 @@ onUnmounted(() => {
 async function handleStart() {
   try {
     notification.value = '';
-    if (props.controller.hostAdapter && props.controller.state.characterPreparation?.status !== 'confirmed') {
+    if (props.controller.hostAdapter && (props.controller.state.characterPreparation?.status !== 'confirmed' || props.controller.state.characterPreparation?.profileSchema !== 'battle_combat_profile_v2')) {
       preparingCharacters.value = true;
       await handlePrepareCharacters();
       return;

@@ -55,14 +55,21 @@ export class BattleController {
     if (scope.chatId !== this.state.scope.chatId || scope.branchId !== this.state.scope.branchId) throw new Error('当前聊天分支已改变');
     const hostContext = this.hostAdapter?.context?.() || {};
     const recentMessages = Array.isArray(hostContext.chat) ? hostContext.chat.slice(-20).map((message) => ({ role: message.role || (message.is_user ? 'user' : 'assistant'), text: String(message.mes || message.message || '').slice(0, 4000) })) : [];
-    const sourceContext = { ...clone(context || {}), scope, recentMessages, enemies: clone(context?.enemies || this.state.actors.enemies) };
+    const card = hostContext.characters?.[hostContext.characterId];
+    const sourceContext = { ...clone(context || {}), scope, recentMessages,
+      playerId: this.state.actors.player.id,
+      playerCandidate: context?.playerCandidate || context?.player || (!['主角', '演示主角', 'player'].includes(this.state.actors.player.name) ? this.state.actors.player : undefined),
+      persona: { name: hostContext.name1 || '', description: hostContext.powerUserSettings?.persona_description || hostContext.persona?.description || '' },
+      characterCard: card ? { name: card.name, description: card.description || card.data?.description, scenario: card.scenario || card.data?.scenario } : undefined,
+      registry: this.registry.snapshot(),
+      enemies: clone(context?.enemies || (this.hostAdapter ? [] : this.state.actors.enemies)) };
     const configured = this.settings.adjudicator;
-    const ai = inference || (configured.mode === 'http' && configured.endpoint && configured.model ? createHttpCharacterInference({ endpoint: configured.endpoint, model: configured.model, apiKey: configured.apiKey || '', timeoutMs: configured.timeoutMs, maxOutput: configured.maxOutput, temperature: configured.temperature, characterCompletionPrompt: this.settings.characterCompletionPrompt }) : null);
+    const ai = inference || (configured.mode === 'http' && configured.endpoint && configured.model ? createHttpCharacterInference({ endpoint: configured.endpoint, model: configured.model, apiKey: configured.apiKey || '', timeoutMs: configured.timeoutMs, maxOutput: this.settings.characterMaxOutput, temperature: configured.temperature, characterCompletionPrompt: this.settings.characterCompletionPrompt }) : null);
     const adapters = createReadOnlyCharacterSourceAdapters({ mvu, database, inference: ai });
     const epoch = this.epoch;
     const request = ++this.characterPreparationRequest;
     this.characterPreparation = null;
-    const preparation = await prepareEnemyCandidates(sourceContext, adapters);
+    const preparation = await prepareEnemyCandidates(sourceContext, { ...adapters, requireProfiles: !!this.hostAdapter, includePlayer: !!this.hostAdapter });
     if (request !== this.characterPreparationRequest || epoch !== this.epoch || this.state.scope.chatId !== scope.chatId || this.state.scope.branchId !== scope.branchId) throw new Error('人物读取期间聊天分支已改变或读取已取消，请重新读取');
     this.characterPreparation = preparation;
     return this.characterConfirmationPanel();
@@ -73,7 +80,9 @@ export class BattleController {
     const scope = this.hostAdapter?.scope?.() || this.state.scope;
     if (scope.chatId !== this.state.scope.chatId || scope.branchId !== this.state.scope.branchId) throw new Error('当前聊天分支已改变');
     const confirmed = confirmEnemyCandidates(this.characterPreparation, edits, options);
-    this.state = applyConfirmedEnemies(this.state, confirmed);
+    const next = applyConfirmedEnemies(this.state, confirmed);
+    this.registry = new TechniqueRegistry(next.registrySnapshot);
+    this.state = next;
     this.characterPreparation = null;
     this.emit();
     return this.state;

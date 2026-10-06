@@ -77,6 +77,7 @@ export function buildAdjudicationPrompt(context, action) {
     `- 境界与装备：${JSON.stringify(player.visibleInfo || {})}`,
     `- 气海机枢：${JSON.stringify(player.resources || {})}`,
     `- 所修功法与传承词条：${JSON.stringify(player.techniques || [])}`,
+    `- 已确认的身份、战斗方式与战术：${JSON.stringify({ identity: player.identity, cultivationRealm: player.cultivationRealm, combatStyle: player.combatStyle, behavior: player.behavior, weaknesses: player.weaknesses })}`,
     '',
     '【3. 敌方修者面板】',
     ...enemies.map((e, idx) => [
@@ -84,6 +85,7 @@ export function buildAdjudicationPrompt(context, action) {
       `- 公开情报与境界：${JSON.stringify(e.visibleInfo || {})}`,
       `- 气海机枢：${JSON.stringify(e.resources || {})}`,
       `- 已知招式：${JSON.stringify(e.observedTechniques || [])}`,
+      `- 已确认的固定战斗档案（内部可读，按 visibility 控制公开）：${JSON.stringify({ identity: e.identity, cultivationRealm: e.cultivationRealm, combatStyle: e.combatStyle, martialArts: e.martialArts, techniques: e.techniques, behavior: e.behavior, weaknesses: e.weaknesses })}`,
       `- 【天道私密情报·仅供内部因果裁定·严禁公开泄密】：${JSON.stringify(e.hidden || {})}`
     ].join('\n')),
     '',
@@ -102,8 +104,11 @@ export function buildAdjudicationPrompt(context, action) {
     '',
     '【7. 权威功法注册表与可用规则库】',
     JSON.stringify(context.registry || {}, null, 2),
+    '【资源规则：所有消耗/恢复通过 resourceChanges 提交，不修改人物定义】',
+    JSON.stringify(context.resourceRules || [], null, 2),
     '',
     '【8. 裁定要求】',
+    '人物境界、功法与招式是用户已确认的固定定义，禁止临场补出新能力或重新生成敌人。按已定义的消耗、距离、冷却、条件、弱点与战斗偏好选择和裁定敌方行动；状态变化写入 semanticState，资源结算写入 resourceChanges。',
     '1. 依据【主角招式机理】与【敌方功法防备】，深度推演功法碰撞与生克因果。',
     '2. 明确给出【对敌人的实质影响】（受制、破防、身法脱节、经脉反噬、破绽）。',
     '3. 明确给出【对战场环境的天地剧变】（地形破坏、水汽激荡、灵气屏风、气象冲击）。',

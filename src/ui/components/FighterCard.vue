@@ -3,8 +3,8 @@
     <!-- 顶部状态印记 (Buffs / Debuffs 持续效果) -->
     <div class="xy-status-lane" :class="'lane-' + side">
       <div v-if="effects.length" class="xy-effects-group">
-        <span 
-          v-for="(eff, idx) in effects" 
+        <span
+          v-for="(eff, idx) in effects"
           :key="idx"
           class="xy-effect-badge"
           :class="{ 'is-field': eff.lane === 'field' }"
@@ -31,8 +31,8 @@
       <!-- 角色名号与公开洞察 -->
       <div class="xy-fighter-bio">
         <div class="xy-side-kicker">
-          <span class="xy-kicker-side">{{ side === 'player' ? 'DAOIST' : 'OPPONENT' }}</span>
-          <span class="xy-kicker-id">#{{ actor.id }}</span>
+          <span class="xy-kicker-side">{{ side === 'player' ? '主角' : '敌方' }}</span>
+
         </div>
 
         <h2 class="xy-fighter-name">
@@ -42,9 +42,9 @@
 
         <!-- 公开可见信息 (境界、装备、站位等) -->
         <div class="xy-visible-traits">
-          <span 
-            v-for="(val, key) in filteredVisibleInfo" 
-            :key="key" 
+          <span
+            v-for="(val, key) in filteredVisibleInfo"
+            :key="key"
             class="xy-trait-pill"
           >
             <b class="xy-trait-key">{{ key }}</b>
@@ -57,7 +57,7 @@
         <div v-if="hasResources" class="xy-resources-bar">
           <span class="xy-resource-label">灵韵机枢</span>
           <div class="xy-resource-chips">
-            <span v-for="(v, k) in actor.resources" :key="k" class="xy-res-chip">
+            <span v-for="(v, k) in displayResources" :key="k" class="xy-res-chip">
               <span class="xy-res-name">{{ k }}</span>
               <span class="xy-res-num">{{ v }}</span>
             </span>
@@ -68,8 +68,8 @@
 
     <!-- 多敌方目标切换标签 -->
     <div v-if="side === 'enemy' && targetCount > 1" class="xy-enemy-switchers">
-      <button 
-        v-for="e in enemiesList" 
+      <button
+        v-for="e in enemiesList"
         :key="e.id"
         class="xy-target-tab"
         :class="{ active: e.id === actor.id }"
@@ -84,6 +84,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { actorTraitLabels, actorResourceLabels } from '../../character-presentation.js';
 
 const props = defineProps({
   actor: { type: Object, default: () => ({}) },
@@ -102,30 +103,11 @@ const initialChar = computed(() => {
   return name.slice(0, 1) || (props.side === 'player' ? '主' : '敌');
 });
 
-const filteredVisibleInfo = computed(() => {
-  const info = props.actor.visibleInfo;
-  if (!info || typeof info !== 'object') return {};
-  const ignored = ['techniques', 'abilities', 'skills', 'spells', '术法', '功法', '招式', 'observedTechniques', 'observedAbilities', '可观察招式'];
-  const res = {};
-  for (const [k, v] of Object.entries(info)) {
-    if (!ignored.includes(k) && v !== null && v !== undefined && v !== '') {
-      res[k] = v;
-    }
-  }
-  return res;
-});
-
+const filteredVisibleInfo = computed(() => actorTraitLabels(props.actor));
 const hasVisibleTraits = computed(() => Object.keys(filteredVisibleInfo.value).length > 0);
-
-const hasResources = computed(() => {
-  const res = props.actor.resources;
-  return res && typeof res === 'object' && Object.keys(res).length > 0;
-});
-
-function formatValue(v) {
-  if (typeof v === 'object') return JSON.stringify(v);
-  return String(v);
-}
+const displayResources = computed(() => props.side === 'player' ? actorResourceLabels(props.actor) : {});
+const hasResources = computed(() => Object.keys(displayResources.value).length > 0);
+function formatValue(value) { return String(value); }
 </script>
 
 <style scoped>

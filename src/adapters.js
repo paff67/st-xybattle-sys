@@ -1,7 +1,9 @@
 import { clone, abortIfNeeded, normalizeChatCompletionsEndpoint } from './common.js';
 import { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, formatScenePacketForStoryAI } from './battle-adjudicator-prompt.js';
-import { DEFAULT_CHARACTER_COMPLETION_PROMPT, normalizePrompt } from './character-prompts.js';
+import { normalizeCharacterCompletionPrompt, normalizePrompt } from './character-prompts.js';
 export function normalizeSettings(input = {}) {
+  const characterMaxOutput = Number(input.characterMaxOutput ?? 8000);
+  if (!Number.isInteger(characterMaxOutput) || characterMaxOutput < 1024) throw new Error('人物档案输出上限必须是至少 1024 的整数');
   const defaultConfig = { mode: 'unconfigured', endpoint: '', model: '', maxOutput: 1600, temperature: 0.2, repairAttempts: 2, timeoutMs: 60000 };
   const adjudicator = { ...defaultConfig, ...(input.adjudicator || {}) };
   if (!input.adjudicator) for (const key of Object.keys(defaultConfig).concat('apiKey')) if (input[key] !== undefined) adjudicator[key] = input[key];
@@ -13,7 +15,7 @@ export function normalizeSettings(input = {}) {
     config.temperature = Number(config.temperature); config.maxOutput = Number(config.maxOutput); config.repairAttempts = Number(config.repairAttempts); config.timeoutMs = Number(config.timeoutMs);
     if (!Number.isFinite(config.temperature) || config.temperature < 0 || config.temperature > 2 || !Number.isInteger(config.maxOutput) || config.maxOutput < 1 || !Number.isInteger(config.repairAttempts) || config.repairAttempts < 0 || config.repairAttempts > 3 || !Number.isFinite(config.timeoutMs) || config.timeoutMs < 100) throw new Error('模型参数无效（温度0~2；修复0~3）');
   }
-  return { adjudicator, narrator, autoNarrative: input.autoNarrative !== false, originalPrompt: input.originalPrompt || '', characterCompletionPrompt: normalizePrompt(input.characterCompletionPrompt, DEFAULT_CHARACTER_COMPLETION_PROMPT), adjudicationPrompt: normalizePrompt(input.adjudicationPrompt, HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT), developerLogs: input.developerLogs !== false };
+  return { adjudicator, narrator, autoNarrative: input.autoNarrative !== false, originalPrompt: input.originalPrompt || '', characterMaxOutput, characterCompletionPrompt: normalizeCharacterCompletionPrompt(input.characterCompletionPrompt), adjudicationPrompt: normalizePrompt(input.adjudicationPrompt, HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT), developerLogs: input.developerLogs !== false };
 }
 export function extractJson(content) {
   if (content && typeof content === 'object') return clone(content);

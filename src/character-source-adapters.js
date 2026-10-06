@@ -1,5 +1,6 @@
 import { clone, normalizeChatCompletionsEndpoint } from './common.js';
-import { DEFAULT_CHARACTER_COMPLETION_PROMPT, normalizePrompt } from './character-prompts.js';
+import { DEFAULT_CHARACTER_COMPLETION_PROMPT, COMBAT_PROFILE_CONTRACT, normalizePrompt } from './character-prompts.js';
+import { normalizeCombatProfile, combatProfileIssues } from './combat-profile.js';
 
 const text = (value) => value == null ? '' : String(value).trim();
 const isObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
@@ -7,7 +8,7 @@ const isObject = (value) => !!value && typeof value === 'object' && !Array.isArr
 function exactMatch(records, candidate) {
   const list = Array.isArray(records) ? records : records && typeof records === 'object' ? Object.entries(records).map(([key, value]) => isObject(value) ? ({ id: value.id || key, ...value }) : ({ id: key, name: value })) : [];
   const id = text(candidate?.id), name = text(candidate?.name);
-  const matches = list.filter((item) => text(item?.id || item?.characterId || item?.uid) === id || text(item?.name || item?.characterName || item?.displayName) === name);
+  const matches = list.filter((item) => text(item?.id || item?.characterId || item?.uid) === id || text(item?.name || item?.characterName || item?.displayName || item?.姓名 || item?.名称) === name);
   if (matches.length > 1) throw new Error(`人物资料匹配歧义：${id || name}`);
   return matches[0] ? clone(matches[0]) : null;
 }
@@ -15,7 +16,8 @@ function exactMatch(records, candidate) {
 function mvuRecords(data) {
   const root = data?.stat_data ?? data?.data?.stat_data ?? data;
   if (!root || typeof root !== 'object') return [];
-  const buckets = [root.enemies, root.opponents, root.characters, root.actors, root.敌方, root.对手].filter(Boolean);
+  const player = root.player || root.protagonist || root.主角;
+  const buckets = [root.enemies, root.opponents, root.characters, root.actors, root.敌方, root.对手, ...(player ? [[player]] : [])].filter(Boolean);
   if (buckets.length) return buckets.flatMap((value) => Array.isArray(value) ? value : Object.entries(value).map(([id, item]) => isObject(item) ? ({ id: item.id || id, ...item }) : ({ id, name: item })));
   return Object.entries(root).filter(([, value]) => isObject(value)).map(([id, value]) => ({ id: value.id || id, ...value }));
 }
@@ -51,6 +53,7 @@ export async function readDatabaseCharacter({ candidate } = {}, { database = glo
 async function readResponse(response) {
   if (!response?.ok) throw new Error(`人物 AI HTTP ${response?.status || '失败'}`);
   const payload = await response.json();
+  if (payload?.choices?.[0]?.finish_reason === 'length') throw new Error('人物档案输出被截断，请提高人物生成输出上限');
   const content = payload?.choices?.[0]?.message?.content ?? payload?.output_text ?? payload;
   if (typeof content === 'string') {
     const fenced = content.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1] || content;
@@ -73,8 +76,26 @@ export function createHttpCharacterInference({ endpoint, model, apiKey = '', fet
     } finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
   };
   return {
+    async inferParticipants(context, { signal } = {}) {
+      return request('从聊天和人设识别当前实际主角与敌人。返回 {"player":{"name":"主角实际姓名","explicitFacts":{}},"candidates":[{"id":"可选稳定标识","name":"敌人姓名","explicitFacts":{},"inferred":{}}]}。主角不是助手角色的默认称呼，不得复用演示人物；主角依据不足时 player=null。角色卡仅是证据，不能直接认定其角色是主角。提取已有境界、功法完整设定、当前状态、资源和战斗偏好，明确事实放 explicitFacts；此步不要创造新能力。', clone(context), timeoutMs, signal);
+    },
     async inferCandidates(context, { signal } = {}) { const result = await request('只提取敌方候选人物，返回 {"candidates":[{"id":"...","name":"...","explicitFacts":{},"inferred":{}}]}。明确事实放 explicitFacts；不确定的内容放 inferred；不要构造完整人物。', clone(context), timeoutMs, signal); return Array.isArray(result) ? result : result?.candidates || []; },
-    async completeCandidate({ candidate, knownFields, context, signal } = {}) { const result = await request(normalizePrompt(characterCompletionPrompt, DEFAULT_CHARACTER_COMPLETION_PROMPT), { task: 'complete_enemy_candidate', candidate, knownFields, context }, timeoutMs, signal); return result?.candidate || result?.fields || result; },
+    async completeCandidate({ candidate, knownFields, context, signal, side = 'enemy' } = {}) {
+      let result, issues, partialProfile;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          result = await request(`${normalizePrompt(characterCompletionPrompt, DEFAULT_CHARACTER_COMPLETION_PROMPT)}\n\n以下输出契约优先于上方可编辑风格提示：\n${COMBAT_PROFILE_CONTRACT}`, { task: 'complete_combat_profile', side, candidate, knownFields, context, ...(attempt ? { repair: { issues, previous: result } } : {}) }, timeoutMs, signal);
+          const profile = normalizeCombatProfile(result, { id: candidate?.id, side });
+          partialProfile = profile;
+          issues = combatProfileIssues(profile);
+          if (!issues.length) return profile;
+        } catch (error) {
+          if (signal?.aborted || error.name === 'AbortError') throw error;
+          issues = [error.message];
+        }
+      }
+      throw Object.assign(new Error(`人物档案仍不完整：${issues.join('；')}`), { partialProfile });
+    },
     async fillMissingFields({ candidate, knownFields, context, signal }) { const result = await request('仅补全明确缺失字段，返回 {"fields":{...},"inferred":true}，不得覆盖已有字段。', { candidate, knownFields, context }, fillTimeoutMs, signal); return result?.fields || result || {}; }
   };
 }

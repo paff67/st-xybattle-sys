@@ -10,9 +10,9 @@
 
         <div class="xy-buff-content">
           <div v-if="effects.length" class="xy-buff-badges">
-            <span 
-              v-for="(eff, idx) in effects" 
-              :key="idx" 
+            <span
+              v-for="(eff, idx) in effects"
+              :key="idx"
               class="xy-buff-pill"
               :class="{ 'is-field': eff.lane === 'field' }"
             >
@@ -33,17 +33,17 @@
       <!-- 玩家侧：立绘在左，弦羽在右（指向中台） -->
       <template v-if="side === 'player'">
         <div class="xy-figure-wrapper">
-          <CharacterFigure 
-            side="player" 
-            :name="actor.name || '主角'" 
-            :avatar="actor.avatar || actor.portrait || ''" 
+          <CharacterFigure
+            side="player"
+            :name="actor.name || '主角'"
+            :avatar="actor.avatar || actor.portrait || ''"
           />
         </div>
 
         <div class="xy-wings-wrapper">
-          <ChordWings 
+          <ChordWings
             side="player"
-            :items="techniques" 
+            :items="techniques"
             :selected-term-id="selectedTermId"
             :is-modal-open="isModalOpen"
             @select-wing="$emit('select-petal', $event)"
@@ -54,9 +54,9 @@
       <!-- 敌方侧：弦羽在左（指向中台），立绘在右 -->
       <template v-else>
         <div class="xy-wings-wrapper">
-          <ChordWings 
+          <ChordWings
             side="enemy"
-            :items="techniques" 
+            :items="techniques"
             :selected-term-id="selectedTermId"
             :is-modal-open="isModalOpen"
             @select-wing="$emit('select-petal', $event)"
@@ -64,10 +64,10 @@
         </div>
 
         <div class="xy-figure-wrapper">
-          <CharacterFigure 
-            side="enemy" 
-            :name="actor.name || '敌手'" 
-            :avatar="actor.avatar || actor.portrait || ''" 
+          <CharacterFigure
+            side="enemy"
+            :name="actor.name || '敌手'"
+            :avatar="actor.avatar || actor.portrait || ''"
           />
         </div>
       </template>
@@ -79,15 +79,15 @@
         <!-- 角色主名号与阵营标识 -->
         <div class="xy-info-top">
           <div class="xy-info-title-group">
-            <span class="xy-side-kicker">{{ side === 'player' ? 'DAOIST' : 'OPPONENT' }}</span>
+            <span class="xy-side-kicker">{{ side === 'player' ? '主角' : '敌方' }}</span>
             <h3 class="xy-actor-name">{{ actor.name || (side === 'player' ? '主角' : '敌手') }}</h3>
-            <span class="xy-actor-id">#{{ actor.id }}</span>
+
           </div>
 
           <!-- 多敌方目标切换标签 (仅敌方且目标数 > 1) -->
           <div v-if="side === 'enemy' && targetCount > 1" class="xy-target-switchers">
-            <button 
-              v-for="e in enemiesList" 
+            <button
+              v-for="e in enemiesList"
               :key="e.id"
               class="xy-switch-btn"
               :class="{ active: e.id === actor.id }"
@@ -100,9 +100,9 @@
 
         <!-- 公开可见特征 (境界、装备、姿态、站位等) -->
         <div class="xy-traits-row">
-          <span 
-            v-for="(val, key) in filteredVisibleInfo" 
-            :key="key" 
+          <span
+            v-for="(val, key) in filteredVisibleInfo"
+            :key="key"
             class="xy-trait-item"
           >
             <b class="xy-trait-k">{{ key }}:</b>
@@ -115,7 +115,7 @@
         <div v-if="hasResources" class="xy-resources-row">
           <span class="xy-res-label">气海机枢:</span>
           <div class="xy-res-chips">
-            <span v-for="(v, k) in actor.resources" :key="k" class="xy-res-tag">
+            <span v-for="(v, k) in displayResources" :key="k" class="xy-res-tag">
               <b>{{ k }}</b> {{ v }}
             </span>
           </div>
@@ -127,6 +127,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { actorTraitLabels, actorResourceLabels } from '../../character-presentation.js';
 import CharacterFigure from './CharacterFigure.vue';
 import ChordWings from './ChordWings.vue';
 
@@ -145,33 +146,11 @@ defineEmits(['select-petal', 'select-target']);
 
 const targetCount = computed(() => props.enemiesList?.length || 0);
 
-const filteredVisibleInfo = computed(() => {
-  const info = props.actor.visibleInfo;
-  if (!info || typeof info !== 'object') return {};
-  const ignored = [
-    'techniques', 'abilities', 'skills', 'spells', '术法', '功法', '招式', 
-    'observedTechniques', 'observedAbilities', '可观察招式'
-  ];
-  const res = {};
-  for (const [k, v] of Object.entries(info)) {
-    if (!ignored.includes(k) && v !== null && v !== undefined && v !== '') {
-      res[k] = v;
-    }
-  }
-  return res;
-});
-
+const filteredVisibleInfo = computed(() => actorTraitLabels(props.actor));
 const hasVisibleTraits = computed(() => Object.keys(filteredVisibleInfo.value).length > 0);
-
-const hasResources = computed(() => {
-  const res = props.actor.resources;
-  return res && typeof res === 'object' && Object.keys(res).length > 0;
-});
-
-function formatValue(v) {
-  if (typeof v === 'object') return JSON.stringify(v);
-  return String(v);
-}
+const displayResources = computed(() => props.side === 'player' ? actorResourceLabels(props.actor) : {});
+const hasResources = computed(() => Object.keys(displayResources.value).length > 0);
+function formatValue(value) { return String(value); }
 </script>
 
 <style scoped>

@@ -3,7 +3,7 @@
     <header class="xy-character-confirmation__header">
       <div>
         <span class="xy-character-confirmation__eyebrow">战前准备 · 核对人物</span>
-        <h3 id="character-confirmation-title">战前敌方人物确认</h3>
+        <h3 id="character-confirmation-title">战前人物档案确认</h3>
         <p class="xy-character-confirmation__hint">
           逐名核对并勾选资料，然后点击“确认并开始战斗”。资料可以直接修改，修改后需要重新勾选。
         </p>
@@ -56,11 +56,12 @@
         >
           <header class="xy-character-candidate__header">
             <div>
-              <span class="xy-character-candidate__id">待核对人物</span>
-              <h4>{{ parsedFields(candidate).name || candidate.name || candidate.id }}</h4>
+              <span class="xy-character-candidate__id">{{ candidate.role === 'player' ? '主角资料' : '敌方资料' }}</span>
+              <h4>{{ parsedFields(candidate).name || (candidate.role === 'player' ? '主角资料待补全' : '敌方资料待补全') }}</h4>
             </div>
             <button
               type="button"
+              v-if="candidate.role !== 'player'"
               class="xy-character-candidate__remove"
               :disabled="busy || preparation.status === 'confirmed'"
               :data-action="removedIds.has(candidate.id) ? 'restore' : 'remove'"
@@ -78,35 +79,15 @@
             {{ draftErrors[candidate.id] }}
           </p>
 
+          <div v-if="profileIssues[candidate.id]?.length" class="xy-character-candidate__error" role="alert">
+            <strong>资料尚未完整，补齐后才能开始战斗</strong>
+            <ul><li v-for="issue in profileIssues[candidate.id]" :key="issue">{{ issue }}</li></ul>
+          </div>
           <div v-if="!removedIds.has(candidate.id)" class="xy-character-candidate__sections" aria-label="人物资料">
-            <section v-for="section in sectionsById[candidate.id]" :key="section.id" class="xy-character-section">
-              <h5>{{ section.label }}</h5>
-              <div class="xy-character-section__rows">
-                <div v-for="field in section.rows" :key="field.path" class="xy-character-field" :data-field-path="field.path">
-                  <div class="xy-character-field__label">
-                    <strong>{{ field.label }}</strong>
-                    <small v-if="field.context">{{ field.context }}</small>
-                  </div>
-                  <div class="xy-character-field__value">
-                    <span>{{ field.display }}</span>
-                    <details v-if="field.editable" class="xy-character-field__edit">
-                      <summary>修改</summary>
-                      <label>
-                        <span>{{ field.label }}</span>
-                        <select v-if="typeof field.value === 'boolean'" :value="String(field.value)" :disabled="editingDisabled(candidate)" @change="updateField(candidate, field, $event.target.value)">
-                          <option value="true">是</option><option value="false">否</option>
-                        </select>
-                        <input v-else-if="typeof field.value === 'number'" type="number" step="any" :value="field.value" :disabled="editingDisabled(candidate)" @input="updateField(candidate, field, $event.target.value)" />
-                        <textarea v-else :value="field.value" rows="3" :disabled="editingDisabled(candidate)" @input="updateField(candidate, field, $event.target.value)"></textarea>
-                      </label>
-                      <span v-if="fieldErrors[candidate.id]?.[field.path]" class="xy-character-candidate__error" role="alert">{{ fieldErrors[candidate.id][field.path] }}</span>
-                    </details>
-                  </div>
-                  <span class="xy-character-field__source">{{ sourceLabel(field.source) }}</span>
-                </div>
-              </div>
-            </section>
-            <p v-if="!sectionsById[candidate.id].length" class="xy-character-candidate__empty-fields">暂无可展示的资料字段。</p>
+            <details v-for="section in sectionsById[candidate.id]" :key="section.id" class="xy-character-section" :data-section="section.id">
+              <summary>{{ section.label }}</summary>
+              <CharacterFieldTree :nodes="section.children" :disabled="editingDisabled(candidate)" :errors="fieldErrors[candidate.id] || {}" @edit="updateField(candidate, $event.field, $event.input)" @add="addFieldItem(candidate, $event)" />
+            </details>
           </div>
 
           <details v-if="!removedIds.has(candidate.id)" class="xy-character-candidate__raw">
@@ -123,15 +104,15 @@
             ></textarea>
           </details>
 
-          <div v-if="candidate.conflicts?.length" class="xy-character-conflicts" aria-label="资料冲突">
-            <h5>需要留意的资料冲突</h5>
+          <details v-if="candidate.conflicts?.length" class="xy-character-conflicts" aria-label="资料冲突">
+            <summary>查看原始来源分歧</summary>
             <p>各来源没有自动优先级。请核对当前草稿，必要时修改上方资料。</p>
             <div v-for="conflict in candidate.conflicts || []" :key="`${candidate.id}:${conflict.path}`" class="xy-character-conflict" :data-conflict-path="conflict.path">
               <b>{{ friendlyPath(conflict.path) }}</b>
               <span>当前采用：<code>{{ displayValue(conflictValue(candidate, conflict.path)) }}</code></span>
               <span v-for="item in conflict.values || legacyConflictValues(conflict)" :key="`${item.source}:${displayValue(item.value)}`"><code>{{ sourceLabel(item.source) }}：{{ displayValue(item.value) }}</code></span>
             </div>
-          </div>
+          </details>
         </article>
 
       </template>
@@ -152,7 +133,9 @@
 
 <script setup>
 import { computed, reactive, watch } from 'vue';
-import { characterSections, characterPathLabel as friendlyPath, characterValueLabel as displayValue, editCharacterField } from '../../character-presentation.js';
+import CharacterFieldTree from './CharacterFieldTree.vue';
+import { combatProfileIssues, normalizeCombatProfile } from '../../combat-profile.js';
+import { characterTree, characterPathLabel as friendlyPath, characterValueLabel as displayValue, editCharacterField } from '../../character-presentation.js';
 
 const props = defineProps({
   preparation: { type: Object, default: null },
@@ -212,8 +195,27 @@ function parsedFields(candidate) {
 }
 
 const sectionsById = computed(() => Object.fromEntries((props.preparation?.candidates || []).map((candidate) => [
-  candidate.id, characterSections(parsedFields(candidate), candidate.provenance, candidate.fields)
+  candidate.id, characterTree(parsedFields(candidate), candidate.provenance, candidate.fields)
 ])));
+
+const profileIssues = computed(() => Object.fromEntries((props.preparation?.candidates || []).map((candidate) => [candidate.id,
+  props.preparation.requiresCompleteProfiles ? combatProfileIssues(normalizeCombatProfile(parsedFields(candidate), { id: candidate.id, side: candidate.role || 'enemy' })) : []
+])));
+
+function addFieldItem(candidate, node) {
+  const fields = parsedFields(candidate);
+  const target = node.keys.reduce((value, key) => value[key], fields);
+  if (!Array.isArray(target)) return;
+  const template = normalizeCombatProfile({ techniques: [{}], martialArts: [{}], resourceDefinitions: [{ current: 0, min: 0, max: 0 }] });
+  const item = template[node.keys.at(-1)]?.[0] || '';
+  if (node.keys.at(-1) === 'resourceDefinitions') {
+    let index = target.length + 1;
+    while (target.some((resource) => resource.key === `resource-${index}`)) index += 1;
+    item.key = `resource-${index}`;
+  }
+  target.push(item);
+  updateDraft(candidate.id, JSON.stringify(fields, null, 2));
+}
 
 function conflictValue(candidate, path) {
   return path.split('.').reduce((value, key) => value?.[key], parsedFields(candidate));
@@ -296,11 +298,11 @@ function toggleConfirmed(id, value) {
   if (value && !draftErrors[id] && !Object.keys(fieldErrors[id] || {}).length) confirmedIds.add(id); else confirmedIds.delete(id);
 }
 
-const hasErrors = computed(() => (props.preparation?.candidates || []).some((candidate) => !removedIds.has(candidate.id) && (draftErrors[candidate.id] || Object.keys(fieldErrors[candidate.id] || {}).length)));
+const hasErrors = computed(() => (props.preparation?.candidates || []).some((candidate) => !removedIds.has(candidate.id) && (draftErrors[candidate.id] || Object.keys(fieldErrors[candidate.id] || {}).length || profileIssues.value[candidate.id]?.length)));
 
 const confirmDisabled = computed(() => {
   const preparation = props.preparation;
-  return hasErrors.value || props.busy || !preparation || preparation.status !== 'awaiting_confirmation' || !preparation.candidates?.length || [...removedIds].length >= preparation.candidates.length || preparation.candidates.some((candidate) => !removedIds.has(candidate.id) && !confirmedIds.has(candidate.id));
+  return hasErrors.value || props.busy || !preparation || preparation.status !== 'awaiting_confirmation' || !preparation.candidates?.length || [...removedIds].length >= preparation.candidates.length || !preparation.candidates.some((candidate) => candidate.role !== 'player' && !removedIds.has(candidate.id)) || preparation.candidates.some((candidate) => !removedIds.has(candidate.id) && !confirmedIds.has(candidate.id));
 });
 
 const activeCount = computed(() => (props.preparation?.candidates || []).filter((candidate) => !removedIds.has(candidate.id)).length);
@@ -309,8 +311,8 @@ const confirmLabel = computed(() => props.preparation?.status === 'confirmed' ? 
 const confirmationHint = computed(() => {
   if (props.preparation?.status === 'confirmed') return '人物资料已确认，可以进入战斗。';
   if (props.busy) return '正在读取资料，请稍候。';
-  if (hasErrors.value) return '资料中有未修正的格式或数值错误，请修正后重新勾选。';
-  if (!activeCount.value) return '至少保留一名敌方人物。';
+  if (hasErrors.value) return '请补齐缺失的战斗设定，并修正资料错误后重新勾选。';
+  if (!(props.preparation?.candidates || []).some((candidate) => candidate.role !== 'player' && !removedIds.has(candidate.id))) return '至少保留一名敌方人物。';
   if (confirmedCount.value < activeCount.value) return `请逐名勾选并核对人物资料，还差 ${activeCount.value - confirmedCount.value} 名。`;
   return '所有保留人物都已核对，可以确认并开始战斗。';
 });
@@ -366,6 +368,8 @@ function confirm() {
 .xy-character-candidate__error { margin: 0; color: #fda4af; font-size: 12px; }
 .xy-character-candidate__sections { display: grid; gap: 12px; }
 .xy-character-section { padding: 11px; border: 1px solid rgba(148,163,184,.16); border-radius: 8px; background: rgba(2,6,23,.28); }
+.xy-character-section > summary { cursor: pointer; padding: 8px 0; color: #d4e4ef; font-size: 15px; }
+.xy-character-section > .xy-character-tree { padding-top: 12px; }
 .xy-character-section h5, .xy-character-conflicts h5 { margin: 0 0 9px; color: #bae6fd; font-size: 13px; font-weight: 650; }
 .xy-character-section__rows { display: grid; gap: 6px; }
 .xy-character-field { display: grid; grid-template-columns: minmax(130px, .7fr) minmax(0, 2fr) minmax(100px, .8fr); gap: 10px; align-items: start; padding: 12px 10px; background: rgba(2,6,23,.38); border-radius: 6px; font-size: 14px; }

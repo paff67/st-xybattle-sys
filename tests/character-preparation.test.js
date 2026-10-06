@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { fullCombatProfile } from './fixtures/combat-profile.js';
 import assert from 'node:assert/strict';
 import { BattleController } from '../src/battle-controller.js';
 import { applyConfirmedEnemies, confirmEnemyCandidates, prepareEnemyCandidates } from '../src/character-preparation.js';
@@ -79,7 +80,7 @@ test('AI completion builds a full opponent draft and requires explicit user conf
   const preparation = await prepareEnemyCandidates({ scope, enemies: [{ id: 'enemy', name: '演示对手', visibleInfo: { stance: '守势' } }] }, {
     inference: {
       inferCandidates: async () => [{ id: 'enemy', name: '厉沧海', explicitFacts: { cultivationRealm: '假丹境' } }],
-      completeCandidate: async ({ candidate }) => ({ id: candidate.id, name: '厉沧海', cultivationRealm: '假丹境', techniques: [{ id: 'pingchuan', name: '平川断澜', originalDefinition: '完整剑招定义', mechanics: ['改变站位'], availability: { default: 'available', conditions: [] }, visibility: 'public', ruleRefs: ['fixture.technique'] }], hidden: { reservePlan: '待用户确认' } })
+      completeCandidate: async ({ candidate }) => ({ ...fullCombatProfile(), id: candidate.id })
     }
   });
   const candidate = preparation.candidates[0];

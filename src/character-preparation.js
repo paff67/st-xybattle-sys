@@ -1,4 +1,6 @@
 import { clone } from './common.js';
+import { COMBAT_PROFILE_SCHEMA, normalizeCombatProfile, combatProfileIssues, compileCombatProfile } from './combat-profile.js';
+import { TechniqueRegistry } from './battle-registry.js';
 
 /**
  * Character preparation is deliberately a read-only, pre-battle boundary.
@@ -320,17 +322,24 @@ function matchingCandidate(candidates, item, index) {
  * supplied state, MVU, database, or host.  The draft is intentionally marked
  * `pending`, making accidental use by an adjudicator fail closed.
  */
-export async function prepareEnemyCandidates(context = {}, { mvu, database, inference, ai, maxCandidates = 32, signal } = {}) {
+export async function prepareEnemyCandidates(context = {}, { mvu, database, inference, ai, maxCandidates = 32, signal, requireProfiles = false, includePlayer = false } = {}) {
   if (signal?.aborted) throw new DOMException('人物准备已取消', 'AbortError');
   const explicit = extractEnemyCandidates(context, { maxCandidates });
   const aiSource = ai || inference;
-  const inferredRaw = await inferCandidates(aiSource, context, signal);
+  const participants = typeof aiSource?.inferParticipants === 'function' ? await aiSource.inferParticipants(clone(context), { signal }) : null;
+  const inferredRaw = participants ? participants.candidates || [] : await inferCandidates(aiSource, context, signal);
+  const strictProfiles = requireProfiles || typeof aiSource?.completeCandidate === 'function';
   const all = [...explicit];
   inferredRaw.forEach((item, index) => { const match = matchingCandidate(all, item, index); if (match && !all.includes(match)) all.push(match); });
+  if (includePlayer) {
+    const rawPlayer = participants?.player || context.playerCandidate || {};
+    const facts = rawPlayer.explicitFacts || rawPlayer.fields || rawPlayer;
+    all.unshift({ ...normalizeRawCandidate({ ...facts, name: rawPlayer.name || facts.name || '', id: context.playerId || 'player' }, 0), role: 'player', extracted: rawPlayer });
+  }
   const candidates = [];
   for (const candidate of all.slice(0, maxCandidates)) {
     if (signal?.aborted) throw new DOMException('人物准备已取消', 'AbortError');
-    const inferred = inferredRaw.find((item) => text(item?.id || item?.name || item?.characterName) === candidate.id || text(item?.name || item?.characterName) === candidate.name);
+    const inferred = candidate.role === 'player' ? candidate.extracted : inferredRaw.find((item) => text(item?.id || item?.name || item?.characterName) === candidate.id || text(item?.name || item?.characterName) === candidate.name);
     const aiParts = inferred ? aiCandidateSources(inferred) : { explicit: {}, inferred: {} };
     const [mvuResult, databaseResult] = await Promise.all([
       readSource(mvu, candidate, context, 'mvu_dynamic'),
@@ -342,13 +351,17 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
     const completionFn = aiSource && typeof aiSource.completeCandidate === 'function' ? aiSource.completeCandidate.bind(aiSource) : null;
     if (completionFn) {
       try {
-        const completed = await completionFn({ candidate: clone(merged.fields), knownFields: clone(merged.fields), context: clone(context), signal });
+        const completed = await completionFn({ candidate: clone(merged.fields), knownFields: clone(merged.fields), context: clone(context), signal, side: candidate.role || 'enemy' });
         const completedData = completed?.data ?? completed?.candidate ?? completed?.fields ?? completed;
         if (completedData && typeof completedData === 'object') {
           merged = mergeCharacterCandidate(merged, { mvu: mvuResult.value, database: databaseResult.value, inference: aiParts.inferred, aiExtracted, aiCompleted: completedData });
+          // A complete profile is one coherent definition, not another bag of
+          // leaves appended to stale aliases and observation wrappers.
+          if (strictProfiles) merged.fields = normalizeCombatProfile(redactCharacterSource(completedData), { id: candidate.id, side: candidate.role || 'enemy' });
           completionStatus = { status: 'matched' };
         } else completionStatus = { status: 'missing' };
       } catch (error) {
+        if (strictProfiles && error.partialProfile) merged.fields = normalizeCombatProfile(redactCharacterSource(error.partialProfile), { id: candidate.id, side: candidate.role || 'enemy' });
         completionStatus = { status: 'read_failed', error: String(error?.message || error) };
       }
     }
@@ -370,12 +383,21 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
       }
     }
     merged.sourceStatus = { mvu_dynamic: { status: mvuResult.status, ...(mvuResult.error ? { error: mvuResult.error } : {}), ...(mvuResult.metadata || {}) }, database: { status: databaseResult.status, ...(databaseResult.error ? { error: databaseResult.error } : {}), ...(databaseResult.metadata || {}) }, ai_extract: inferred ? { status: 'matched' } : { status: aiSource ? 'missing' : 'not_configured' }, ai_complete: completionStatus, ai_fill: fillStatus };
+    merged.role = candidate.role || 'enemy';
+    if (strictProfiles) {
+      merged.fields = normalizeCombatProfile(merged.fields, { id: candidate.id, side: merged.role });
+      merged.name = merged.fields.name;
+      merged.validationIssues = combatProfileIssues(merged.fields);
+    }
     candidates.push(merged);
   }
   return {
     schema: CHARACTER_PREPARATION_SCHEMA,
     version: 1,
     status: 'awaiting_confirmation',
+    requiresCompleteProfiles: strictProfiles,
+    requiresPlayer: includePlayer,
+    ...(strictProfiles ? { profileSchema: COMBAT_PROFILE_SCHEMA } : {}),
     createdAt: new Date().toISOString(),
     scope: clone(context.scope || null),
     candidates,
@@ -394,10 +416,16 @@ export function confirmEnemyCandidates(preparation, edits = {}, { removeIds = []
   assertPreparation(preparation);
   const patchMap = normalizeEdits(edits);
   const removed = new Set(removeIds.map(String));
+  if (preparation.requiresPlayer && preparation.candidates.some((candidate) => candidate.role === 'player' && removed.has(candidate.id))) throw new Error('不能移除主角资料');
   const candidates = preparation.candidates.filter((candidate) => !removed.has(String(candidate.id))).map((candidate) => {
     const patch = patchMap[candidate.id] || {};
-    const fields = redactCharacterSource(clone(candidate.fields));
+    let fields = redactCharacterSource(clone(candidate.fields));
     for (const [path, value] of leaves(patch)) setPath(fields, path, value);
+    if (preparation.requiresCompleteProfiles) {
+      fields = normalizeCombatProfile(fields, { id: candidate.id, side: candidate.role || 'enemy' });
+      const issues = combatProfileIssues(fields);
+      if (issues.length) throw new Error(`${fields.name || '人物'}资料不完整：${issues.join('；')}`);
+    }
     const id = text(fields.id || candidate.id);
     const name = text(fields.name || candidate.name || id);
     if (!id || requireName && !name) throw new Error(`敌方人物 ${candidate.id} 缺少 id/name`);
@@ -408,7 +436,8 @@ export function confirmEnemyCandidates(preparation, edits = {}, { removeIds = []
     provenance.name = { source: 'user_confirmed', priority: sourcePriority('user_confirmed') };
     return { ...candidate, id, name, fields, provenance, confirmation: { status: 'confirmed', required: true, confirmedAt: new Date().toISOString() } };
   });
-  if (!candidates.length) throw new Error('确认后没有可用的敌方人物');
+  if (!candidates.some((candidate) => candidate.role !== 'player')) throw new Error('确认后没有可用的敌方人物');
+  if (preparation.requiresPlayer && candidates.filter((candidate) => candidate.role === 'player').length !== 1) throw new Error('请先补全并确认主角资料');
   if (new Set(candidates.map((candidate) => candidate.id)).size !== candidates.length) throw new Error('敌方人物 id 重复');
   const confirmedAt = new Date().toISOString();
   return { ...clone(preparation), status: 'confirmed', confirmedAt, candidates };
@@ -428,7 +457,7 @@ export function assertConfirmedEnemyPreparation(preparation) {
 /** Return only the confirmed, merged actor records suitable for battle state. */
 export function confirmedEnemyActors(preparation) {
   assertConfirmedEnemyPreparation(preparation);
-  return preparation.candidates.map((candidate) => clone(candidate.fields));
+  return preparation.candidates.filter((candidate) => candidate.role !== 'player').map((candidate) => clone(candidate.fields));
 }
 
 /** Fail-closed projection used by a controller before building an adjudication request. */
@@ -443,6 +472,19 @@ export function applyConfirmedEnemies(state, preparation) {
   if (preparation.scope) {
     if (String(preparation.scope.chatId) !== String(state.scope?.chatId) || String(preparation.scope.branchId) !== String(state.scope?.branchId)) throw new Error('人物准备作用域与当前聊天/分支不一致');
   }
+  if (preparation.requiresCompleteProfiles) {
+    const compiled = preparation.candidates.map((candidate) => compileCombatProfile(candidate.fields, candidate.role || 'enemy'));
+    const player = compiled.find((item) => preparation.candidates.find((candidate) => candidate.id === item.actor.id)?.role === 'player')?.actor || clone(state.actors.player);
+    if (preparation.candidates.some((candidate) => candidate.role !== 'player' && candidate.id === player.id)) throw new Error('敌方人物 id 与主角重复');
+    const enemies = compiled.filter((item) => item.actor.id !== player.id).map((item) => item.actor);
+    if (new Set([player.id, ...enemies.map((enemy) => enemy.id)]).size !== enemies.length + 1) throw new Error('敌方人物 id 与主角重复');
+    const registrySnapshot = [...state.registrySnapshot.filter((entry) => !entry.characterProfileId), ...compiled.map((item) => item.entry)];
+    new TechniqueRegistry(registrySnapshot);
+    const ids = new Set([...compiled.map((item) => item.actor.id), ...state.actors.enemies.map((enemy) => enemy.id)]);
+    const resourceRules = [...(state.resourceRules || []).filter((rule) => !ids.has(rule.actorId)), ...compiled.flatMap((item) => item.resourceRules)];
+    const positions = Object.fromEntries([player, ...enemies].filter((actor) => actor.visibleInfo?.position).map((actor) => [actor.id, actor.visibleInfo.position]));
+    return { ...clone(state), actors: { player, enemies }, registrySnapshot, resourceRules, semanticState: { ...clone(state.semanticState), positions }, characterPreparation: clone(preparation), version: Number(state.version || 0) + 1, updatedAt: new Date().toISOString() };
+  }
   const enemies = confirmedEnemyActors(preparation);
   if (enemies.some((enemy) => enemy.id === state.actors?.player?.id)) throw new Error('敌方人物 id 与主角重复');
   return { ...clone(state), actors: { ...clone(state.actors), enemies }, characterPreparation: clone(preparation), version: Number(state.version || 0) + 1, updatedAt: new Date().toISOString() };
@@ -455,9 +497,13 @@ export function buildCharacterConfirmationPanel(preparation) {
     schema: CHARACTER_PREPARATION_SCHEMA,
     status: preparation.status,
     scope: clone(preparation.scope),
+    requiresCompleteProfiles: preparation.requiresCompleteProfiles,
+    requiresPlayer: preparation.requiresPlayer,
     candidates: preparation.candidates.map((candidate) => ({
       id: candidate.id,
       name: candidate.name,
+      role: candidate.role || 'enemy',
+      validationIssues: clone(candidate.validationIssues || []),
       fields: clone(candidate.fields),
       editableFields: Object.keys(candidate.fields),
       provenance: clone(candidate.provenance),

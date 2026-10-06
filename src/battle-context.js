@@ -27,6 +27,8 @@ function publicTechnique(item, source, status = 'known') {
     name,
     description: text(item.description || item.originalDefinition || item.definition || item.summary || '已识别名称；完整效果尚未公开。'),
     mechanics: Array.isArray(item.mechanics) ? clone(item.mechanics) : [],
+    cost: text(item.cost), range: text(item.range), cooldown: text(item.cooldown), counterplay: text(item.counterplay),
+    availability: clone(item.availability || {}), triggeredState: clone(item.triggeredState || []), ruleRefs: clone(item.ruleRefs || []),
     status: text(item.status || status) || status,
     source,
     visibility: 'public',
@@ -48,7 +50,7 @@ export function extractEnemyTechniques(enemy = {}, state = {}) {
     result.push(technique);
   };
   for (const key of TECHNIQUE_KEYS) {
-    const value = enemy[key] ?? enemy.visibleInfo?.[key];
+    const value = enemy.visibleInfo?.[key] ?? enemy[key];
     const fromVisibleInfo = enemy.visibleInfo && Object.hasOwn(enemy.visibleInfo, key);
     for (const item of asItems(value)) {
       if (key === 'techniques' && !fromVisibleInfo && item && typeof item === 'object' && item.exposed !== true && !['public', 'player'].includes(text(item.visibility).toLowerCase())) continue;

@@ -87,23 +87,16 @@
             </p>
           </div>
 
-          <!-- 规制出处 -->
-          <div class="xy-grid-cell">
-            <span class="xy-cell-title">
-              <span class="xy-cell-icon">💠</span>
-              <span>规制出处</span>
-            </span>
-            <div class="xy-rulerefs-tags">
-              <span v-for="r in ruleRefs" :key="r" class="xy-rule-chip">{{ r }}</span>
-              <span v-if="!ruleRefs.length" class="xy-no-rules">未注明规则出处</span>
-            </div>
+          <div v-for="detail in combatDetails" :key="detail.label" class="xy-grid-cell">
+            <span class="xy-cell-title">{{ detail.label }}</span>
+            <p>{{ detail.value }}</p>
           </div>
         </div>
 
         <!-- 底部行动区 -->
         <div class="xy-modal-footer">
           <span class="xy-footer-hint">
-            {{ isPlayer ? '功法源于结构化 Registry · 遵循语义裁定机枢' : '敌方内部资源与 Hidden 战术已被天道法则严格屏蔽' }}
+            {{ isPlayer ? '按已确认的功法设定裁定本轮行动' : '这里只展示已公开的招式资料' }}
           </span>
 
           <div class="xy-footer-btns">
@@ -167,7 +160,13 @@ const rawDefinition = computed(() => {
 
 const mechanics = computed(() => props.termData?.mechanics || []);
 const triggeredStates = computed(() => props.termData?.triggeredState || []);
-const ruleRefs = computed(() => props.termData?.ruleRefs || []);
+const combatDetails = computed(() => [
+  { label: '施展消耗', value: props.termData?.cost },
+  { label: '作用范围', value: props.termData?.range },
+  { label: '使用条件', value: props.termData?.availability?.description },
+  { label: '冷却间隔', value: props.termData?.cooldown },
+  { label: '应对与打断', value: props.termData?.counterplay }
+].filter((item) => typeof item.value === 'string' && item.value));
 
 const isAvailable = computed(() => {
   if (!props.isPlayer) return true;

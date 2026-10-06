@@ -145,7 +145,7 @@ const playerEffects = computed(() => splitEff.value.player || []);
 const enemyEffects = computed(() => splitEff.value.enemy || []);
 
 // 敌方列表与当前敌人
-const enemies = computed(() => props.state.actors?.enemies || props.view.enemies || []);
+const enemies = computed(() => props.view.enemies || []);
 
 const currentEnemy = computed(() => {
   if (!enemies.value.length) return null;
@@ -189,7 +189,7 @@ const playerTechniques = computed(() => {
 // 敌方招式列表计算
 const enemyTechniques = computed(() => {
   if (!currentEnemy.value) return [];
-  return extractEnemyTechniques(currentEnemy.value, props.state);
+  return extractEnemyTechniques(currentEnemy.value, props.view);
 });
 
 // 下拉框选项

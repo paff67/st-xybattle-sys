@@ -8,6 +8,7 @@ import { parse, compileScript } from '@vue/compiler-sfc';
 import { BattleController } from '../src/battle-controller.js';
 import { prepareEnemyCandidates, buildCharacterConfirmationPanel } from '../src/character-preparation.js';
 import { characterSections, editCharacterField } from '../src/character-presentation.js';
+import { fullCombatProfile } from './fixtures/combat-profile.js';
 
 // Compile the actual component, then exercise DOM events without a browser or model API.
 const dom = new JSDOM('<!doctype html><html><body></body></html>');
@@ -15,12 +16,16 @@ for (const key of ['window', 'document', 'Element', 'HTMLElement', 'SVGElement',
 const { createApp, nextTick, reactive } = await import('vue');
 const source = await readFile(new URL('../src/ui/components/CharacterConfirmationPanel.vue', import.meta.url), 'utf8');
 const { descriptor } = parse(source);
+const treeSource = await readFile(new URL('../src/ui/components/CharacterFieldTree.vue', import.meta.url), 'utf8');
+const treeCode = compileScript(parse(treeSource).descriptor, { id: 'character-tree-test', inlineTemplate: true }).content;
 const compiled = compileScript(descriptor, { id: 'character-confirmation-test', inlineTemplate: true }).content;
 await mkdir(new URL('../output/', import.meta.url), { recursive: true });
 const compiledPath = new URL(`../output/character-confirmation-${process.pid}.mjs`, import.meta.url);
-await writeFile(compiledPath, compiled.replace('../../character-presentation.js', pathToFileURL(resolve('src/character-presentation.js')).href));
+const treePath = new URL(`../output/character-tree-${process.pid}.mjs`, import.meta.url);
+await writeFile(treePath, treeCode);
+await writeFile(compiledPath, compiled.replace('./CharacterFieldTree.vue', treePath.href).replace('../../combat-profile.js', pathToFileURL(resolve('src/combat-profile.js')).href).replace('../../character-presentation.js', pathToFileURL(resolve('src/character-presentation.js')).href));
 const { default: Panel } = await import(compiledPath.href);
-after(async () => { await unlink(compiledPath); dom.window.close(); });
+after(async () => { await unlink(compiledPath); await unlink(treePath); dom.window.close(); });
 
 const scope = { chatId: 'confirmation-ui', branchId: 'main' };
 async function fixture(count = 1) {
@@ -71,7 +76,8 @@ test('confirmation emits complete reviewed data and controller can enter the nex
   const content = root.querySelector('.xy-character-candidate__sections').textContent;
   assert.match(content, /可见情报 · 姿态|姿态/);
   assert.match(content, /可用/);
-  assert.match(content, /未知字段也不能丢失/);
+  assert.doesNotMatch(content, /未知字段也不能丢失|内部编号|enemy-0/);
+  assert.ok([...root.querySelectorAll("[data-section], [data-field-group]")].every((details) => !details.open));
   assert.match(content, /长说明/);
   assert.doesNotMatch(content, /visibleInfo|availability|customData|reservePlan/);
   await acknowledge(root);
@@ -157,4 +163,25 @@ test('presentation preserves nested arrays, long values, empty and unknown field
   assert.equal(edited.techniques[0].enabled, true);
   assert.ok(Array.isArray(edited.techniques));
   assert.deepEqual(fields, before);
+});
+
+test('complete profile review hides internal fields and requires both protagonist and enemy acknowledgments', async (t) => {
+  const preparation = await prepareEnemyCandidates({ scope, playerId: 'player', enemies: [{ id: 'e', name: '厉沧海' }] }, {
+    includePlayer: true, requireProfiles: true,
+    inference: { completeCandidate: async ({ side }) => fullCombatProfile(side === 'player' ? '许新毅' : '厉沧海') }
+  });
+  const { root, button } = mount(t, preparation);
+  assert.equal(root.querySelector('[data-candidate-id="player"] [data-action="remove"]'), null);
+  assert.ok(root.querySelector('[data-field-group="techniques.0"]'));
+  assert.equal(root.querySelector('[data-field-group="techniques.0"]').open, false);
+  const visibleFields = [...root.querySelectorAll('.xy-character-candidate__sections')].map((section) => section.textContent).join('');
+  assert.doesNotMatch(visibleFields, /内部编号|profileSchema|ruleRefs|combat-profile/);
+  assert.match(visibleFields, /消耗10点真气/);
+  await acknowledge(root, 0);
+  assert.equal(button().disabled, true);
+  await acknowledge(root, 1);
+  assert.equal(button().disabled, false);
+  await inputValue(root.querySelector('[data-candidate-id="e"] [data-field-path="techniques.0.originalDefinition"] textarea'), '');
+  assert.equal(button().disabled, true);
+  assert.match(root.textContent, /平川断澜缺少完整定义/);
 });

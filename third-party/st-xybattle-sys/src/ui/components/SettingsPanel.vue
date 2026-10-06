@@ -152,7 +152,11 @@
       </label>
 
       <label class="xy-form-field xy-mt-3">
-        <span class="xy-field-label">候选人物补全提示词（AI 只生成待确认的完整人物草稿）</span>
+        <span class="xy-field-label">人物档案生成输出上限（独立于每轮裁定，默认 8000）</span>
+        <input v-model.number="form.characterMaxOutput" type="number" min="1024" step="1024" class="xy-input-text" />
+      </label>
+      <label class="xy-form-field xy-mt-3">
+        <span class="xy-field-label">候选人物补全提示词（固定境界、功法、招式、资源与战斗偏好；确认后生效）</span>
         <textarea v-model="form.characterCompletionPrompt" rows="12" class="xy-input-textarea xy-prompt-editor"></textarea>
       </label>
 
@@ -212,6 +216,7 @@ const form = reactive({
   autoNarrative: true,
   originalPrompt: '',
   characterCompletionPrompt: '',
+  characterMaxOutput: 8000,
   adjudicationPrompt: ''
 });
 
@@ -222,6 +227,7 @@ watch(() => props.settings, (s) => {
   form.autoNarrative = !!s.autoNarrative;
   form.originalPrompt = s.originalPrompt || '';
   form.characterCompletionPrompt = s.characterCompletionPrompt || '';
+  form.characterMaxOutput = s.characterMaxOutput || 8000;
   form.adjudicationPrompt = s.adjudicationPrompt || '';
 }, { immediate: true, deep: true });
 
@@ -232,6 +238,7 @@ function onSave() {
     autoNarrative: form.autoNarrative,
     originalPrompt: form.originalPrompt,
     characterCompletionPrompt: form.characterCompletionPrompt,
+    characterMaxOutput: form.characterMaxOutput,
     adjudicationPrompt: form.adjudicationPrompt
   });
 }
