@@ -52,13 +52,13 @@
           <!-- 灵光通告 / 异常警示条 -->
           <Transition name="xy-notice-slide">
             <div 
-              v-if="notification || state.lastError" 
-              class="xy-notice-banner" 
+              v-if="notification || state.lastError"
+              class="xy-notice-banner"
               :class="{ 'is-error': !!state.lastError }"
               role="status"
             >
               <span class="xy-notice-icon">{{ state.lastError ? '⚠️' : '✨' }}</span>
-              <span class="xy-notice-text">{{ notification || state.lastError }}</span>
+              <span class="xy-notice-text">{{ notification || state.lastError || state.hostSync?.reason }}</span>
               <button class="xy-notice-dismiss" @click="notification = ''; state.lastError = ''">✕</button>
             </div>
           </Transition>

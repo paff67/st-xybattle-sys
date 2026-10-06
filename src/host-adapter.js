@@ -6,7 +6,16 @@ const clone = (value) => value == null ? value : JSON.parse(JSON.stringify(value
 const integer = (value) => value != null && value !== '' && Number.isInteger(Number(value)) && Number(value) >= 0 ? Number(value) : null;
 const assistant = (message) => !!message && (message.role === 'assistant' || (message.role == null && message.is_user === false && message.extra?.type !== 'narrator'));
 const scopeFields = ['chatId', 'branchId', 'messageId', 'swipeId', 'messageUid'];
-const matches = (expected, current, lease = false) => !!expected && !!current && scopeFields.every((key) => expected[key] == null || String(expected[key]) === String(current[key])) && (!lease || expected.scopeEpoch == null || expected.scopeEpoch === current.scopeEpoch);
+const matches = (expected, current, lease = false) => {
+  if (!expected || !current) return false;
+  const stableAnchor = expected.messageUid != null && current.messageUid != null && String(expected.messageUid) === String(current.messageUid);
+  const sameFields = scopeFields.every((key) => {
+    if (expected[key] == null) return true;
+    if (stableAnchor && (key === 'messageId' || key === 'branchId')) return true;
+    return String(expected[key]) === String(current[key]);
+  });
+  return sameFields && (!lease || expected.scopeEpoch == null || expected.scopeEpoch === current.scopeEpoch);
+};
 const persistedScope = (scope) => Object.fromEntries(scopeFields.map((key) => [key, scope[key]]));
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -43,11 +52,18 @@ export class BattleHostAdapter {
   }
   storedAnchorId(context, chatId) {
     if (!Array.isArray(context.chat)) return null;
+    const candidates = [];
     for (let index = context.chat.length - 1; index >= 0; index -= 1) {
-      const raw = context.chat[index], store = raw?.swipe_info?.[raw.swipe_id ?? 0]?.battle_v2 || raw?.extra?.battle_v2;
-      if (assistant(raw) && store?.schema === 'battle_v2_host_store' && store.scope?.chatId === chatId && store.scope?.messageId === index && store.scope?.swipeId === (raw.swipe_id ?? 0)) return index;
+      const raw = context.chat[index], swipeId = raw?.swipe_id ?? 0;
+      const info = raw?.swipe_info?.[swipeId] || raw?.swipes_info?.[swipeId] || raw?.extra || {};
+      const store = info?.battle_v2;
+      if (!assistant(raw) || store?.schema !== 'battle_v2_host_store' || String(store.scope?.chatId) !== String(chatId) || String(store.scope?.swipeId) !== String(swipeId)) continue;
+      const exactIndex = String(store.scope?.messageId) === String(index) ? 1 : 0;
+      const version = Number(store.version ?? store.state?.version ?? 0);
+      candidates.push({ index, exactIndex, version: Number.isFinite(version) ? version : 0, updatedAt: Date.parse(store.state?.updatedAt || '') || 0 });
     }
-    return null;
+    candidates.sort((a, b) => b.exactIndex - a.exactIndex || b.version - a.version || b.updatedAt - a.updatedAt || b.index - a.index);
+    return candidates[0]?.index ?? null;
   }
   readMessageSync(id, context = this.context()) {
     const helper = this.helper();
@@ -80,6 +96,15 @@ export class BattleHostAdapter {
     }
     let message;
     try { message = id == null ? null : this.readMessageSync(id, context); } catch { message = null; }
+    // A deleted anchor must not pin the adapter to a dead array index. Re-scan
+    // surviving assistant messages for the latest durable battle checkpoint.
+    if (id != null && !assistant(message)) {
+      this.anchor = null;
+      id = this.storedAnchorId(context, chatId);
+      recovered = id != null;
+      if (id == null) id = this.latestAssistantId(context);
+      try { message = id == null ? null : this.readMessageSync(id, context); } catch { message = null; }
+    }
     const raw = context.chat?.[id] || (explicitId === id ? context.message : null);
     if (!chatId || !assistant(message) || integer(message?.swipe_id) == null) {
       this.publishScope({ chatId: chatId || 'default-chat', branchId: 'main', messageId: null, swipeId: null, messageUid: null, available: false, writable: false });
@@ -292,7 +317,7 @@ export class BattleHostAdapter {
         this.scope();
       });
       on(events.USER_MESSAGE_RENDERED || 'USER_MESSAGE_RENDERED', (messageId) => { this.displayFolding?.apply?.(); this.verifyRenderedUserMessage(messageId); });
-      for (const name of ['CHARACTER_MESSAGE_RENDERED', 'MESSAGE_RENDERED']) on(events[name] || name, () => this.displayFolding?.apply?.());
+      for (const name of ['CHARACTER_MESSAGE_RENDERED', 'MESSAGE_RENDERED']) on(events[name] || name, () => { this.displayFolding?.apply?.(); this.scope(); });
     }
     this.displayFolding?.observe?.();
     if (this.windowRef?.addEventListener) { const handler = () => this.clearScenePacket(); this.windowRef.addEventListener('pagehide', handler); this.disposers.push(() => this.windowRef.removeEventListener?.('pagehide', handler)); }

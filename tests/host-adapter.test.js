@@ -58,6 +58,69 @@ test('scope uses ST chat/message/swipe and stays anchored when generation append
   host.selectSwipe(1); const next = host.adapter.scope(); assert.equal(next.swipeId, 1); assert.equal(next.messageUid, first.messageUid); assert.ok(next.scopeEpoch > first.scopeEpoch);
 });
 
+test('deleting all assistant messages clears the branch battle snapshot and waits for a new anchor', async () => {
+  const host = fixture(), storage = controllerStorage(), controller = await attachedController(host, { storage });
+  try {
+    controller.start();
+    controller.state.actors.enemies = [{ id: 'old-enemy', name: '旧敌手' }];
+    controller.state.semanticState.statuses = ['xianshi:triggered'];
+    controller.emit();
+    host.context().chat.length = 0;
+    host.context().chat.push({ is_user: true, mes: '只剩用户消息' });
+    await host.events.emit('MESSAGE_DELETED', 0);
+    await controller.ready;
+    await controller.checkpoints;
+    assert.equal(host.adapter.scope().available, false);
+    assert.equal(controller.state.phase, 'idle');
+    assert.deepEqual(controller.state.actors.enemies, []);
+    assert.deepEqual(controller.state.semanticState.statuses, []);
+    assert.equal(controller.state.history.length, 0);
+    assert.equal(controller.state.hostSync.status, 'unavailable');
+    assert.equal(controller.state.hostSync.reason, null);
+    assert.deepEqual(controller.storage.readSession().actors.enemies, []);
+  } finally { controller.dispose(); }
+});
+
+test('deleted anchor rolls back to the surviving assistant checkpoint instead of local stale state', async () => {
+  const host = fixture(), storage = controllerStorage(), controller = await attachedController(host, { storage });
+  try {
+    controller.start();
+    controller.state.actors.enemies = [{ id: 'checkpoint-enemy', name: '检查点敌手' }];
+    controller.state.semanticState.statuses = ['checkpoint:active'];
+    controller.emit();
+    await controller.checkpoints;
+    host.context().chat.push({ is_user: true, mes: '后续用户消息' }, rawAssistant('后续正文'));
+    const deleted = host.context().chat.pop();
+    assert.equal(deleted.is_user, false);
+    await host.events.emit('MESSAGE_DELETED', 2);
+    await controller.ready;
+    await controller.checkpoints;
+    assert.equal(host.adapter.scope().available, true);
+    assert.equal(controller.state.phase, 'awaiting_player');
+    assert.deepEqual(controller.state.actors.enemies, [{ id: 'checkpoint-enemy', name: '检查点敌手' }]);
+    assert.deepEqual(controller.state.semanticState.statuses, ['checkpoint:active']);
+  } finally { controller.dispose(); }
+});
+
+test('surviving checkpoint follows its stable message uid when earlier messages are deleted', async () => {
+  const host = fixture(), storage = controllerStorage(), controller = await attachedController(host, { storage });
+  try {
+    controller.start();
+    controller.state.actors.enemies = [{ id: 'uid-enemy', name: 'UID 敌手' }];
+    controller.emit();
+    await controller.checkpoints;
+    const original = host.context().chat[0];
+    host.context().chat.unshift({ is_user: true, mes: '后来插入的用户消息' });
+    await host.events.emit('MESSAGE_DELETED', 0);
+    await controller.ready;
+    await controller.checkpoints;
+    assert.equal(host.adapter.scope().messageId, 1);
+    assert.equal(controller.state.phase, 'awaiting_player');
+    assert.equal(controller.state.actors.enemies[0].id, 'uid-enemy');
+    assert.equal(host.adapter.scope().messageUid, original.extra.battle_v2_message_uuid);
+  } finally { controller.dispose(); }
+});
+
 test('helper persistence resends all swipes and preserves unrelated fields and MVU data', async () => {
   const host = fixture(), scope = host.adapter.scope(), item = data(scope), before = clone(host.context().chat[0]);
   const result = await host.adapter.persistReceipt(item.receipt, item.state, scope);

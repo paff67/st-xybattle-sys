@@ -6026,7 +6026,7 @@ var ap = {
 			])])
 		]));
 	}
-}, [["__scopeId", "data-v-93d72bd6"]]), Dp = {
+}, [["__scopeId", "data-v-c7aecbcf"]]), Dp = {
 	class: "xy-character-confirmation",
 	"data-testid": "character-confirmation-panel",
 	"aria-labelledby": "character-confirmation-title"
@@ -6293,7 +6293,7 @@ var ap = {
 			}, "读取候选人物", 8, Mp)]))
 		]));
 	}
-}, [["__scopeId", "data-v-a2f99834"]]);
+}, [["__scopeId", "data-v-d55ef351"]]);
 //#endregion
 //#region src/utils.js
 function tm(e, t) {
@@ -8191,7 +8191,7 @@ var sh = class {
 						role: "status"
 					}, [
 						H("span", uh, A(d.value.lastError ? "⚠️" : "✨"), 1),
-						H("span", dh, A(a.value || d.value.lastError), 1),
+						H("span", dh, A(a.value || d.value.lastError || d.value.hostSync?.reason), 1),
 						H("button", {
 							class: "xy-notice-dismiss",
 							onClick: n[1] ||= (e) => {
@@ -8560,7 +8560,10 @@ var Eh = class e {
 		return this.replaceLogs(t);
 	}
 	clear() {
-		for (let e of ["session", "logs"]) this.storage?.removeItem(this.key(e));
+		for (let e of ["session", "logs"]) {
+			let t = this.key(e);
+			typeof this.storage?.removeItem == "function" ? this.storage.removeItem(t) : this.storage?.setItem && this.storage.setItem(t, "");
+		}
 		this.memory.clear();
 	}
 	read(e, t) {
@@ -9251,16 +9254,34 @@ var bg = class {
 	async switchScope(e, t = !0) {
 		let n = this.storage.readSession();
 		t && (this.cancelPending("聊天/分支切换"), this.characterPreparation = null, this.characterPreparationRequest += 1, this.hostAdapter?.clearScenePacket?.());
-		let r = this.state.scope;
-		(r.chatId !== String(e.chatId) || r.branchId !== String(e.branchId)) && (this.characterPreparation = null, this.characterPreparationRequest += 1, this.storage = this.storage.withScope(e), n = this.storage.readSession(), this.state = n ? Fm(n) : Am({
+		let r = String(e?.chatId || this.state.scope.chatId), i = String(e?.branchId || "main");
+		if (e?.available === !1) {
+			this.cancelPending("当前聊天已没有可用的助手消息锚点"), this.characterPreparation = null, this.characterPreparationRequest += 1, this.hostAdapter?.clearScenePacket?.(), this.storage = this.storage.withScope({
+				chatId: r,
+				branchId: i
+			}), this.storage.clear(), this.logs = [], this.registry = new zf(this.initialOptions.registrySnapshot), this.state = Am({
+				...this.initialOptions,
+				chatId: r,
+				branchId: i
+			}), this.state.hostSync = {
+				status: "unavailable",
+				reason: null
+			}, this.emit({ persistHost: !1 });
+			return;
+		}
+		let a = this.state.scope;
+		(a.chatId !== r || a.branchId !== i) && (this.characterPreparation = null, this.characterPreparationRequest += 1, this.storage = this.storage.withScope({
+			chatId: r,
+			branchId: i
+		}), n = this.storage.readSession(), this.state = n ? Fm(n) : Am({
 			...this.initialOptions,
-			chatId: e.chatId,
-			branchId: e.branchId
+			chatId: r,
+			branchId: i
 		}), this.logs = this.storage.readLogs());
-		let i = this.epoch, a = await this.hostAdapter?.loadSession?.(e);
-		if (i === this.epoch) {
-			if (a?.loaded && a.state) {
-				let e = Fm(a.state);
+		let o = this.epoch, s = await this.hostAdapter?.loadSession?.(e);
+		if (o === this.epoch) {
+			if (s?.loaded && s.state) {
+				let e = Fm(s.state);
 				e.scope.chatId === this.state.scope.chatId && e.scope.branchId === this.state.scope.branchId && (!n || e.sessionId === this.state.sessionId && e.version >= this.state.version || Date.parse(e.updatedAt) > Date.parse(this.state.updatedAt) ? (this.state = e, this.storage.writeSession(e)) : this.log({
 					kind: "host_local_ahead",
 					capability: { reason: "本地checkpoint比宿主新，将重试持久化；不回退回合" }
@@ -9269,9 +9290,10 @@ var bg = class {
 			this.registry = new zf(this.state.registrySnapshot), this.emit();
 		}
 	}
-	emit() {
-		if (this.storage.writeSession(X(this.state, this.secrets())), this.onChange(this.state, zm(this.state)), this.hostAdapter) {
+	emit({ persistHost: e = !0 } = {}) {
+		if (this.storage.writeSession(X(this.state, this.secrets())), this.onChange(this.state, zm(this.state)), this.hostAdapter && e) {
 			let e = Y(this.state), t = Y(this.hostAdapter.scope?.() || this.state.scope), n = this.epoch;
+			if (t.available === !1) return;
 			this.checkpoints = this.checkpoints.catch(() => {}).then(async () => {
 				if (n !== this.epoch) return {
 					persisted: !1,
@@ -9330,6 +9352,7 @@ var bg = class {
 	async prepareCharacters({ context: e, mvu: t, database: n, inference: r } = {}) {
 		if (await this.ready, this.assertIdleRequest(), !["idle", "ended"].includes(this.state.phase)) throw Error("只能在战斗开始前准备敌方人物");
 		let i = Y(this.hostAdapter?.scope?.() || this.state.scope);
+		if (i.available === !1) throw Error("当前聊天没有可用的助手消息锚点；请先生成新的正文消息。");
 		if (i.chatId !== this.state.scope.chatId || i.branchId !== this.state.scope.branchId) throw Error("当前聊天分支已改变");
 		let a = this.hostAdapter?.context?.() || {}, o = Array.isArray(a.chat) ? a.chat.slice(-20).map((e) => ({
 			role: e.role || (e.is_user ? "user" : "assistant"),
@@ -9364,7 +9387,8 @@ var bg = class {
 		this.characterPreparationRequest += 1, this.characterPreparation = null;
 	}
 	start() {
-		return this.assertIdleRequest(), this.state = Nm(this.state), this.emit(), this.state;
+		if (this.assertIdleRequest(), this.hostAdapter?.scope?.()?.available === !1) throw Error("当前聊天没有可用的助手消息锚点；请先生成新的正文消息。");
+		return this.state = Nm(this.state), this.emit(), this.state;
 	}
 	cancelPending() {
 		this.epoch += 1, this.inFlight?.abort(), this.inFlight = null, this.bridgeQueuedAction = null;
@@ -10177,7 +10201,11 @@ var qg = class {
 	"messageId",
 	"swipeId",
 	"messageUid"
-], Zg = (e, t, n = !1) => !!e && !!t && Xg.every((n) => e[n] == null || String(e[n]) === String(t[n])) && (!n || e.scopeEpoch == null || e.scopeEpoch === t.scopeEpoch), Qg = (e) => Object.fromEntries(Xg.map((t) => [t, e[t]]));
+], Zg = (e, t, n = !1) => {
+	if (!e || !t) return !1;
+	let r = e.messageUid != null && t.messageUid != null && String(e.messageUid) === String(t.messageUid);
+	return Xg.every((n) => e[n] == null || r && (n === "messageId" || n === "branchId") ? !0 : String(e[n]) === String(t[n])) && (!n || e.scopeEpoch == null || e.scopeEpoch === t.scopeEpoch);
+}, Qg = (e) => Object.fromEntries(Xg.map((t) => [t, e[t]]));
 function $g(e) {
 	return Array.isArray(e) ? `[${e.map($g).join(",")}]` : e && typeof e == "object" ? `{${Object.keys(e).sort().map((t) => `${JSON.stringify(t)}:${$g(e[t])}`).join(",")}}` : JSON.stringify(e);
 }
@@ -10228,11 +10256,19 @@ var n_ = class {
 	}
 	storedAnchorId(e, t) {
 		if (!Array.isArray(e.chat)) return null;
-		for (let n = e.chat.length - 1; n >= 0; --n) {
-			let r = e.chat[n], i = r?.swipe_info?.[r.swipe_id ?? 0]?.battle_v2 || r?.extra?.battle_v2;
-			if (Yg(r) && i?.schema === "battle_v2_host_store" && i.scope?.chatId === t && i.scope?.messageId === n && i.scope?.swipeId === (r.swipe_id ?? 0)) return n;
+		let n = [];
+		for (let r = e.chat.length - 1; r >= 0; --r) {
+			let i = e.chat[r], a = i?.swipe_id ?? 0, o = (i?.swipe_info?.[a] || i?.swipes_info?.[a] || i?.extra || {})?.battle_v2;
+			if (!Yg(i) || o?.schema !== "battle_v2_host_store" || String(o.scope?.chatId) !== String(t) || String(o.scope?.swipeId) !== String(a)) continue;
+			let s = +(String(o.scope?.messageId) === String(r)), c = Number(o.version ?? o.state?.version ?? 0);
+			n.push({
+				index: r,
+				exactIndex: s,
+				version: Number.isFinite(c) ? c : 0,
+				updatedAt: Date.parse(o.state?.updatedAt || "") || 0
+			});
 		}
-		return null;
+		return n.sort((e, t) => t.exactIndex - e.exactIndex || t.version - e.version || t.updatedAt - e.updatedAt || t.index - e.index), n[0]?.index ?? null;
 	}
 	readMessageSync(e, t = this.context()) {
 		let n = this.helper();
@@ -10274,6 +10310,14 @@ var n_ = class {
 			a = r == null ? null : this.readMessageSync(r, e);
 		} catch {
 			a = null;
+		}
+		if (r != null && !Yg(a)) {
+			this.anchor = null, r = this.storedAnchorId(e, t), i = r != null, r ??= this.latestAssistantId(e);
+			try {
+				a = r == null ? null : this.readMessageSync(r, e);
+			} catch {
+				a = null;
+			}
 		}
 		let o = e.chat?.[r] || (n === r ? e.message : null);
 		if (!t || !Yg(a) || Jg(a?.swipe_id) == null) return this.publishScope({
@@ -10757,7 +10801,9 @@ var n_ = class {
 			i(r.USER_MESSAGE_RENDERED || "USER_MESSAGE_RENDERED", (e) => {
 				this.displayFolding?.apply?.(), this.verifyRenderedUserMessage(e);
 			});
-			for (let e of ["CHARACTER_MESSAGE_RENDERED", "MESSAGE_RENDERED"]) i(r[e] || e, () => this.displayFolding?.apply?.());
+			for (let e of ["CHARACTER_MESSAGE_RENDERED", "MESSAGE_RENDERED"]) i(r[e] || e, () => {
+				this.displayFolding?.apply?.(), this.scope();
+			});
 		}
 		if (this.displayFolding?.observe?.(), this.windowRef?.addEventListener) {
 			let e = () => this.clearScenePacket();
