@@ -56,7 +56,7 @@ export class BattleController {
     const recentMessages = Array.isArray(hostContext.chat) ? hostContext.chat.slice(-20).map((message) => ({ role: message.role || (message.is_user ? 'user' : 'assistant'), text: String(message.mes || message.message || '').slice(0, 4000) })) : [];
     const sourceContext = { ...clone(context || {}), scope, recentMessages, enemies: clone(context?.enemies || this.state.actors.enemies) };
     const configured = this.settings.adjudicator;
-    const ai = inference || (configured.mode === 'http' && configured.endpoint && configured.model ? createHttpCharacterInference({ endpoint: configured.endpoint, model: configured.model, apiKey: configured.apiKey || '' }) : null);
+    const ai = inference || (configured.mode === 'http' && configured.endpoint && configured.model ? createHttpCharacterInference({ endpoint: configured.endpoint, model: configured.model, apiKey: configured.apiKey || '', timeoutMs: configured.timeoutMs }) : null);
     const adapters = createReadOnlyCharacterSourceAdapters({ mvu, database, inference: ai });
     const epoch = this.epoch;
     const request = ++this.characterPreparationRequest;

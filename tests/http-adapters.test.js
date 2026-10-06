@@ -31,3 +31,14 @@ test('OpenAI-compatible v1 roots resolve to chat completions for adjudication an
   assert.equal(calls[0].url, 'https://api.example.test/v1/chat/completions');
   assert.equal(calls[0].body.model, 'judge');
 });
+
+test('character inference defaults to the configured long request timeout', async () => {
+  let timeoutSignal;
+  const fetchImpl = async (_url, options) => {
+    timeoutSignal = options.signal;
+    return new Response(JSON.stringify({ candidates: [] }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  const inference = createHttpCharacterInference({ endpoint: 'https://api.example.test/v1', model: 'judge', fetchImpl });
+  await inference.inferCandidates({});
+  assert.equal(timeoutSignal.aborted, false);
+});

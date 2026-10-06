@@ -9152,7 +9152,7 @@ async function _g(e) {
 	}
 	return n;
 }
-function vg({ endpoint: e, model: t, apiKey: n = "", fetchImpl: r = globalThis.fetch, timeoutMs: i = 3e4 } = {}) {
+function vg({ endpoint: e, model: t, apiKey: n = "", fetchImpl: r = globalThis.fetch, timeoutMs: i = 6e4 } = {}) {
 	if (!e || typeof r != "function") throw Error("人物 AI 需要 endpoint 与 fetch");
 	let a = async (a, o) => {
 		let s = new AbortController(), c = setTimeout(() => s.abort(), i);
@@ -9372,7 +9372,8 @@ var xg = class {
 			inference: r || (c.mode === "http" && c.endpoint && c.model ? vg({
 				endpoint: c.endpoint,
 				model: c.model,
-				apiKey: c.apiKey || ""
+				apiKey: c.apiKey || "",
+				timeoutMs: c.timeoutMs
 			}) : null)
 		}), u = this.epoch, d = ++this.characterPreparationRequest;
 		this.characterPreparation = null;

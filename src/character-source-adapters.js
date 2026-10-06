@@ -58,7 +58,7 @@ async function readResponse(response) {
   return content;
 }
 
-export function createHttpCharacterInference({ endpoint, model, apiKey = '', fetchImpl = globalThis.fetch, timeoutMs = 30000 } = {}) {
+export function createHttpCharacterInference({ endpoint, model, apiKey = '', fetchImpl = globalThis.fetch, timeoutMs = 60000 } = {}) {
   if (!endpoint || typeof fetchImpl !== 'function') throw new Error('人物 AI 需要 endpoint 与 fetch');
   const request = async (instruction, context) => {
     const controller = new AbortController();
