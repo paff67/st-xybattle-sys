@@ -425,6 +425,7 @@ test('a provider echo of a runtime API key is redacted before host message persi
     adjudicator: { async judge(request) { return { ...validResult(request), reason: `provider error detail echoed ${apiKey}` }; } },
     narrator: new MockNarrator()
   });
+  controller.state.characterPreparation = { status: 'confirmed', profileSchema: 'battle_combat_profile_v2' };
   controller.start();
   await controller.submit({ actionId: 'host-secret-redaction', label: '验证宿主落盘脱敏' });
 

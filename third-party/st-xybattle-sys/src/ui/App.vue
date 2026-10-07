@@ -279,13 +279,20 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown);
+  props.controller.onBattleEntry = null;
 });
 
 // 动作指令处理器
+props.controller.onBattleEntry = async () => {
+  isOpen.value = true;
+  currentTab.value = 'workbench';
+  if (characterBusy.value || preparingCharacters.value) return;
+  if (['idle', 'ended'].includes(props.controller.state.phase)) await handleStart();
+};
 async function handleStart() {
   try {
     notification.value = '';
-    if (props.controller.hostAdapter && (props.controller.state.characterPreparation?.status !== 'confirmed' || props.controller.state.characterPreparation?.profileSchema !== 'battle_combat_profile_v2')) {
+    if (props.controller.hostAdapter && (props.controller.state.phase === 'ended' || props.controller.state.characterPreparation?.status !== 'confirmed' || props.controller.state.characterPreparation?.profileSchema !== 'battle_combat_profile_v2')) {
       preparingCharacters.value = true;
       await handlePrepareCharacters();
       return;

@@ -17,11 +17,11 @@
 
     <div class="xy-character-confirmation__body xy-custom-scroll" tabindex="0" aria-label="候选人物资料，可上下滚动">
       <div v-if="busy" class="xy-character-confirmation__busy" role="status" aria-live="polite">
-        正在读取人物资料；确认操作暂不可用。
+        正在读取上下文并由 AI 生成完整人物档案；敌人的功法、招式与资源会自动补全。
       </div>
 
       <div v-if="!preparation" class="xy-character-confirmation__empty">
-        <p>尚未生成候选人物。先从当前上下文、MVU 和人物资料库读取候选。</p>
+        <p>从当前上下文识别人物，并由 AI 生成完整敌人档案；无需预先提供敌人的功法或招式。</p>
         <button type="button" data-action="prepare" :disabled="busy" @click="$emit('prepare')">读取候选人物</button>
       </div>
 
@@ -38,6 +38,7 @@
           </span>
         </div>
 
+        <p v-if="preparation.scene?.location">当前场景：{{ preparation.scene.location }}</p>
         <div v-if="preparation.candidates?.length" class="xy-character-confirmation__progress" role="status" aria-live="polite">
           <span class="xy-character-confirmation__progress-count">已核对 {{ confirmedCount }} / {{ activeCount }} 名人物</span>
           <span class="xy-character-confirmation__progress-hint">{{ confirmationHint }}</span>
@@ -80,7 +81,7 @@
           </p>
 
           <div v-if="profileIssues[candidate.id]?.length" class="xy-character-candidate__error" role="alert">
-            <strong>资料尚未完整，补齐后才能开始战斗</strong>
+            <strong>{{ candidate.role === 'player' ? '主角资料尚未完整' : '敌人自动生成未完成，请重新生成；无需手动提供设定' }}</strong>
             <ul><li v-for="issue in profileIssues[candidate.id]" :key="issue">{{ issue }}</li></ul>
           </div>
           <details v-if="candidate.role === 'player' && authorityCatalogue.length" class="xy-character-section">
@@ -342,7 +343,7 @@ const confirmLabel = computed(() => props.preparation?.status === 'confirmed' ? 
 const confirmationHint = computed(() => {
   if (props.preparation?.status === 'confirmed') return '人物资料已确认，可以进入战斗。';
   if (props.busy) return '正在读取资料，请稍候。';
-  if (hasErrors.value) return '请补齐缺失的战斗设定，并修正资料错误后重新勾选。';
+  if (hasErrors.value) return '档案尚未完整。敌人缺项请重试 AI 生成；主角请核对当前资料来源。';
   if (!(props.preparation?.candidates || []).some((candidate) => candidate.role !== 'player' && !removedIds.has(candidate.id))) return '至少保留一名敌方人物。';
   if (confirmedCount.value < activeCount.value) return `请逐名勾选并核对人物资料，还差 ${activeCount.value - confirmedCount.value} 名。`;
   return '所有保留人物都已核对，可以确认并开始战斗。';

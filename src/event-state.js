@@ -30,7 +30,8 @@ export function validateEventStore(store, chatId) {
 }
 const transitions = {
   captured: ['routing', 'cancelled', 'needs_input', 'rejected'],
-  routing: ['passed', 'committed', 'needs_input', 'unsupported', 'cancelled', 'rejected'],
+  routing: ['passed', 'committed', 'handed_off', 'needs_input', 'unsupported', 'cancelled', 'rejected'],
+  handed_off: ['rolled_back'],
   committed: ['rolled_back'],
   passed: ['rolled_back'], needs_input: ['routing', 'cancelled', 'rolled_back'],
   unsupported: ['routing', 'cancelled', 'rolled_back'], rejected: ['routing', 'cancelled', 'rolled_back'],

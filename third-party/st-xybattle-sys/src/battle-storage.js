@@ -1,8 +1,8 @@
 import { stripSecrets } from './common.js';
 const prefix='battle_v2';
-function token(scope){return JSON.stringify([String(scope.chatId||'default-chat'),String(scope.branchId||'main')]);}
+function token(scope){return JSON.stringify([String(scope.chatId||'default-chat'),String(scope.branchId||'main'),...(scope.messageUid ? [String(scope.messageUid)] : [])]);}
 export class BattleStorage{
-  constructor(storage=globalThis.localStorage,scope={chatId:'default-chat',branchId:'main'}){this.storage=storage&&typeof storage.getItem==='function'?storage:null;this.scope={chatId:String(scope.chatId||'default-chat'),branchId:String(scope.branchId||'main')};this.token=encodeURIComponent(token(this.scope));this.memory=new Map();}
+  constructor(storage=globalThis.localStorage,scope={chatId:'default-chat',branchId:'main'}){this.storage=storage&&typeof storage.getItem==='function'?storage:null;this.scope={chatId:String(scope.chatId||'default-chat'),branchId:String(scope.branchId||'main'),...(scope.messageUid ? {messageUid:String(scope.messageUid)} : {})};this.token=encodeURIComponent(token(this.scope));this.memory=new Map();}
   withScope(scope){return new BattleStorage(this.storage,scope);}
   key(kind){return`${prefix}.${kind}.${this.token}`;}
   readSettings(){return this.read(`${prefix}.settings`,this.read(this.key('settings'),{}));}

@@ -415,3 +415,30 @@ test('P1 backend reader uses current character/chat and CSRF headers without per
   assert.deepEqual(JSON.parse(calls[0][1].body), { ch_name: 'test', file_name: 'chat-A', avatar_url: 'test.png' });
   assert.doesNotMatch(JSON.stringify(root), /fixture-secret/);
 });
+
+
+test('workbench handoff blocks story, releases P1 lock and reuses durable handoff without adjudication', async () => {
+  const f = fixture({ router: async () => ({ decision: 'handoff', reasonCode: 'battle_workbench_preparation' }) });
+  let handoffs = 0;
+  f.gate.onCombatHandoff = event => { assert.equal(f.lock.owner, null); assert.equal(event.execution, undefined); handoffs++; };
+  await f.gate.setEnabled(true);
+  assert.equal((await f.start('迎击顾澜')).aborted, 1);
+  assert.equal(handoffs, 1);
+  assert.equal(Object.values(f.context().chatMetadata[NS].events)[0].status, 'handed_off');
+  assert.equal((await f.start('', 'regenerate')).aborted, 1);
+  assert.equal(handoffs, 2); assert.equal(f.routes, 1);
+  f.gate.dispose();
+});
+
+test('passed scene request observes only its completed assistant after the generation lock is released', async () => {
+  const f = fixture(); let observed = 0;
+  f.gate.afterNarrative = ({ message, input, event, signal }) => {
+    assert.equal(f.lock.owner, null); assert.equal(event.status, 'passed');
+    assert.equal(message, f.context().chat[1]); assert.equal(input, f.context().chat[0]);
+    assert.equal(signal.aborted, false); observed++;
+  };
+  await f.gate.setEnabled(true); await f.start('创建战斗场景');
+  await f.story({ reverse: true }); assert.equal(observed, 1);
+  await f.events.emit('GENERATION_ENDED'); assert.equal(observed, 1);
+  f.gate.dispose();
+});

@@ -93,3 +93,14 @@ test('AI completion builds a full opponent draft and requires explicit user conf
   assert.equal(applied.actors.enemies[0].name, '用户确认的厉沧海');
   assert.equal(applied.actors.enemies[0].techniques[0].name, '平川断澜');
 });
+
+
+test('MVU role container binds only the protagonist; named gender archives supply enemies', async () => {
+  const { readMvuCharacter } = await import('../src/character-source-adapters.js');
+  const mvu = { getMvuData: async () => ({ stat_data: { 主角: { 境界: '金丹初期', 功法: { 水法: { 定义: '主角自己的功法' } } }, 男性角色档案: { 顾澜: { 境界: '金丹初期', 身份: '散修' } } } }) };
+  const player = await readMvuCharacter({ candidate: { id: 'player', name: '许妍', role: 'player' }, context: { scope } }, { mvu });
+  assert.equal(player.name, '许妍'); assert.equal(player.境界, '金丹初期');
+  const enemy = await readMvuCharacter({ candidate: { id: 'gulan', name: '顾澜' }, context: { scope } }, { mvu });
+  assert.equal(enemy.身份, '散修'); assert.equal(enemy.功法, undefined);
+  assert.equal(await readMvuCharacter({ candidate: { id: 'x', name: '无记录敌人' }, context: { scope } }, { mvu }), null);
+});

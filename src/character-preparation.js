@@ -352,7 +352,7 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
     const completionFn = aiSource && typeof aiSource.completeCandidate === 'function' ? aiSource.completeCandidate.bind(aiSource) : null;
     if (completionFn) {
       try {
-        const completed = await completionFn({ candidate: clone(merged.fields), knownFields: clone(merged.fields), context: clone(context), signal, side: candidate.role || 'enemy' });
+        const completed = await completionFn({ candidate: clone(merged.fields), knownFields: clone(merged.fields), context: { ...clone(context), scene: clone(participants?.scene || context.scene || {}) }, signal, side: candidate.role || 'enemy' });
         const completedData = completed?.data ?? completed?.candidate ?? completed?.fields ?? completed;
         if (completedData && typeof completedData === 'object') {
           merged = mergeCharacterCandidate(merged, { mvu: mvuResult.value, database: databaseResult.value, inference: aiParts.inferred, aiExtracted, aiCompleted: completedData });
@@ -362,6 +362,7 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
           completionStatus = { status: 'matched' };
         } else completionStatus = { status: 'missing' };
       } catch (error) {
+        if (signal?.aborted) throw error;
         if (strictProfiles && error.partialProfile) merged.fields = normalizeCombatProfile(redactCharacterSource(error.partialProfile), { id: candidate.id, side: candidate.role || 'enemy' });
         completionStatus = { status: 'read_failed', error: String(error?.message || error) };
       }
@@ -405,6 +406,7 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
     registrySnapshot: clone(context.registry || []),
     requiresCompleteProfiles: strictProfiles,
     requiresPlayer: includePlayer,
+    scene: Object.fromEntries(Object.entries(participants?.scene || {}).filter(([key, value]) => ['location', 'time', 'weather', 'terrain', 'tags'].includes(key) && (typeof value === 'string' || key === 'tags' && Array.isArray(value) && value.every(tag => typeof tag === 'string')))),
     ...(strictProfiles ? { profileSchema: COMBAT_PROFILE_SCHEMA } : {}),
     createdAt: new Date().toISOString(),
     scope: clone(context.scope || null),
@@ -492,7 +494,7 @@ export function applyConfirmedEnemies(state, preparation) {
     const ids = new Set([...compiled.map((item) => item.actor.id), ...state.actors.enemies.map((enemy) => enemy.id)]);
     const resourceRules = [...(state.resourceRules || []).filter((rule) => !ids.has(rule.actorId)), ...compiled.flatMap((item) => item.resourceRules)];
     const positions = Object.fromEntries([player, ...enemies].filter((actor) => actor.visibleInfo?.position).map((actor) => [actor.id, actor.visibleInfo.position]));
-    return { ...clone(state), actors: { player, enemies }, registrySnapshot, ruleMemory: createRuleMemory(registrySnapshot), resourceRules, semanticState: { ...clone(state.semanticState), positions }, characterPreparation: clone(preparation), version: Number(state.version || 0) + 1, updatedAt: new Date().toISOString() };
+    return { ...clone(state), scene: { ...clone(state.scene), ...clone(preparation.scene || {}) }, actors: { player, enemies }, registrySnapshot, ruleMemory: createRuleMemory(registrySnapshot), resourceRules, semanticState: { ...clone(state.semanticState), positions }, characterPreparation: clone(preparation), version: Number(state.version || 0) + 1, updatedAt: new Date().toISOString() };
   }
   const enemies = confirmedEnemyActors(preparation);
   if (enemies.some((enemy) => enemy.id === state.actors?.player?.id)) throw new Error('敌方人物 id 与主角重复');
@@ -507,6 +509,7 @@ export function buildCharacterConfirmationPanel(preparation) {
     status: preparation.status,
     registrySnapshot: clone(preparation.registrySnapshot || []),
     scope: clone(preparation.scope),
+    scene: clone(preparation.scene || {}),
     requiresCompleteProfiles: preparation.requiresCompleteProfiles,
     requiresPlayer: preparation.requiresPlayer,
     candidates: preparation.candidates.map((candidate) => ({

@@ -160,7 +160,9 @@ test('host adapter receives final committed receipt and a main-story packet', as
   const calls = [];
   const hostAdapter = { scope: () => ({chatId:'test-chat',branchId:'host'}), persistReceipt: async (receipt) => { if (receipt) calls.push(['receipt',receipt]); return {persisted:true,confirmed:true}; }, injectScenePacket: async (packet) => { calls.push(['inject',packet]); return {queued:true}; }, clearScenePacket: () => calls.push(['clear']) };
   const controller = new BattleController({ storage: new MemoryStorage(), chatId: 'test-chat', branchId: 'host', adjudicator: new MockAdjudicator(), hostAdapter });
-  await controller.ready; controller.start();
+  await controller.ready;
+  controller.state.characterPreparation = { status: 'confirmed', profileSchema: 'battle_combat_profile_v2' };
+  controller.start();
   const result = await controller.submit({ actionId: 'host-action', label: '桥接行动' });
   assert.equal(result.state.phase, 'awaiting_next');
   assert.equal(calls.find((item) => item[0]==='receipt')[1].actionId,'host-action');

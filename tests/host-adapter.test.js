@@ -393,6 +393,7 @@ test('real controller and host contracts persist final version, consume one main
   const storage = { items: new Map(), getItem(key) { return this.items.get(key) || null; }, setItem(key, value) { this.items.set(key, value); } };
   const controller = new BattleController({ storage, hostAdapter: host.adapter, chatId: scope.chatId, branchId: scope.branchId, adjudicator, narrator: new MainStoryNarrator(), initialScene: { location: 'Test quay', time: 'Noon' } });
   await controller.ready;
+  controller.state.characterPreparation = { status: 'confirmed', profileSchema: 'battle_combat_profile_v2' };
   controller.start();
   const result = await controller.submit({ actionId: 'integration-action', label: 'Observe the visible flow' });
   assert.equal(result.record.status, 'committed'); assert.ok(host.adapter.packet, 'controller must queue only after its final version is durably saved');
@@ -416,6 +417,8 @@ async function attachedController(host, { storage = controllerStorage(), adjudic
   const controller = new BattleController({ storage, hostAdapter: adapter, chatId: scope.chatId, branchId: scope.branchId, adjudicator, narrator, initialScene: { location: 'Checkpoint quay', time: 'Noon' } });
   await controller.ready;
   await controller.checkpoints;
+  // Transport fixtures enter after the separately tested character confirmation.
+  controller.state.characterPreparation ||= { status: 'confirmed', profileSchema: 'battle_combat_profile_v2' };
   return controller;
 }
 
@@ -554,4 +557,44 @@ test('a newer local lifecycle checkpoint survives refresh over older host disk a
     assert.equal(host.disk()[0].extra.battle_v2.state.phase, 'ended');
     assert.equal(adjudicator.calls.length, 1);
   } finally { controller.dispose(); }
+});
+
+
+test('replacement assistant on the same numeric floor never restores old local battle, including reload', async () => {
+  const host = fixture(), storage = controllerStorage();
+  let controller = await attachedController(host, { storage });
+  controller.state.actors.enemies = [{ id: 'old', name: '厉沧海' }];
+  controller.state.scene.location = '沧澜湖心';
+  controller.start(); await controller.checkpoints;
+  const oldUid = controller.state.scope.messageUid, oldSession = controller.state.sessionId;
+  const oldKeys = [...storage.items.keys()];
+  host.context().chat[0] = rawAssistant('许妍和顾澜，金丹初期，在太平洋战界交战');
+  host.adapter.scope(); await controller.ready; await controller.checkpoints;
+  assert.notEqual(controller.state.scope.messageUid, oldUid);
+  assert.notEqual(controller.state.sessionId, oldSession);
+  assert.equal(controller.state.phase, 'idle');
+  assert.deepEqual(controller.state.actors.enemies, []);
+  assert.notEqual(controller.state.scene.location, '沧澜湖心');
+  assert.throws(() => controller.start(), /生成并确认/);
+  await assert.rejects(controller.submit({ label: '不得绕过确认' }), /生成并确认/);
+  assert.ok(oldKeys.every(key => storage.items.has(key)), 'old saves remain recoverable');
+  const freshSession = controller.state.sessionId;
+  controller.dispose();
+  const adapter = new BattleHostAdapter(host.options);
+  controller = new BattleController({ storage, hostAdapter: adapter });
+  await controller.ready; await controller.checkpoints;
+  assert.equal(controller.state.sessionId, freshSession);
+  assert.deepEqual(controller.state.actors.enemies, []);
+  controller.dispose();
+});
+
+test('legacy floor-only cache without matching UID is not adopted on startup', async () => {
+  const host = fixture(), storage = controllerStorage();
+  const prior = new BattleController({ storage, chatId: 'chat-1', branchId: 'message:0:swipe:0' });
+  prior.state.actors.enemies = [{ id: 'old', name: '厉沧海' }]; prior.emit(); prior.dispose();
+  const controller = new BattleController({ storage, hostAdapter: host.adapter });
+  await controller.ready; await controller.checkpoints;
+  assert.deepEqual(controller.state.actors.enemies, []);
+  assert.equal(controller.state.phase, 'idle');
+  controller.dispose();
 });

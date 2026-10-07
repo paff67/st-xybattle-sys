@@ -12,12 +12,12 @@
 
     <fieldset class="xy-config-card">
       <legend class="xy-card-legend">日常事务入口 · 开发阶段</legend>
-      <p class="xy-panel-desc">自动分流、资料准备和战斗兼容入口已加入。默认关闭；开启后，普通输入继续原生放行，明确战斗行动才进入 AI 裁定流程。</p>
+      <p class="xy-panel-desc">默认关闭。开启后，普通输入继续生成正文；战斗行动交给现有工作台，先由 AI 提取人物资料，再由你确认开战。创建战斗场景时先生成正文，再识别是否需要准备战斗。</p>
       <label class="xy-checkbox-label xy-mt-3">
         <input type="checkbox" v-model="form.eventAutoEnabled" class="xy-checkbox" />
-        <span>启用自动事务分流与 AI 战斗裁定（保存后生效）</span>
+        <span>启用自动分流与战斗准备（保存后生效）</span>
       </label>
-      <small class="xy-field-hint">当前 P3 仅执行战斗领域；其他事务会安全停止并保留资料。</small>
+      <small class="xy-field-hint">分流不会直接结算战斗。其他事务仍只准备资料，尚未实现的执行步骤会停止并保留输入。</small>
     </fieldset>
 
     <!-- 裁定 AI 配置区 -->

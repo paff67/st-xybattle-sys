@@ -35,13 +35,23 @@ export function mountBattleSystem({
   // and applied to a new battle explicitly by the user.
   const controller = providedController || new BattleController({ storage, chatId, branchId, hostAdapter: host });
   const events = globalThis.SillyTavern?.getContext ? createEventRuntime({ controller }) : null;
+  let restoringEntry = false, restoreTimer, unsubscribeEntry;
   if (events && controller.settings?.eventAutoEnabled) {
     const judge = controller.settings.adjudicator;
     if (judge?.mode === 'http' && judge.endpoint && judge.model) {
       try {
         events.configureAutomaticAdjudication({ endpoint: judge.endpoint, model: judge.model, apiKey: judge.apiKey || '',
           requestTimeoutMs: judge.timeoutMs, totalTimeoutMs: Math.max(judge.timeoutMs * 4, 120000), maxOutput: judge.maxOutput });
-        void events.enable().catch(error => console.warn('[xybattle] 自动事务入口未能恢复:', error));
+        const restoreEntry = () => {
+          const context = host?.context?.();
+          if (!controller.settings.eventAutoEnabled || events.gate.enabled || restoringEntry || !context?.chatId || context.groupId) return;
+          restoringEntry = true;
+          void events.enable().catch(error => console.warn('[xybattle] 自动事务入口未能恢复:', error)).finally(() => { restoringEntry = false; });
+        };
+        // ST may load extensions on its welcome page before selecting a chat.
+        // Restore after that selection rather than failing once at bootstrap.
+        unsubscribeEntry = host?.subscribeScopeChange?.(() => { clearTimeout(restoreTimer); restoreTimer = setTimeout(restoreEntry, 0); });
+        restoreEntry();
       } catch (error) { console.warn('[xybattle] 自动事务入口配置无效:', error); }
     }
   }
@@ -64,6 +74,8 @@ export function mountBattleSystem({
     close: () => vm.close?.(),
     render: () => { controller.emit(); },
     destroy: () => {
+      clearTimeout(restoreTimer);
+      unsubscribeEntry?.();
       events?.destroy();
       controller.dispose();
       app.unmount();

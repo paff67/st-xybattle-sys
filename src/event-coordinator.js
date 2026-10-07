@@ -155,17 +155,17 @@ export class EventCoordinator {
       const captured = await this.capture(task, input, kind);
       task.root = captured.root; task.event = captured.event;
       this.assertActive(task);
-      if (!['passed', 'committed'].includes(task.event.status)) {
+      if (!['passed', 'committed', 'handed_off'].includes(task.event.status)) {
         task.event = { ...transitionEvent(task.event, 'routing'), attempts: task.event.attempts + 1 };
         task.root = await this.saveEvent(task, task.root, task.event);
         this.assertActive(task); this.status('routing');
         if (typeof this.router !== 'function') throw new Error('P3 分流器尚未配置');
         const route = await abortableEventTask(() => this.router({ input: inputSnapshot(input), message: input, event: copy(task.event), battleState: eventBattleState(task.root, task.event), signal: task.controller.signal }), task.controller.signal, this.timeoutMs);
         this.assertActive(task);
-        if (!route || !['pass', 'needs_context', 'unsupported', 'adjudicate'].includes(route.decision)) throw new Error('无效的分流结果，拒绝默认放行');
+        if (!route || !['pass', 'needs_context', 'unsupported', 'adjudicate', 'handoff'].includes(route.decision)) throw new Error('无效的分流结果，拒绝默认放行');
         // P0/P1 never executes a domain or makes a success/failure judgment.
         const executed = route.decision === 'adjudicate' && route.execution?.schema === 'event_combat_commit_v1' && route.execution.status === 'validated';
-        const status = executed ? 'committed' : { pass: 'passed', needs_context: 'needs_input', unsupported: 'unsupported', adjudicate: 'unsupported' }[route.decision];
+        const status = executed ? 'committed' : { pass: 'passed', handoff: 'handed_off', needs_context: 'needs_input', unsupported: 'unsupported', adjudicate: 'unsupported' }[route.decision];
         const details = route.framework === 'auto-preparation-v1' ? copy({ framework: route.framework, policyId: route.policyId,
           scope: route.scope, battlefield: route.battlefield, actions: route.actions, missingInformation: route.missingInformation,
           activationCandidates: route.activationCandidates, preparation: route.preparation }) : {};
@@ -223,6 +223,7 @@ export class EventCoordinator {
       patches.push(inputPatch);
       await this.store.write(task.scope, task.root, patches);
       this.status(stopped ? 'narrative_failed' : 'completed');
+      return stopped ? null : { event: copy(task.event), message, input: task.input };
     } catch (error) { this.status(error instanceof EventPersistenceError ? 'persistence_pending' : 'binding_pending', error.message); }
     finally { task.release(); if (this.active === task) this.active = null; }
   }

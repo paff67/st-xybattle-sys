@@ -22,6 +22,7 @@ export class HostGenerationGate {
       reason: this.enabled ? null : '自动事件入口已安装，需配置模型并显式启用' };
   }
   clearPacket() { this.packetHandle?.uninject?.(); this.packetHandle = null; }
+  cancelObservation() { this.observation?.abort(); this.observation = null; }
   injectPacket(event, intent) {
     const packet = event.execution?.packet;
     if (!packet) return;
@@ -47,6 +48,7 @@ export class HostGenerationGate {
     };
     bind('GENERATION_STARTED', (kind = 'normal', _params, dryRun) => {
       if (!this.enabled || dryRun) return;
+      this.cancelObservation();
       if (this.intent?.running || this.intent?.accepted || this.coordinator.active) return;
       const context = this.contextProvider();
       this.intent = { kind: kind || 'normal', requestId: this.id(), chat: context.chat, chatId: context.chatId, input: null, received: null, ended: false };
@@ -78,6 +80,7 @@ export class HostGenerationGate {
       }, this.completionTimeoutMs);
     });
     bind('GENERATION_STOPPED', async () => {
+      this.cancelObservation();
       clearTimeout(this.intent?.completionTimer);
       this.clearPacket();
       this.coordinator.cancel();
@@ -90,6 +93,7 @@ export class HostGenerationGate {
       if (key === 'MESSAGE_DELETED' && this.intent?.kind === 'regenerate' && !this.intent.running && !this.coordinator.active && this.matches(this.intent)) return;
       clearTimeout(this.intent?.completionTimer);
       this.clearPacket();
+      this.cancelObservation();
       this.coordinator.scopeChanged(); this.intent = null;
     });
     this.started = true;
@@ -102,12 +106,18 @@ export class HostGenerationGate {
   async complete(intent) {
     if (this.intent !== intent) return;
     clearTimeout(intent.completionTimer);
-    await this.coordinator.finish({ messageId: intent.received });
+    const completed = await this.coordinator.finish({ messageId: intent.received });
     this.clearPacket();
     if (this.intent === intent) this.intent = null;
+    if (completed && this.enabled && this.matches(intent)) {
+      this.cancelObservation();
+      this.observation = new AbortController();
+      void this.afterNarrative?.({ ...completed, signal: this.observation.signal });
+    }
   }
   async setEnabled(enabled) {
     if (!enabled) {
+      this.cancelObservation();
       clearTimeout(this.intent?.completionTimer);
       this.clearPacket();
       this.enabled = false; this.coordinator.cancel('事件入口已关闭');
@@ -141,6 +151,7 @@ export class HostGenerationGate {
       const result = await this.coordinator.enter({ input: intent.input, kind, requestId: intent.requestId });
       if (!result.allow || this.intent !== intent || !this.enabled || !this.matches(intent)) {
         abort(true); if (this.intent === intent) this.intent = null;
+        if (result.event?.status === 'handed_off' && this.enabled && this.matches(intent)) void this.onCombatHandoff?.(result.event);
         return;
       }
       this.injectPacket(result.event, intent);
@@ -155,6 +166,7 @@ export class HostGenerationGate {
     }
   }
   dispose() {
+    this.cancelObservation();
     clearTimeout(this.intent?.completionTimer);
     this.clearPacket();
     this.enabled = false; this.coordinator.scopeChanged(); this.intent = null;

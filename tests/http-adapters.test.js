@@ -52,5 +52,36 @@ test('character field fill uses a shorter optional timeout than candidate extrac
     return new Response(JSON.stringify({ fields: { realm: '未知' }, inferred: true }), { status: 200, headers: { 'content-type': 'application/json' } });
   };
   const inference = createHttpCharacterInference({ endpoint: 'https://api.example.test/v1', model: 'judge', fetchImpl, fillTimeoutMs: 5 });
-  await assert.rejects(inference.fillMissingFields({ candidate: { id: 'enemy-1' }, knownFields: { id: 'enemy-1' }, context: {} }), /aborted|AbortError|The operation was aborted/i);
+  await assert.rejects(inference.fillMissingFields({ candidate: { id: 'enemy-1' }, knownFields: { id: 'enemy-1' }, context: {} }), /超时|aborted|AbortError|The operation was aborted/i);
+});
+
+
+test('enemy completion constructs a full contextual opponent without user data or protagonist rule library', async () => {
+  const { fullCombatProfile } = await import('./fixtures/combat-profile.js');
+  let calls = 0;
+  const ai = createHttpCharacterInference({ endpoint: 'https://example.invalid/v1', model: 'real-config-fixture', fetchImpl: async (_url, options) => {
+    calls++;
+    const body = JSON.parse(options.body), input = JSON.parse(body.messages[1].content.slice('上下文：'.length));
+    assert.equal(input.side, 'enemy'); assert.equal(input.context.registry, undefined);
+    assert.equal(input.context.persona, undefined);
+    assert.ok(body.max_tokens <= 4000);
+    assert.match(body.messages[0].content, /首份档案优先设计3个招式/);
+    assert.match(body.messages[0].content, /由你主动设计/);
+    assert.match(body.messages[0].content, /不能因为缺乏功法原文/);
+    assert.equal(body.messages[0].content.match(/candidate 严格使用以下字段/g).length, 1);
+    assert.match(input.context.recentMessages[0].text, /顾澜/);
+    return new Response(JSON.stringify({ candidate: { ...fullCombatProfile('顾澜'), cultivationRealm: '金丹初期' } }), { status: 200 });
+  } });
+  const profile = await ai.completeCandidate({ candidate: { id: 'gulan', name: '顾澜' }, knownFields: { cultivationRealm: '金丹初期' }, side: 'enemy', context: { recentMessages: [{ text: '顾澜在太平洋操纵重水攻击' }], registry: [{ huge: 'protagonist-only' }], persona: 'player-only' } });
+  assert.equal(profile.name, '顾澜'); assert.ok(profile.techniques.length); assert.ok(profile.resourceDefinitions.length); assert.equal(calls, 1);
+});
+
+test('timed-out enemy generation automatically retries once without treating transport timeout as user cancellation', async () => {
+  const { fullCombatProfile } = await import('./fixtures/combat-profile.js'); let calls = 0;
+  const ai = createHttpCharacterInference({ endpoint: 'https://example.invalid/v1', model: 'fixture', timeoutMs: 15, fetchImpl: async (_url, options) => {
+    if (++calls === 1) return new Promise((_resolve, reject) => options.signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))));
+    return new Response(JSON.stringify({ candidate: fullCombatProfile('顾澜') }), { status: 200 });
+  } });
+  assert.equal((await ai.completeCandidate({ candidate: { name: '顾澜' }, context: {}, side: 'enemy' })).name, '顾澜');
+  assert.equal(calls, 2);
 });

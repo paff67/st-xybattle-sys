@@ -113,3 +113,20 @@ test('battle verdict and timeline display committed results even if stored narra
   assert.match(history.textContent, /双方未受伤/);
   assert.doesNotMatch(history.textContent, /推理|正文也不展示|正文演化/);
 });
+
+
+test('automatic battle entry uses the same preparation panel and never starts before acknowledgment', async t => {
+  const { root, controller, vm } = await mount(t);
+  let preparations = 0, starts = 0;
+  const preparation = await prepareEnemyCandidates({ scope: controller.state.scope, enemies: [{ ...fullCombatProfile('顾澜'), id: 'gulan' }] });
+  controller.hostAdapter = {};
+  controller.prepareCharacters = async () => { preparations++; return buildCharacterConfirmationPanel(preparation); };
+  controller.start = () => { starts++; };
+  vm.close(); await nextTick();
+  await controller.onBattleEntry({ decision: 'handoff' }); await nextTick();
+  assert.equal(preparations, 1); assert.equal(starts, 0);
+  assert.ok(root.querySelector('[data-testid="character-confirmation-panel"]'));
+  assert.match(root.querySelector('[data-testid="character-confirmation-panel"]').textContent, /顾澜/);
+  await controller.onBattleEntry({ decision: 'handoff' });
+  assert.equal(preparations, 1, 'duplicate routing must preserve the pending review');
+});

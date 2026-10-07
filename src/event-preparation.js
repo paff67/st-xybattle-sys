@@ -65,7 +65,7 @@ export function validatePreparedEvidence(domain, raw, snapshot, profileOptions =
   return { domain, status: missing.length || conflicts.length ? 'needs_context' : 'ready', fields, missing, conflicts, ...(roster ? { roster } : {}) };
 }
 
-export function createAutomaticEventPreparation({ captureContext, request, policy = HIGH_MARTIAL_EVENT_POLICY, onPrepared, reuseCombatState = false, profileOptions,
+export function createAutomaticEventPreparation({ captureContext, request, policy = HIGH_MARTIAL_EVENT_POLICY, onPrepared, combatHandoff = false, reuseCombatState = false, profileOptions,
   requestTimeoutMs = 60000, ...options } = {}) {
   const capture = captureContext || createEventContextReader(options);
   const ask = request || createCharacterJsonRequest(options);
@@ -85,6 +85,13 @@ export function createAutomaticEventPreparation({ captureContext, request, polic
     const result = { ...route, framework: 'auto-preparation-v1', policyId: policySnapshot.id, scope: snapshot.scope,
       battlefield: snapshot.battlefield, activationCandidates: combatActivationCandidates(route, snapshot), preparation: null };
     if (route.decision !== 'adjudicate') return result;
+    // Hosted battles share the existing candidate/confirmation/controller flow.
+    // Do not compile a second roster or adjudicate before handing off.
+    if (combatHandoff && result.activationCandidates.length) {
+      const linked = new Set(result.activationCandidates.map(item => item.actionKey));
+      if (route.actions.some(action => !linked.has(action.localKey))) return { ...result, decision: 'unsupported', reasonCode: 'mixed_workbench_event' };
+      return { ...result, decision: 'handoff', reasonCode: 'battle_workbench_preparation' };
+    }
     if (snapshot.battlefield.differences.length && route.actions.some(action => ['combat', 'battlefield', 'pursuit'].includes(action.domain))) {
       return { ...result, decision: 'needs_context', preparation: { status: 'needs_context', reason: 'battlefield_projection_conflict', modules: [] } };
     }

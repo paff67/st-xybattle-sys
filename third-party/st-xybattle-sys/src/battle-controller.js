@@ -1,3 +1,4 @@
+import { storyText } from './story-context.js';
 import { preparationRegistry, createRuleMemory } from './authoritative-rules.js';
 import { rollbackFromAction } from './battle-rollback.js';
 import { TechniqueRegistry } from './battle-registry.js';
@@ -15,7 +16,7 @@ export function adaptersFromSettings(input = {}) {
 export class BattleController {
   constructor({ storage, credentialStorage, chatId = 'default-chat', branchId = 'main', adjudicator, narrator, hostAdapter, registry = new TechniqueRegistry(), onChange = () => {}, initialScene = {}, initialPlayer, initialEnemies = [], semanticState } = {}) {
     this.storage = storage instanceof BattleStorage ? storage : new BattleStorage(storage,{chatId,branchId}); this.credentialStorage=credentialStorage; this.registry=registry; const persistedSettings=this.storage.readSettings(); const credentials=readCredentialSettings(this.credentialStorage); this.settings=normalizeSettings({...persistedSettings,adjudicator:{...persistedSettings.adjudicator,...credentials.adjudicator},narrator:{...persistedSettings.narrator,...credentials.narrator}}); const configured=adaptersFromSettings(this.settings); this.adjudicator=adjudicator||configured.adjudicator; this.narrator=narrator||configured.narrator; this.customAdapters={adjudicator,narrator}; this.hostAdapter=hostAdapter; this.onChange=onChange; this.epoch=0; this.inFlight=null; this.checkpoints=Promise.resolve(); this.bridgeQueuedAction=null; this.characterPreparation=null; this.characterPreparationRequest=0;
-    this.initialOptions={registrySnapshot:registry.snapshot(),player:initialPlayer||this.defaultPlayer(),enemies:initialEnemies,...initialScene,semanticState}; const restored=this.storage.readSession(); this.state=restored?restoreBattle(restored):createInitialState({...this.initialOptions,chatId,branchId}); if(restored)this.registry=new TechniqueRegistry(this.state.registrySnapshot); this.logs=this.storage.readLogs();
+    this.initialOptions={registrySnapshot:registry.snapshot(),player:initialPlayer||this.defaultPlayer(),enemies:initialEnemies,...initialScene,semanticState}; const restored=hostAdapter?null:this.storage.readSession(); this.state=restored?restoreBattle(restored):createInitialState({...this.initialOptions,chatId,branchId}); if(restored)this.registry=new TechniqueRegistry(this.state.registrySnapshot); this.logs=this.storage.readLogs();
     this.ready=Promise.resolve(); if(hostAdapter){hostAdapter.start?.();this.unsubScope=hostAdapter.subscribeScopeChange?.((scope)=>{this.ready=this.switchScope(scope);});this.unsubNarrative=hostAdapter.subscribeNarrative?.((result)=>this.recordHostNarrative(result));this.unsubTranscript=hostAdapter.subscribeTranscriptChange?.(()=>{this.ready=this.reconcileTranscript();return this.ready;});this.unsubSent=hostAdapter.subscribePacketSent?.((event)=>this.recordPacketSent(event));this.ready=this.initializeHost();}
   }
   recordPacketSent(event) {
@@ -46,7 +47,43 @@ export class BattleController {
   }
   defaultPlayer(){const entry=this.registry.findEntry?.('gongfa.dielang-xuanchaojue')||this.registry.list().find((item)=>item.id==='gongfa.dielang-xuanchaojue')||this.registry.list()[0];return{id:'player',name:'主角',visibleInfo:'导入真实场景后再裁定',resources:{},techniques:entry?[{registryId:entry.id,techniqueIds:entry.techniques.map((item)=>item.id)}]:[]};}
   async initializeHost(){await this.hostAdapter.ready?.();await this.switchScope(this.hostAdapter.scope?.()||this.state.scope,false);await this.reconcileTranscript();return this;}
-  async switchScope(scope,cancel=true){let cached=this.storage.readSession();if(cancel){this.cancelPending('聊天/分支切换');this.characterPreparation=null;this.characterPreparationRequest+=1;this.hostAdapter?.clearScenePacket?.();}const chatId=String(scope?.chatId||this.state.scope.chatId),branchId=String(scope?.branchId||'main');if(scope?.available===false){this.cancelPending('当前聊天已没有可用的助手消息锚点');this.characterPreparation=null;this.characterPreparationRequest+=1;this.hostAdapter?.clearScenePacket?.();this.storage=this.storage.withScope({chatId,branchId});this.storage.clear();this.logs=[];this.registry=new TechniqueRegistry(this.initialOptions.registrySnapshot);this.state=createInitialState({...this.initialOptions,chatId,branchId});this.state.hostSync={status:'unavailable',reason:null};this.emit({persistHost:false});return;}const current=this.state.scope;if(current.chatId!==chatId||current.branchId!==branchId){this.characterPreparation=null;this.characterPreparationRequest+=1;this.storage=this.storage.withScope({chatId,branchId});cached=this.storage.readSession();this.state=cached?restoreBattle(cached):createInitialState({...this.initialOptions,chatId,branchId});this.logs=this.storage.readLogs();}const epoch=this.epoch;const loaded=await this.hostAdapter?.loadSession?.(scope);if(epoch!==this.epoch)return;if(loaded?.loaded&&loaded.state){const hostState=restoreBattle(loaded.state);if(hostState.scope.chatId===this.state.scope.chatId&&hostState.scope.branchId===this.state.scope.branchId){if(!cached||hostState.sessionId===this.state.sessionId&&hostState.version>=this.state.version||Date.parse(hostState.updatedAt)>Date.parse(this.state.updatedAt)){this.state=hostState;this.storage.writeSession(hostState);}else this.log({kind:'host_local_ahead',capability:{reason:'本地checkpoint比宿主新，将重试持久化；不回退回合'}});}}this.registry=new TechniqueRegistry(this.state.registrySnapshot);this.emit();await this.reconcileTranscript();}
+  async switchScope(scope, cancel = true) {
+    if (cancel) { this.cancelPending(); this.cancelCharacterPreparation(); this.hostAdapter?.clearScenePacket?.(); }
+    const chatId = String(scope?.chatId || this.state.scope.chatId), branchId = String(scope?.branchId || 'main');
+    const previousStorage = this.storage;
+    const changed = this.state.scope.chatId !== chatId || this.state.scope.branchId !== branchId || this.state.scope.messageUid !== scope.messageUid;
+    this.storage = this.storage.withScope({ chatId, branchId, messageUid: scope.messageUid });
+    let cached = this.storage.readSession();
+    // Migrate only a proven identical anchor. Keep old floor-only caches intact
+    // for recovery; never attach them to a replacement assistant at that index.
+    const legacy = previousStorage.withScope({ chatId, branchId }).readSession();
+    if (!cached && scope.messageUid && legacy?.scope?.messageUid === scope.messageUid) cached = legacy;
+    if (cached && scope.messageUid && cached.scope?.messageUid !== scope.messageUid) cached = null;
+    if (scope.available === false || changed) {
+      this.cancelCharacterPreparation();
+      this.state = cached && scope.available !== false ? restoreBattle(cached) : createInitialState({ ...this.initialOptions, chatId, branchId });
+      this.logs = cached ? this.storage.readLogs() : [];
+    }
+    if (scope.available === false) {
+      this.state.hostSync = { status: 'unavailable', reason: null };
+      this.registry = new TechniqueRegistry(this.state.registrySnapshot);
+      this.emit({ persistHost: false }); return;
+    }
+    const epoch = this.epoch;
+    const loaded = await this.hostAdapter?.loadSession?.(scope);
+    if (epoch !== this.epoch) return;
+    if (loaded?.loaded && loaded.state) {
+      const hostState = restoreBattle(loaded.state);
+      if (!cached || hostState.sessionId === this.state.sessionId && hostState.version >= this.state.version || Date.parse(hostState.updatedAt) > Date.parse(this.state.updatedAt)) this.state = hostState;
+      else this.log({ kind: 'host_local_ahead', capability: { reason: '本地 checkpoint 比宿主新，将重试持久化' } });
+    }
+    this.state.scope = { ...this.state.scope, ...scope };
+    this.registry = new TechniqueRegistry(this.state.registrySnapshot);
+    this.emit(); await this.reconcileTranscript();
+  }
+  assertPrepared() {
+    if (this.hostAdapter && (this.state.characterPreparation?.status !== 'confirmed' || this.state.characterPreparation?.profileSchema !== 'battle_combat_profile_v2')) throw new Error('请先通过开始战斗生成并确认本场人物资料');
+  }
   emit({persistHost=true}={}){this.storage.writeSession(stripSecrets(this.state,this.secrets()));this.onChange(this.state,getPlayerView(this.state));if(this.hostAdapter&&persistHost){const state=clone(this.state),scope=clone(this.hostAdapter.scope?.()||this.state.scope),epoch=this.epoch;if(scope.available===false)return;this.checkpoints=this.checkpoints.catch(()=>{}).then(async()=>{if(epoch!==this.epoch)return{persisted:false,confirmed:false,stale:true};const result=await this.persistToHost(null,state,scope);if(epoch===this.epoch&&this.state.version===state.version){this.state.hostSync={status:result?.persisted&&result?.confirmed?'confirmed':'pending',reason:result?.reason||null};this.storage.writeSession(stripSecrets(this.state,this.secrets()));this.onChange(this.state,getPlayerView(this.state));}return result;});}}
   secrets(){return[this.settings.adjudicator.apiKey,this.settings.narrator.apiKey];}
   log(entry){this.logs=this.storage.appendLog(stripSecrets(entry,this.secrets()));}
@@ -82,11 +119,11 @@ export class BattleController {
     if (scope.available === false) throw new Error('当前聊天没有可用的助手消息锚点；请先生成新的正文消息。');
     if (scope.chatId !== this.state.scope.chatId || scope.branchId !== this.state.scope.branchId) throw new Error('当前聊天分支已改变');
     const hostContext = this.hostAdapter?.context?.() || {};
-    const recentMessages = Array.isArray(hostContext.chat) ? hostContext.chat.slice(-20).map((message) => ({ role: message.role || (message.is_user ? 'user' : 'assistant'), text: String(message.mes || message.message || '').slice(0, 4000) })) : [];
+    const recentMessages = Array.isArray(hostContext.chat) ? hostContext.chat.slice(-20).map((message) => ({ role: message.role || (message.is_user ? 'user' : 'assistant'), text: storyText(message.mes || message.message) })) : [];
     const card = hostContext.characters?.[hostContext.characterId];
     const sourceContext = { ...clone(context || {}), scope, recentMessages,
       playerId: this.state.actors.player.id,
-      playerCandidate: context?.playerCandidate || context?.player || (!['主角', '演示主角', 'player'].includes(this.state.actors.player.name) ? this.state.actors.player : undefined),
+      playerCandidate: context?.playerCandidate || context?.player || (!this.hostAdapter && !['主角', '演示主角', 'player'].includes(this.state.actors.player.name) ? this.state.actors.player : undefined),
       persona: { name: hostContext.name1 || '', description: hostContext.powerUserSettings?.persona_description || hostContext.persona?.description || '' },
       characterCard: card ? { name: card.name, description: card.description || card.data?.description, scenario: card.scenario || card.data?.scenario } : undefined,
       registry: this.hostAdapter ? preparationRegistry(this.registry.snapshot()) : this.registry.snapshot(),
@@ -97,10 +134,14 @@ export class BattleController {
     const epoch = this.epoch;
     const request = ++this.characterPreparationRequest;
     this.characterPreparation = null;
-    const preparation = await prepareEnemyCandidates(sourceContext, { ...adapters, requireProfiles: !!this.hostAdapter, includePlayer: !!this.hostAdapter });
-    if (request !== this.characterPreparationRequest || epoch !== this.epoch || this.state.scope.chatId !== scope.chatId || this.state.scope.branchId !== scope.branchId) throw new Error('人物读取期间聊天分支已改变或读取已取消，请重新读取');
-    this.characterPreparation = preparation;
-    return this.characterConfirmationPanel();
+    const abort = new AbortController();
+    this.preparationAbort = abort;
+    try {
+      const preparation = await prepareEnemyCandidates(sourceContext, { ...adapters, signal: abort.signal, requireProfiles: !!this.hostAdapter, includePlayer: !!this.hostAdapter });
+      if (request !== this.characterPreparationRequest || epoch !== this.epoch || this.state.scope.chatId !== scope.chatId || this.state.scope.branchId !== scope.branchId || this.state.scope.messageUid !== scope.messageUid) throw new Error('人物读取期间聊天分支已改变或读取已取消，请重新读取');
+      this.characterPreparation = preparation;
+      return this.characterConfirmationPanel();
+    } finally { if (this.preparationAbort === abort) this.preparationAbort = null; }
   }
   confirmCharacters(edits = {}, options = {}) {
     this.assertIdleRequest();
@@ -115,8 +156,8 @@ export class BattleController {
     this.emit();
     return this.state;
   }
-  cancelCharacterPreparation(){this.characterPreparationRequest+=1;this.characterPreparation=null;}
-  start(){this.assertIdleRequest();if(this.characterPreparation?.status && this.characterPreparation.status !== 'confirmed')throw new Error('请先在人物确认页逐项确认全部候选人物');const scope=this.hostAdapter?.scope?.();if(scope?.available===false)throw new Error('当前聊天没有可用的助手消息锚点；请先生成新的正文消息。');this.state=startBattle(this.state);this.emit();return this.state;}
+  cancelCharacterPreparation(){this.preparationAbort?.abort();this.preparationAbort=null;this.characterPreparationRequest+=1;this.characterPreparation=null;}
+  start(){this.assertIdleRequest();if(this.characterPreparation?.status && this.characterPreparation.status !== 'confirmed')throw new Error('请先在人物确认页逐项确认全部候选人物');const scope=this.hostAdapter?.scope?.();if(scope?.available===false)throw new Error('当前聊天没有可用的助手消息锚点；请先生成新的正文消息。');this.assertPrepared();this.state=startBattle(this.state);this.emit();return this.state;}
   cancelPending(){this.epoch+=1;this.inFlight?.abort();this.inFlight=null;this.bridgeQueuedAction=null;}
   stop(reason='用户停止'){this.cancelPending();this.hostAdapter?.clearScenePacket?.();this.state=stopBattle({...this.state,history:this.state.history.map((record)=>record.status==='prepared'?{...record,status:'interrupted',error:reason}:record)},reason);this.emit();return this.state;}
   continueNext(options = {}){this.assertIdleRequest();if(this.bridgeQueuedAction)throw new Error('本轮场景包仍等待主剧情生成；请先生成正文或跳过本轮正文');this.state=nextRound(this.state, options);this.emit();return this.state;}
@@ -157,7 +198,7 @@ export class BattleController {
     return this.eventOperationLock.run(`${avatar}:${chatId}`, 'manual-battle', operation);
   }
   async submit(action){return this.withEventOperationLock(() => this.submitUnlocked(action));}
-  async submitUnlocked(action){await this.ready;await this.checkpoints;const existing=action?.actionId?this.state.history.find((record)=>record.actionId===action.actionId):null;if(existing)return{state:this.state,record:clone(existing),deduplicated:true};this.assertIdleRequest();const epoch=this.epoch;const controller=new AbortController();this.inFlight=controller;const scope=clone(this.hostAdapter?.scope?.()||this.state.scope);const save=async(state)=>{if(epoch!==this.epoch)throw new DOMException('作用域已变化','AbortError');this.state=state;this.emit();await this.checkpoints;};
+  async submitUnlocked(action){await this.ready;await this.checkpoints;this.assertPrepared();const existing=action?.actionId?this.state.history.find((record)=>record.actionId===action.actionId):null;if(existing)return{state:this.state,record:clone(existing),deduplicated:true};this.assertIdleRequest();const epoch=this.epoch;const controller=new AbortController();this.inFlight=controller;const scope=clone(this.hostAdapter?.scope?.()||this.state.scope);const save=async(state)=>{if(epoch!==this.epoch)throw new DOMException('作用域已变化','AbortError');this.state=state;this.emit();await this.checkpoints;};
     try{const result=await judgeAndCommit(this.state,action,{adjudicator:this.adjudicator,narrator:this.narrator,settings:this.settings,signal:controller.signal,save,logger:(entry)=>{if(epoch===this.epoch)this.log(entry);},onCommit:async(record,state)=>{if(epoch!==this.epoch)return;const saved=await this.persistToHost(record,state,scope);abortIfNeeded(controller.signal);return{allowed:!this.hostAdapter||!!(saved?.persisted&&saved?.confirmed),reason:saved?.reason};}});if(epoch!==this.epoch)return{stale:true,state:this.state};this.state=result.state;this.emit();await this.checkpoints;const saved=await this.persistToHost(result.record,this.state,scope);if(this.settings.autoNarrative&&this.settings.narrator.mode==='main_story'&&saved?.persisted&&saved?.confirmed)await this.queueMainStory(result.record,scope);else if(this.settings.narrator.mode==='main_story'&&this.hostAdapter)this.state.hostSync={status:'pending',reason:saved?.reason};this.storage.writeSession(stripSecrets(this.state,this.secrets()));this.onChange(this.state,getPlayerView(this.state));return result;}catch(error){if(epoch!==this.epoch||controller.signal.aborted)return{stale:true,state:this.state};throw error;}finally{if(this.inFlight===controller)this.inFlight=null;}}
   async rewrite(actionId){return this.withEventOperationLock(() => this.rewriteUnlocked(actionId));}
   async rewriteUnlocked(actionId){await this.ready;this.assertIdleRequest();this.hostAdapter?.clearScenePacket?.();const epoch=this.epoch;const controller=new AbortController();this.inFlight=controller;const scope=clone(this.hostAdapter?.scope?.()||this.state.scope);const save=async(state)=>{if(epoch!==this.epoch)throw new DOMException('作用域已变化','AbortError');this.state=state;this.emit();await this.checkpoints;};try{const result=await rewriteNarrative(this.state,actionId,this.narrator,{signal:controller.signal,save,logger:(entry)=>{if(epoch===this.epoch)this.log(entry);},originalPrompt:this.settings.originalPrompt});if(epoch!==this.epoch)return{stale:true,state:this.state};this.state=result.state;await this.persistToHost(result.record,this.state,scope);this.emit();await this.checkpoints;if(this.settings.narrator.mode==='main_story')await this.queueMainStory(result.record,scope);return result;}catch(error){if(epoch!==this.epoch||controller.signal.aborted)return{stale:true,state:this.state};throw error;}finally{if(this.inFlight===controller)this.inFlight=null;}}
