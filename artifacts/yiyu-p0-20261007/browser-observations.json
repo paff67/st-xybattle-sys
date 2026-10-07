@@ -1,0 +1,37 @@
+{
+  "source": "Observed via Chrome tab-scoped CDP; selected records transcribed from tool results, not an exported complete trace",
+  "gac": {
+    "start": 1791357671630,
+    "metadataSaved": 1791357679466,
+    "released": 1791357701911,
+    "messageSent": 1791357702560,
+    "promptReady": 1791357704244,
+    "ended": 1791357705892,
+    "auxiliaryArguments": {"type":"normal","params":{},"dryRun":false},
+    "stopVisibleWhileHeld": false,
+    "cancelPreservedInputAsUserMessage": true,
+    "throwContinuedToModelRequest": true
+  },
+  "manifestInterceptor": [
+    {"event":"interceptor_seen","type":"normal","time":1791358463136,"length":3},
+    {"event":"hold","time":1791358463136},
+    {"event":"auxiliary_completed_without_reentry","mockRequest":8},
+    {"event":"resume","time":1791358499014,"mainMockRequest":9},
+    {"event":"interceptor_seen","type":"normal","time":1791358530756,"length":5},
+    {"event":"caught_failure_abort","time":1791358547217},
+    {"event":"interceptor_seen","type":"normal","time":1791358572653,"length":6},
+    {"event":"explicit_abort","time":1791358596757}
+  ],
+  "reloadVerification": {
+    "chat":"codex-event-p0-empty-20261007",
+    "messages":2,
+    "metadataEventId":"p0-empty-1",
+    "inputMessageUid":"p0-user-1",
+    "assistantMessageUid":"p0-assistant-1",
+    "swipeUids":["p0-A","p0-B"],
+    "Mvu":"object"
+  },
+  "command": {"input":"/echo P0_COMMAND_ONLY","events":["GENERATION_STARTED"],"gac":false},
+  "warnings": ["Timeout waiting for chat to save", "[DICE][GACHA] MESSAGE_SENT: ReferenceError: processPendingEffectRuns is not defined"],
+  "restoredSelectedChat":"yiyu-battle-test - 2026-10-03@04h00m59s321ms"
+}

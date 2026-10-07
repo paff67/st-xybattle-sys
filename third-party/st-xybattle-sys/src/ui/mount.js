@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import { BattleController } from '../battle-controller.js';
 import { BattleHostAdapter } from '../host-adapter.js';
+import { createEventRuntime } from '../event-runtime.js';
 
 export function mountBattleSystem({
   documentRef = globalThis.document,
@@ -33,6 +34,7 @@ export function mountBattleSystem({
   //叠浪玄潮诀 demo only. Catalogue entries are loaded by the content library
   // and applied to a new battle explicitly by the user.
   const controller = providedController || new BattleController({ storage, chatId, branchId, hostAdapter: host });
+  const events = globalThis.SillyTavern?.getContext ? createEventRuntime({ controller }) : null;
 
   const app = createApp(App, {
     controller,
@@ -43,6 +45,7 @@ export function mountBattleSystem({
 
   const api = {
     controller,
+    events,
     root,
     app,
     vm,
@@ -50,6 +53,7 @@ export function mountBattleSystem({
     close: () => vm.close?.(),
     render: () => { controller.emit(); },
     destroy: () => {
+      events?.destroy();
       controller.dispose();
       app.unmount();
       root.remove();

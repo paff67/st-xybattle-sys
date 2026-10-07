@@ -54,6 +54,8 @@ export function buildAdjudicationRequest(state, action, settings = {}) {
 function hiddenLeaves(value) { if (!value || typeof value !== 'object') return typeof value === 'string' && value.length > 3 ? [value] : []; return Object.values(value).flatMap(hiddenLeaves); }
 export function validateAdjudication(result, state, { allowMock = false, requireExchange = false, actionId = 'validation' } = {}) {
   if (!result || typeof result !== 'object' || Array.isArray(result)) throw new Error('裁定响应不是对象');
+  if (result.battleStatus !== undefined && !['ongoing', 'ended'].includes(result.battleStatus)) throw new Error('战斗结束状态无效');
+  if (result.battleStatus === 'ended' && (typeof result.battleEndReason !== 'string' || !result.battleEndReason.trim())) throw new Error('结束战斗需要明确脱战或终结依据');
   for (const key of ['summary','before','after','reason','ruleRefs','publicEvents']) if (!(key in result)) throw new Error(`裁定缺少字段 ${key}`);
   if (typeof result.summary !== 'string' || !result.summary.trim() || typeof result.reason !== 'string' || !result.reason.trim() || !Array.isArray(result.ruleRefs) || !result.ruleRefs.length || !Array.isArray(result.publicEvents)) throw new Error('裁定字段类型或非空约束错误');
   if (stableStringify(result.before) !== stableStringify(state.semanticState)) throw new Error('裁定 before 与当前状态不一致');
@@ -87,7 +89,7 @@ export function validateAdjudication(result, state, { allowMock = false, require
   const causalChanges = result.causalChanges === undefined ? [] : result.causalChanges;
   if (!Array.isArray(causalChanges) || causalChanges.some((change) => !change || typeof change !== 'object' || Array.isArray(change) || !(change.operation || change.type))) throw new Error('causalChanges 必须是带 operation/type 的对象数组');
   if (causalChanges.some((change) => change.scope && (String(change.scope.chatId) !== String(state.scope.chatId) || String(change.scope.branchId) !== String(state.scope.branchId)))) throw new Error('因果变更作用域不匹配');
-  return { ...(result.combatChanges ? { combatChanges: clone(result.combatChanges) } : {}), ...(exchange ? { exchange } : {}), summary: result.summary, before: clone(result.before), after: clone(result.after), reason: result.reason, ruleRefs: clone(result.ruleRefs), publicEvents: result.publicEvents.map(String), ...(result.resourceChanges === undefined ? {} : {resourceChanges: clone(resourceChanges)}), ...(result.causalChanges === undefined ? {} : {causalChanges: clone(causalChanges)}), confidence: Number.isFinite(result.confidence) ? result.confidence : null };
+  return { ...(result.battleStatus ? { battleStatus: result.battleStatus, ...(result.battleStatus === 'ended' ? { battleEndReason: result.battleEndReason } : {}) } : {}), ...(result.combatChanges ? { combatChanges: clone(result.combatChanges) } : {}), ...(exchange ? { exchange } : {}), summary: result.summary, before: clone(result.before), after: clone(result.after), reason: result.reason, ruleRefs: clone(result.ruleRefs), publicEvents: result.publicEvents.map(String), ...(result.resourceChanges === undefined ? {} : {resourceChanges: clone(resourceChanges)}), ...(result.causalChanges === undefined ? {} : {causalChanges: clone(causalChanges)}), confidence: Number.isFinite(result.confidence) ? result.confidence : null };
 }
 export function buildNarrativePacket(state, record, request) {
   return createScenePacket(state, record, request.action);

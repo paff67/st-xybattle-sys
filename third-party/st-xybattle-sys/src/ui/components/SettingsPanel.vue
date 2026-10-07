@@ -10,6 +10,11 @@
       </p>
     </div>
 
+    <fieldset class="xy-config-card">
+      <legend class="xy-card-legend">日常事务入口 · 开发阶段</legend>
+      <p class="xy-panel-desc">自动分流与资料准备框架已加入，尚未接入自动裁定。当前默认关闭，不会自动接管聊天；原手动战斗入口继续可用。</p>
+    </fieldset>
+
     <!-- 裁定 AI 配置区 -->
     <fieldset class="xy-config-card">
       <legend class="xy-card-legend">

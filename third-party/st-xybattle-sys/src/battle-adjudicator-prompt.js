@@ -95,6 +95,7 @@ export function buildAdjudicationPrompt(context, action) {
     `- 气海机枢：${JSON.stringify(player.resources || {})}`,
     `- 所修功法与传承词条：${JSON.stringify(player.techniques || [])}`,
     `- 已确认的身份、战斗方式与战术：${JSON.stringify({ identity: player.identity, cultivationRealm: player.cultivationRealm, combatStyle: player.combatStyle, behavior: player.behavior, weaknesses: player.weaknesses })}`,
+    ...(player.narrativeProfile ? [`- 当前人物资料原文（仅内部依据，不是新能力授权）：${JSON.stringify(player.narrativeProfile)}`] : []),
     '',
     '【3. 敌方修者面板】',
     ...enemies.map((e, idx) => [
@@ -104,6 +105,7 @@ export function buildAdjudicationPrompt(context, action) {
       `- 已知招式：${JSON.stringify(e.observedTechniques || [])}`,
       `- 已确认的固定战斗档案（内部可读，按 visibility 控制公开）：${JSON.stringify({ identity: e.identity, cultivationRealm: e.cultivationRealm, combatStyle: e.combatStyle, martialArts: e.martialArts, techniques: e.techniques, behavior: e.behavior, weaknesses: e.weaknesses })}`,
       `- 【天道私密情报·仅供内部因果裁定·严禁公开泄密】：${JSON.stringify(e.hidden || {})}`
+      ,...(e.narrativeProfile ? [`- 当前人物资料原文（内部，不得整段公开）：${JSON.stringify(e.narrativeProfile)}`] : [])
     ].join('\n')),
     '',
     '【4. 战场环境与时空标尺】',
@@ -111,6 +113,7 @@ export function buildAdjudicationPrompt(context, action) {
     `- 时辰天色：${scene.time || '未提供'}`,
     `- 天地气象：${scene.weather || '未提供'}`,
     `- 先手天机：${scene.initiative || '均势'}`,
+    ...(scene.battlefield || scene.situation ? [`- 战界与当前交战事实：${JSON.stringify({ battlefield: scene.battlefield, situation: scene.situation })}`] : []),
     '',
     '【5. 交锋前战局语义状态 (before)】',
     JSON.stringify(currentSemantic, null, 2),

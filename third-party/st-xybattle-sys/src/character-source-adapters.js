@@ -62,9 +62,9 @@ async function readResponse(response) {
   return content;
 }
 
-export function createHttpCharacterInference({ endpoint, model, apiKey = '', fetchImpl = globalThis.fetch, timeoutMs = 60000, fillTimeoutMs = 15000, maxOutput = 5000, temperature = 0.4, characterCompletionPrompt = DEFAULT_CHARACTER_COMPLETION_PROMPT } = {}) {
-  if (!endpoint || typeof fetchImpl !== 'function') throw new Error('人物 AI 需要 endpoint 与 fetch');
-  const request = async (instruction, context, requestTimeoutMs = timeoutMs, signal) => {
+export function createCharacterJsonRequest({ endpoint, model, apiKey = '', fetchImpl = globalThis.fetch, timeoutMs = 60000, maxOutput = 5000, temperature = 0.4 } = {}) {
+  if (!endpoint || typeof fetchImpl !== 'function') throw new Error('资料 AI 需要 endpoint 与 fetch');
+  return async (instruction, context, requestTimeoutMs = timeoutMs, signal) => {
     const controller = new AbortController();
     const abort = () => controller.abort();
     if (signal?.aborted) throw new DOMException('人物 AI 请求已取消', 'AbortError');
@@ -75,6 +75,11 @@ export function createHttpCharacterInference({ endpoint, model, apiKey = '', fet
       return await readResponse(response);
     } finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
   };
+}
+
+export function createHttpCharacterInference({ endpoint, model, apiKey = '', fetchImpl = globalThis.fetch, timeoutMs = 60000, fillTimeoutMs = 15000, maxOutput = 5000, temperature = 0.4, characterCompletionPrompt = DEFAULT_CHARACTER_COMPLETION_PROMPT } = {}) {
+  if (!endpoint || typeof fetchImpl !== 'function') throw new Error('人物 AI 需要 endpoint 与 fetch');
+  const request = createCharacterJsonRequest({ endpoint, model, apiKey, fetchImpl, timeoutMs, maxOutput, temperature });
   return {
     async inferParticipants(context, { signal } = {}) {
       return request('从聊天和人设识别当前实际主角与敌人。返回 {"player":{"name":"主角实际姓名","explicitFacts":{}},"candidates":[{"id":"可选稳定标识","name":"敌人姓名","explicitFacts":{},"inferred":{}}]}。主角不是助手角色的默认称呼，不得复用演示人物；主角依据不足时 player=null。角色卡仅是证据，不能直接认定其角色是主角。提取已有境界、功法完整设定、当前状态、资源和战斗偏好，明确事实放 explicitFacts；此步不要创造新能力。', clone(context), timeoutMs, signal);

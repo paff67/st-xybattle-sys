@@ -7,6 +7,8 @@ test('extension manifest and third-party entry are present', async () => {
   const releaseManifest = JSON.parse(await readFile(new URL('../third-party/st-xybattle-sys/manifest.json', import.meta.url), 'utf8'));
   assert.equal(manifest.js, 'index.js');
   assert.equal(releaseManifest.js, 'index.js');
+  assert.equal(manifest.generate_interceptor, 'xyEventGenerationInterceptor');
+  assert.equal(releaseManifest.generate_interceptor, manifest.generate_interceptor);
   assert.match(await readFile(new URL('../third-party/st-xybattle-sys/index.js', import.meta.url), 'utf8'), /src\/index\.js/);
   const rootUi = await readFile(new URL('../src/battle-ui.js', import.meta.url), 'utf8');
   assert.match(rootUi, /battle-ui\.bundle\.js/);

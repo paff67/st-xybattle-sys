@@ -40,7 +40,7 @@ export class TechniqueRegistry {
   availability(entryId, techniqueId, semanticState = {}) {
     const technique = this.technique(entryId, techniqueId); if (!technique) return { available: false, state: 'unavailable', reason: '词条不存在', triggered: false };
     const requirements = technique.availability.requires || [];
-    if (this.get(entryId)?.combatSpec && technique.availability.default === 'conditional' && !requirements.length) return { available: true, state: 'conditional', reason: '可提交意图；实际条件由裁定检查', triggered: false };
+    if ((this.get(entryId)?.combatSpec || this.get(entryId)?.narrativeCompiled) && technique.availability.default === 'conditional' && !requirements.length) return { available: true, state: 'conditional', reason: '可提交意图；实际条件由裁定检查', triggered: false };
     const available = technique.availability.default !== 'unavailable' && (requirements.length ? requirements.every((requirement) => matchesRequirement(semanticState, requirement)) : technique.availability.default === 'available');
     const triggered = (semanticState.statuses || []).some((status) => status === `${techniqueId}:triggered`) || (semanticState.effects || []).some((effect) => typeof effect === 'string' ? effect.startsWith(`${techniqueId}`) : effect.techniqueId === techniqueId);
     return { available, state: available ? 'available' : 'conditional', reason: technique.availability.conditions.join('；'), triggered };
