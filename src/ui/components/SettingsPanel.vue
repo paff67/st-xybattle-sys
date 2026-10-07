@@ -12,7 +12,12 @@
 
     <fieldset class="xy-config-card">
       <legend class="xy-card-legend">日常事务入口 · 开发阶段</legend>
-      <p class="xy-panel-desc">自动分流与资料准备框架已加入，尚未接入自动裁定。当前默认关闭，不会自动接管聊天；原手动战斗入口继续可用。</p>
+      <p class="xy-panel-desc">自动分流、资料准备和战斗兼容入口已加入。默认关闭；开启后，普通输入继续原生放行，明确战斗行动才进入 AI 裁定流程。</p>
+      <label class="xy-checkbox-label xy-mt-3">
+        <input type="checkbox" v-model="form.eventAutoEnabled" class="xy-checkbox" />
+        <span>启用自动事务分流与 AI 战斗裁定（保存后生效）</span>
+      </label>
+      <small class="xy-field-hint">当前 P3 仅执行战斗领域；其他事务会安全停止并保留资料。</small>
     </fieldset>
 
     <!-- 裁定 AI 配置区 -->
@@ -189,7 +194,8 @@ import { reactive, ref, watch } from 'vue';
 import Icons from './Icons.vue';
 
 const props = defineProps({
-  settings: { type: Object, default: () => ({}) }
+  settings: { type: Object, default: () => ({}) },
+  events: { type: Object, default: null }
 });
 
 const emit = defineEmits(['save', 'back']);
@@ -219,6 +225,7 @@ const form = reactive({
     timeoutMs: 60000
   },
   autoNarrative: true,
+  eventAutoEnabled: false,
   originalPrompt: '',
   characterCompletionPrompt: '',
   characterMaxOutput: 8000,
@@ -230,6 +237,7 @@ watch(() => props.settings, (s) => {
   if (s.adjudicator) Object.assign(form.judge, s.adjudicator);
   if (s.narrator) Object.assign(form.narrator, s.narrator);
   form.autoNarrative = !!s.autoNarrative;
+  form.eventAutoEnabled = s.eventAutoEnabled === true;
   form.originalPrompt = s.originalPrompt || '';
   form.characterCompletionPrompt = s.characterCompletionPrompt || '';
   form.characterMaxOutput = s.characterMaxOutput || 8000;
@@ -241,6 +249,7 @@ function onSave() {
     adjudicator: { ...form.judge },
     narrator: { ...form.narrator },
     autoNarrative: form.autoNarrative,
+    eventAutoEnabled: form.eventAutoEnabled,
     originalPrompt: form.originalPrompt,
     characterCompletionPrompt: form.characterCompletionPrompt,
     characterMaxOutput: form.characterMaxOutput,

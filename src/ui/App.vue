@@ -95,6 +95,7 @@
             <SettingsPanel 
               v-show="currentTab === 'settings'"
               :settings="controller.settings"
+              :events="events"
               @save="handleSaveSettings"
               @back="currentTab = 'workbench'"
             />
@@ -151,7 +152,8 @@ import { ContentStore } from '../content-store.js';
 
 const props = defineProps({
   controller: { type: Object, required: true },
-  hostAdapter: { type: Object, default: null }
+  hostAdapter: { type: Object, default: null },
+  events: { type: Object, default: null }
 });
 
 const isOpen = ref(false);
@@ -405,9 +407,19 @@ async function handleRetryHost() {
 }
 
 // 设置与数据
-function handleSaveSettings(newSettings) {
+async function handleSaveSettings(newSettings) {
   try {
     props.controller.setSettings(newSettings);
+    if (props.events) {
+      await props.events.disable();
+      if (newSettings.eventAutoEnabled) {
+        const judge = props.controller.settings.adjudicator;
+        if (judge.mode !== 'http' || !judge.endpoint || !judge.model) throw new Error('自动事务入口需要先配置真实裁定 AI 的接口和模型');
+        props.events.configureAutomaticAdjudication({ endpoint: judge.endpoint, model: judge.model, apiKey: judge.apiKey || '',
+          requestTimeoutMs: judge.timeoutMs, totalTimeoutMs: Math.max(judge.timeoutMs * 4, 120000), maxOutput: judge.maxOutput });
+        await props.events.enable();
+      }
+    }
     notification.value = '独立机枢设定已保存；凭据仅保存在当前浏览器本地，不写入战报或导出';
     updateViews();
   } catch (err) {

@@ -35,10 +35,21 @@ export function mountBattleSystem({
   // and applied to a new battle explicitly by the user.
   const controller = providedController || new BattleController({ storage, chatId, branchId, hostAdapter: host });
   const events = globalThis.SillyTavern?.getContext ? createEventRuntime({ controller }) : null;
+  if (events && controller.settings?.eventAutoEnabled) {
+    const judge = controller.settings.adjudicator;
+    if (judge?.mode === 'http' && judge.endpoint && judge.model) {
+      try {
+        events.configureAutomaticAdjudication({ endpoint: judge.endpoint, model: judge.model, apiKey: judge.apiKey || '',
+          requestTimeoutMs: judge.timeoutMs, totalTimeoutMs: Math.max(judge.timeoutMs * 4, 120000), maxOutput: judge.maxOutput });
+        void events.enable().catch(error => console.warn('[xybattle] 自动事务入口未能恢复:', error));
+      } catch (error) { console.warn('[xybattle] 自动事务入口配置无效:', error); }
+    }
+  }
 
   const app = createApp(App, {
     controller,
-    hostAdapter: host
+    hostAdapter: host,
+    events
   });
 
   const vm = app.mount(root);

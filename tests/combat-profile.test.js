@@ -111,6 +111,11 @@ test('old default completion prompt migrates; custom prompt persists; generation
   assert.throws(() => normalizeSettings({ characterMaxOutput: Infinity }), /输出上限/);
 });
 
+test('automatic event entry stays disabled by default and persists only as an explicit setting', () => {
+  assert.equal(normalizeSettings({}).eventAutoEnabled, false);
+  assert.equal(normalizeSettings({ eventAutoEnabled: true }).eventAutoEnabled, true);
+});
+
 test('malformed nested entries report missing definitions instead of bypassing completeness validation', () => {
   const profile = normalizeCombatProfile({ techniques: [null], martialArts: [null], resourceDefinitions: [null] });
   assert.ok(combatProfileIssues(profile).length > 5);
