@@ -18691,7 +18691,7 @@ function _b({ documentRef: e = globalThis.document, storage: t = globalThis.loca
 		chatId: i,
 		branchId: a,
 		hostAdapter: s
-	}), l = globalThis.SillyTavern?.getContext ? gb({ controller: c }) : null, u = !1, d, f;
+	}), l = globalThis.SillyTavern?.getContext ? gb({ controller: c }) : null, u = !1, d, f, p = 0;
 	if (l && c.settings?.eventAutoEnabled) {
 		let e = c.settings.adjudicator;
 		if (e?.mode === "http" && e.endpoint && e.model) try {
@@ -18705,37 +18705,39 @@ function _b({ documentRef: e = globalThis.document, storage: t = globalThis.loca
 			});
 			let t = () => {
 				let e = s?.context?.();
-				!c.settings.eventAutoEnabled || l.gate.enabled || u || !e?.chatId || e.groupId || (u = !0, l.enable().catch((e) => console.warn("[xybattle] 自动事务入口未能恢复:", e)).finally(() => {
+				!c.settings.eventAutoEnabled || l.gate.enabled || u || !e?.chatId || e.groupId || (u = !0, l.enable().catch((e) => {
+					console.warn("[xybattle] 自动事务入口未能恢复:", e), ++p < 3 && (clearTimeout(d), d = setTimeout(t, 500));
+				}).finally(() => {
 					u = !1;
 				}));
 			};
 			f = s?.subscribeScopeChange?.(() => {
-				clearTimeout(d), d = setTimeout(t, 0);
+				clearTimeout(d), p = 0, d = setTimeout(t, 300);
 			}), t();
 		} catch (e) {
 			console.warn("[xybattle] 自动事务入口配置无效:", e);
 		}
 	}
-	let p = vs(a_, {
+	let m = vs(a_, {
 		controller: c,
 		hostAdapter: s,
 		events: l
-	}), m = p.mount(o), h = {
+	}), h = m.mount(o), g = {
 		controller: c,
 		events: l,
 		root: o,
-		app: p,
-		vm: m,
-		open: () => m.open?.(),
-		close: () => m.close?.(),
+		app: m,
+		vm: h,
+		open: () => h.open?.(),
+		close: () => h.close?.(),
 		render: () => {
 			c.emit();
 		},
 		destroy: () => {
-			clearTimeout(d), f?.(), l?.destroy(), c.dispose(), p.unmount(), o.remove(), delete globalThis.XYBattle;
+			clearTimeout(d), f?.(), l?.destroy(), c.dispose(), m.unmount(), o.remove(), delete globalThis.XYBattle;
 		}
 	};
-	return globalThis.XYBattle = h, h;
+	return globalThis.XYBattle = g, g;
 }
 //#endregion
 export { _b as mountBattleSystem };
