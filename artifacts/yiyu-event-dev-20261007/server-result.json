@@ -1,0 +1,24 @@
+{
+  "messages": 4,
+  "revision": 7,
+  "events": [
+    {
+      "eventId": "6a5ea372-eac5-49d8-abbd-a0bcc1213482",
+      "status": "rejected",
+      "generationBindings": []
+    },
+    {
+      "eventId": "3be5e886-f484-4bdf-9d40-87862c2217b4",
+      "status": "passed",
+      "generationBindings": [
+        {
+          "requestId": "31117d73-3603-4f8e-8c5b-0e14418ea757",
+          "kind": "normal",
+          "status": "completed",
+          "assistantMessageUid": "b7913766-b378-4527-be74-fbb134e0d7d0",
+          "swipeUid": "361e8256-dff7-4c9d-9739-8afd19fc7481"
+        }
+      ]
+    }
+  ]
+}

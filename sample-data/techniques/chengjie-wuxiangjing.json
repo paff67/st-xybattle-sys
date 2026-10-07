@@ -1,0 +1,99 @@
+{
+  "id": "fabao.chengjie-wuxiangjing",
+  "name": "澄界无相镜",
+  "rank": "天阶",
+  "element": "水·镜",
+  "corePrinciple": "将视线、神识与水元合一；视线所及，镜界立成，水脉自显。",
+  "mechanics": [
+    "视界即锚点：目光注视处瞬息凝结无相水镜核心节点，成型时延大幅骤降",
+    "水脉透析：将听澜诀收集的暗流与气脉破绽直接三维可视化投影于视野，大幅免除神识运算负荷",
+    "镜面分层：赋予水镜多层独立功能（折射、侦测、卸力、传导）"
+  ],
+  "techniques": [
+    {
+      "id": "shijie-maoding",
+      "name": "视界锚定",
+      "originalDefinition": "目光所注视之处瞬息凝结核心水镜节点，无需额外道诀牵引，成型时延由数息降至瞬息。",
+      "mechanics": [
+        "瞬发建立镜界节点",
+        "提升空间展开速度与隐蔽性"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "装备澄界无相镜",
+          "目标位置在视线感知内"
+        ]
+      },
+      "triggeredState": [
+        "瞬时节点凝结"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "fabao.wuxiangjing.maoding"
+      ]
+    },
+    {
+      "id": "shuimai-touxi",
+      "name": "水脉天纹透析",
+      "originalDefinition": "镜片直接将听澜诀捕捉到的敌方灵力运转断层、气机流动与破绽以三维冰蓝水纹显化于视野中。",
+      "mechanics": [
+        "视觉化破绽投影",
+        "大幅降低大脑与神识计算负荷"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "装备澄界无相镜"
+        ]
+      },
+      "triggeredState": [
+        "破绽天纹显影"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "fabao.wuxiangjing.touxi"
+      ]
+    },
+    {
+      "id": "jingmian-fenceng",
+      "name": "镜面多重分层",
+      "originalDefinition": "将单面水镜解析分为卸力层、折射层、传导层与束缚层，可同时承载不同性质的攻防转化。",
+      "mechanics": [
+        "单节点复合功能",
+        "防御卸力与折返同时生效"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "装备澄界无相镜",
+          "已建立水镜节点"
+        ]
+      },
+      "triggeredState": [
+        "镜面多重复合分层"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "fabao.wuxiangjing.fenceng"
+      ]
+    }
+  ],
+  "synergies": [
+    "为无相水镜法提供瞬发节点",
+    "为澄心听澜诀提供数据视野透析",
+    "为弦海共鸣篇提供折返路径"
+  ],
+  "narrativeGuidance": [
+    "日常形态为现代淡蓝眼镜，融入日常生活",
+    "严禁跨件泄漏能力：绝不提供足底加速、惯性消除或音律放大"
+  ],
+  "version": "1.0.0",
+  "visibility": "player",
+  "ruleRefs": [
+    "fabao.wuxiangjing.core",
+    "fabao.wuxiangjing.maoding",
+    "fabao.wuxiangjing.touxi",
+    "fabao.wuxiangjing.fenceng"
+  ]
+}

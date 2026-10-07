@@ -1,0 +1,1219 @@
+{
+  "schema": "battle_negative_cases_v1",
+  "version": "1",
+  "purpose": "假设反例，不能作为当前战斗事实；纠错依据仍是权威原文",
+  "items": [
+    {
+      "id": "negative.gongfa.dielang-xuanchaojue.qixian-chuchao",
+      "registryIds": [
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [
+        "gongfa.dielang-xuanchaojue.qixian-chuchao"
+      ],
+      "keywords": [
+        "起弦·初潮",
+        "初潮",
+        "起弦"
+      ],
+      "scenario": "修士起弦试探，敌手仍在防御。",
+      "wrongVerdict": "仅因起弦便判定已经形成可引爆潮眼。",
+      "correction": "初潮与稳定叠加的潮眼分别裁定，不能跳过形成条件。",
+      "sourceRefs": [
+        "gongfa.dielang-xuanchaojue.qixian-chuchao.definition",
+        "gongfa.dielang-xuanchaojue.qixian-chuchao.definition",
+        "gongfa.dielang-xuanchaojue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.dielang-xuanchaojue.liangong-dielang",
+      "registryIds": [
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [
+        "gongfa.dielang-xuanchaojue.liangong-dielang"
+      ],
+      "keywords": [
+        "连弓·叠浪",
+        "叠浪",
+        "连弓"
+      ],
+      "scenario": "连弓持续施压，敌方打断水元与弓弦控制。",
+      "wrongVerdict": "只要宣布连弓就每回合自动叠层。",
+      "correction": "持续叠势取决于实际控制与交锋结果，不固定自动加层。",
+      "sourceRefs": [
+        "gongfa.dielang-xuanchaojue.liangong-dielang.definition",
+        "gongfa.dielang-xuanchaojue.liangong-dielang.definition",
+        "gongfa.dielang-xuanchaojue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.dielang-xuanchaojue.tiaogong-suichao",
+      "registryIds": [
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [
+        "gongfa.dielang-xuanchaojue.tiaogong-suichao"
+      ],
+      "keywords": [
+        "跳弓·碎潮",
+        "碎潮",
+        "跳弓"
+      ],
+      "scenario": "主角原地演奏跳弓·碎潮，向敌方防御打出短促攻势。",
+      "wrongVerdict": "把跳弓判为跳跃步法，要求先向前移动。",
+      "correction": "跳弓属于演奏攻伐，多段短促爆发；移动不是其名称含义。",
+      "sourceRefs": [
+        "gongfa.dielang-xuanchaojue.tiaogong-suichao.definition",
+        "gongfa.dielang-xuanchaojue.tiaogong-suichao.definition",
+        "gongfa.dielang-xuanchaojue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.dielang-xuanchaojue.changong-huichao",
+      "registryIds": [
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [
+        "gongfa.dielang-xuanchaojue.changong-huichao"
+      ],
+      "keywords": [
+        "颤弓·回潮",
+        "回潮",
+        "颤弓"
+      ],
+      "scenario": "主角用颤弓活化已经留下的弦势。",
+      "wrongVerdict": "要求持有射箭长弓并回收箭矢。",
+      "correction": "颤弓是弦乐弓法；按已有弦势和回流条件裁定。",
+      "sourceRefs": [
+        "gongfa.dielang-xuanchaojue.changong-huichao.definition",
+        "gongfa.dielang-xuanchaojue.changong-huichao.definition",
+        "gongfa.dielang-xuanchaojue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.dielang-xuanchaojue.boxian-nilang",
+      "registryIds": [
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [
+        "gongfa.dielang-xuanchaojue.boxian-nilang"
+      ],
+      "keywords": [
+        "拨弦·逆浪",
+        "逆浪",
+        "拨弦"
+      ],
+      "scenario": "敌手护体结构稳固，主角拨弦突袭局部。",
+      "wrongVerdict": "凭拨弦名称直接判定所有护体失效。",
+      "correction": "突然局部爆发仍需与实际防御交互，不能自动破防。",
+      "sourceRefs": [
+        "gongfa.dielang-xuanchaojue.boxian-nilang.definition",
+        "gongfa.dielang-xuanchaojue.boxian-nilang.definition",
+        "gongfa.dielang-xuanchaojue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.dielang-xuanchaojue.fanyin-chaoyan",
+      "registryIds": [
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [
+        "gongfa.dielang-xuanchaojue.fanyin-chaoyan"
+      ],
+      "keywords": [
+        "泛音·潮眼",
+        "潮眼",
+        "泛音"
+      ],
+      "scenario": "弦势已稳定叠加，主角打算压缩潮眼后引爆。",
+      "wrongVerdict": "把潮眼仅作为观察窗口，禁止爆发。",
+      "correction": "潮眼具有爆发核心作用；压缩引爆仍检查已有结构。",
+      "sourceRefs": [
+        "gongfa.dielang-xuanchaojue.fanyin-chaoyan.definition",
+        "gongfa.dielang-xuanchaojue.fanyin-chaoyan.definition",
+        "gongfa.dielang-xuanchaojue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.dielang-xuanchaojue.jiudie-cangchao",
+      "registryIds": [
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [
+        "gongfa.dielang-xuanchaojue.jiudie-cangchao"
+      ],
+      "keywords": [
+        "九叠沧潮"
+      ],
+      "scenario": "多层潮势有不同落点，主角尝试九叠共振。",
+      "wrongVerdict": "规定最多三层或必须恰好连续攻击九次。",
+      "correction": "按多层共振条件裁定，不增加原文不存在的三层上限或九次计数。",
+      "sourceRefs": [
+        "gongfa.dielang-xuanchaojue.jiudie-cangchao.definition",
+        "gongfa.dielang-xuanchaojue.jiudie-cangchao.definition",
+        "gongfa.dielang-xuanchaojue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.taiyi-canglanjing.chengyuan-qihai-huiliu",
+      "registryIds": [
+        "gongfa.taiyi-canglanjing"
+      ],
+      "techniqueIds": [
+        "gongfa.taiyi-canglanjing.chengyuan-qihai-huiliu"
+      ],
+      "keywords": [
+        "澄渊·气海回流",
+        "气海回流",
+        "澄渊"
+      ],
+      "scenario": "自身水元仍在维持镜界，主角要求气海回流回收。",
+      "wrongVerdict": "既保留原节点供能，又全额回收同一水元。",
+      "correction": "仍受控使用的水元不可同时回收；已散逸且联系可达才评估回收。",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.chengyuan-qihai-huiliu.definition",
+        "gongfa.taiyi-canglanjing.chengyuan-qihai-huiliu.definition",
+        "gongfa.taiyi-canglanjing.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.taiyi-canglanjing.wuxiang-fenshen",
+      "registryIds": [
+        "gongfa.taiyi-canglanjing"
+      ],
+      "techniqueIds": [
+        "gongfa.taiyi-canglanjing.wuxiang-fenshen"
+      ],
+      "keywords": [
+        "五相分神"
+      ],
+      "scenario": "主角同时操控多个术式，神魂负担已经升高。",
+      "wrongVerdict": "把五相分神定义为固定五个免费控制槽。",
+      "correction": "评估复杂度和神魂承载，不设五槽或免费并行。",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.wuxiang-fenshen.definition",
+        "gongfa.taiyi-canglanjing.wuxiang-fenshen.definition",
+        "gongfa.taiyi-canglanjing.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.taiyi-canglanjing.canghai-yangshen",
+      "registryIds": [
+        "gongfa.taiyi-canglanjing"
+      ],
+      "techniqueIds": [
+        "gongfa.taiyi-canglanjing.canghai-yangshen"
+      ],
+      "keywords": [
+        "沧海养神"
+      ],
+      "scenario": "激烈交锋中主角使用沧海养神。",
+      "wrongVerdict": "因此直接免疫所有精神干扰。",
+      "correction": "滋养稳定不等于无条件免疫，仍需核对外力和承载。",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.canghai-yangshen.definition",
+        "gongfa.taiyi-canglanjing.canghai-yangshen.definition",
+        "gongfa.taiyi-canglanjing.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.taiyi-canglanjing.zhirou-huae",
+      "registryIds": [
+        "gongfa.taiyi-canglanjing"
+      ],
+      "techniqueIds": [
+        "gongfa.taiyi-canglanjing.zhirou-huae"
+      ],
+      "keywords": [
+        "至柔·化厄",
+        "化厄",
+        "至柔"
+      ],
+      "scenario": "敌人释放独立的诅咒，主角使用至柔化厄。",
+      "wrongVerdict": "把诅咒直接转成等量可用水元。",
+      "correction": "不能无依据吞噬神魂、诅咒或因果力量并取得属性。",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.zhirou-huae.definition",
+        "gongfa.taiyi-canglanjing.zhirou-huae.definition",
+        "gongfa.taiyi-canglanjing.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.taiyi-canglanjing.taiyi-huilan",
+      "registryIds": [
+        "gongfa.taiyi-canglanjing"
+      ],
+      "techniqueIds": [
+        "gongfa.taiyi-canglanjing.taiyi-huilan"
+      ],
+      "keywords": [
+        "太一·回澜",
+        "回澜",
+        "太一"
+      ],
+      "scenario": "自己的水势已经被彻底湮灭，主角使用太一回澜。",
+      "wrongVerdict": "从不存在的水势中无损恢复全部资源。",
+      "correction": "已湮灭与可回流的散逸水元不同，不能无中生有。",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.taiyi-huilan.definition",
+        "gongfa.taiyi-canglanjing.taiyi-huilan.definition",
+        "gongfa.taiyi-canglanjing.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.chengxin-tinglanjue.xinyuan-chengting",
+      "registryIds": [
+        "gongfa.chengxin-tinglanjue"
+      ],
+      "techniqueIds": [
+        "gongfa.chengxin-tinglanjue.xinyuan-chengting"
+      ],
+      "keywords": [
+        "心渊·澄听",
+        "澄听",
+        "心渊"
+      ],
+      "scenario": "敌人没有公开秘密术式信息，主角开启澄听。",
+      "wrongVerdict": "立刻读出其完整隐藏招式档案。",
+      "correction": "感知依赖可观察信号，不等于全知。",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.xinyuan-chengting.definition",
+        "gongfa.chengxin-tinglanjue.xinyuan-chengting.definition",
+        "gongfa.chengxin-tinglanjue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.chengxin-tinglanjue.maixiang-xianwen",
+      "registryIds": [
+        "gongfa.chengxin-tinglanjue"
+      ],
+      "techniqueIds": [
+        "gongfa.chengxin-tinglanjue.maixiang-xianwen"
+      ],
+      "keywords": [
+        "脉相·先闻",
+        "先闻",
+        "脉相"
+      ],
+      "scenario": "敌方动作显露起手征兆后突然变招。",
+      "wrongVerdict": "先闻使主角预知变招后的全部结果。",
+      "correction": "依据当前可读征兆推断，后续变招需要重新辨识。",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.maixiang-xianwen.definition",
+        "gongfa.chengxin-tinglanjue.maixiang-xianwen.definition",
+        "gongfa.chengxin-tinglanjue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.chengxin-tinglanjue.mingzhen-zhaoying",
+      "registryIds": [
+        "gongfa.chengxin-tinglanjue"
+      ],
+      "techniqueIds": [
+        "gongfa.chengxin-tinglanjue.mingzhen-zhaoying"
+      ],
+      "keywords": [
+        "明真·照影",
+        "照影",
+        "明真"
+      ],
+      "scenario": "敌人布置复杂真假映像，主角照影辨识。",
+      "wrongVerdict": "所有幻象与遮蔽自动解除。",
+      "correction": "辨识与解除是两件事，结论取决于实际线索。",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.mingzhen-zhaoying.definition",
+        "gongfa.chengxin-tinglanjue.mingzhen-zhaoying.definition",
+        "gongfa.chengxin-tinglanjue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.chengxin-tinglanjue.tianlai-tingxi",
+      "registryIds": [
+        "gongfa.chengxin-tinglanjue"
+      ],
+      "techniqueIds": [
+        "gongfa.chengxin-tinglanjue.tianlai-tingxi"
+      ],
+      "keywords": [
+        "天籁·听隙",
+        "听隙",
+        "天籁"
+      ],
+      "scenario": "听隙发现防御交替，但主角攻击尚未到达。",
+      "wrongVerdict": "发现破绽就直接判定命中和受伤。",
+      "correction": "窗口与命中分别裁定，敌人仍可能补防或改变节奏。",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.tianlai-tingxi.definition",
+        "gongfa.chengxin-tinglanjue.tianlai-tingxi.definition",
+        "gongfa.chengxin-tinglanjue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.chengxin-tinglanjue.suxi-zhuilan",
+      "registryIds": [
+        "gongfa.chengxin-tinglanjue"
+      ],
+      "techniqueIds": [
+        "gongfa.chengxin-tinglanjue.suxi-zhuilan"
+      ],
+      "keywords": [
+        "溯息·追澜",
+        "追澜",
+        "溯息"
+      ],
+      "scenario": "目标切断了可追踪的气息联系。",
+      "wrongVerdict": "追澜仍无限距离精确定位目标。",
+      "correction": "追踪需要存续的真实线索；线索中断不能继续精确定位。",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.suxi-zhuilan.definition",
+        "gongfa.chengxin-tinglanjue.suxi-zhuilan.definition",
+        "gongfa.chengxin-tinglanjue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.chengxin-tinglanjue.chengxin-huisheng",
+      "registryIds": [
+        "gongfa.chengxin-tinglanjue"
+      ],
+      "techniqueIds": [
+        "gongfa.chengxin-tinglanjue.chengxin-huisheng"
+      ],
+      "keywords": [
+        "澄心·回声",
+        "回声",
+        "澄心"
+      ],
+      "scenario": "敌人的反制改变了回声信号。",
+      "wrongVerdict": "以旧回声结论替代本轮重新辨识。",
+      "correction": "依据新的可观察反馈判断，旧情报不是永久有效标记。",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.chengxin-huisheng.definition",
+        "gongfa.chengxin-tinglanjue.chengxin-huisheng.definition",
+        "gongfa.chengxin-tinglanjue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.chengxin-tinglanjue.tinglan-wanxiang-huisheng",
+      "registryIds": [
+        "gongfa.chengxin-tinglanjue"
+      ],
+      "techniqueIds": [
+        "gongfa.chengxin-tinglanjue.tinglan-wanxiang-huisheng"
+      ],
+      "keywords": [
+        "听澜·万象回声",
+        "万象回声",
+        "听澜"
+      ],
+      "scenario": "战场信号纷杂，主角使用万象回声。",
+      "wrongVerdict": "因此获取所有不可感知区域的真实信息。",
+      "correction": "广域感知仍受信号、干扰和承载限制。",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.tinglan-wanxiang-huisheng.definition",
+        "gongfa.chengxin-tinglanjue.tinglan-wanxiang-huisheng.definition",
+        "gongfa.chengxin-tinglanjue.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.wuxiang-shuijingfa.shuijing-jiejie-jiedian",
+      "registryIds": [
+        "gongfa.wuxiang-shuijingfa"
+      ],
+      "techniqueIds": [
+        "gongfa.wuxiang-shuijingfa.shuijing-jiejie-jiedian"
+      ],
+      "keywords": [
+        "水镜·镜界节点",
+        "镜界节点",
+        "水镜"
+      ],
+      "scenario": "原有水镜节点被敌人摧毁。",
+      "wrongVerdict": "后续换位仍使用该节点作为有效落点。",
+      "correction": "节点失效应影响依赖它的行动，需另找有效联系。",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.shuijing-jiejie-jiedian.definition",
+        "gongfa.wuxiang-shuijingfa.shuijing-jiejie-jiedian.definition",
+        "gongfa.wuxiang-shuijingfa.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.wuxiang-shuijingfa.chengjie-chaotianmu",
+      "registryIds": [
+        "gongfa.wuxiang-shuijingfa"
+      ],
+      "techniqueIds": [
+        "gongfa.wuxiang-shuijingfa.chengjie-chaotianmu"
+      ],
+      "keywords": [
+        "澄界·潮天幕",
+        "潮天幕",
+        "澄界"
+      ],
+      "scenario": "敌人以大范围攻击覆盖潮天幕所在区域。",
+      "wrongVerdict": "天幕使其中一切攻击自动落空。",
+      "correction": "场地关系不等于绝对防御，覆盖攻击仍须实际交互。",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.chengjie-chaotianmu.definition",
+        "gongfa.wuxiang-shuijingfa.chengjie-chaotianmu.definition",
+        "gongfa.wuxiang-shuijingfa.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.wuxiang-shuijingfa.jingjie-zhichi-qianxun",
+      "registryIds": [
+        "gongfa.wuxiang-shuijingfa"
+      ],
+      "techniqueIds": [
+        "gongfa.wuxiang-shuijingfa.jingjie-zhichi-qianxun"
+      ],
+      "keywords": [
+        "镜界·咫尺千寻",
+        "咫尺千寻"
+      ],
+      "scenario": "敌人封锁了镜界节点间的联系。",
+      "wrongVerdict": "咫尺千寻可以绕过所有封界限制。",
+      "correction": "局部空间关系依赖有效节点与联系，封锁会影响成立。",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.jingjie-zhichi-qianxun.definition",
+        "gongfa.wuxiang-shuijingfa.jingjie-zhichi-qianxun.definition",
+        "gongfa.wuxiang-shuijingfa.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.wuxiang-shuijingfa.jingjie-yihua-yinsha",
+      "registryIds": [
+        "gongfa.wuxiang-shuijingfa"
+      ],
+      "techniqueIds": [
+        "gongfa.wuxiang-shuijingfa.jingjie-yihua-yinsha"
+      ],
+      "keywords": [
+        "镜界·移花引煞",
+        "移花引煞"
+      ],
+      "scenario": "移花引煞面对瞬发即散且已命中的攻击。",
+      "wrongVerdict": "事后宣布将全部伤害无条件转走。",
+      "correction": "核对可干涉时机、作用对象和联系，不能事后改写已提交事实。",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.jingjie-yihua-yinsha.definition",
+        "gongfa.wuxiang-shuijingfa.jingjie-yihua-yinsha.definition",
+        "gongfa.wuxiang-shuijingfa.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.wuxiang-shuijingfa.jingjie-shuiyue-zhenshen",
+      "registryIds": [
+        "gongfa.wuxiang-shuijingfa"
+      ],
+      "techniqueIds": [
+        "gongfa.wuxiang-shuijingfa.jingjie-shuiyue-zhenshen"
+      ],
+      "keywords": [
+        "镜界·水月真身",
+        "水月真身"
+      ],
+      "scenario": "镜身替主角承受一次攻击。",
+      "wrongVerdict": "同时自动宣布真身已经完成远距离换位。",
+      "correction": "镜身替劫与真身位置变化分别记录，换位另需依据。",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.jingjie-shuiyue-zhenshen.definition",
+        "gongfa.wuxiang-shuijingfa.jingjie-shuiyue-zhenshen.definition",
+        "gongfa.wuxiang-shuijingfa.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.wuxiang-shuijingfa.jingjie-fanzhao-guitu",
+      "registryIds": [
+        "gongfa.wuxiang-shuijingfa"
+      ],
+      "techniqueIds": [
+        "gongfa.wuxiang-shuijingfa.jingjie-fanzhao-guitu"
+      ],
+      "keywords": [
+        "镜界·反照归途",
+        "反照归途"
+      ],
+      "scenario": "敌人攻击激起镜界回响。",
+      "wrongVerdict": "所有回响自动等额反弹到施术者。",
+      "correction": "回响不等于自动反射；核对返照路径与干涉条件。",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.jingjie-fanzhao-guitu.definition",
+        "gongfa.wuxiang-shuijingfa.jingjie-fanzhao-guitu.definition",
+        "gongfa.wuxiang-shuijingfa.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.wuxiang-shuijingfa.wuxiang-jingjie-chongdie",
+      "registryIds": [
+        "gongfa.wuxiang-shuijingfa"
+      ],
+      "techniqueIds": [
+        "gongfa.wuxiang-shuijingfa.wuxiang-jingjie-chongdie"
+      ],
+      "keywords": [
+        "无相·镜界重叠",
+        "镜界重叠",
+        "无相"
+      ],
+      "scenario": "镜界重叠形成多个攻击落点。",
+      "wrongVerdict": "相同资源与攻击因此无代价复制多倍。",
+      "correction": "多个落点不意味着资源复制、固定倍伤或必中。",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.wuxiang-jingjie-chongdie.definition",
+        "gongfa.wuxiang-shuijingfa.wuxiang-jingjie-chongdie.definition",
+        "gongfa.wuxiang-shuijingfa.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.liuguang-tachaobu.tachao-jiejie",
+      "registryIds": [
+        "gongfa.liuguang-tachaobu"
+      ],
+      "techniqueIds": [
+        "gongfa.liuguang-tachaobu.tachao-jiejie"
+      ],
+      "keywords": [
+        "踏潮·借界",
+        "借界",
+        "踏潮"
+      ],
+      "scenario": "落点水意已经被敌人截断，主角尝试借界。",
+      "wrongVerdict": "仅凭招式名称就瞬移至任意地点。",
+      "correction": "跨距需要有效落点联系，不能跳过封锁和失效检查。",
+      "sourceRefs": [
+        "gongfa.liuguang-tachaobu.tachao-jiejie.definition",
+        "gongfa.liuguang-tachaobu.tachao-jiejie.definition",
+        "gongfa.liuguang-tachaobu.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.liuguang-tachaobu.chaohen-huishen",
+      "registryIds": [
+        "gongfa.liuguang-tachaobu"
+      ],
+      "techniqueIds": [
+        "gongfa.liuguang-tachaobu.chaohen-huishen"
+      ],
+      "keywords": [
+        "潮痕·回身",
+        "回身",
+        "潮痕"
+      ],
+      "scenario": "此前留下的潮痕已被破坏，主角回身。",
+      "wrongVerdict": "仍可回到失效潮痕处。",
+      "correction": "回身检查潮痕存续与联系，不把历史记录当活跃锚点。",
+      "sourceRefs": [
+        "gongfa.liuguang-tachaobu.chaohen-huishen.definition",
+        "gongfa.liuguang-tachaobu.chaohen-huishen.definition",
+        "gongfa.liuguang-tachaobu.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.liuguang-tachaobu.liuguang-liuying",
+      "registryIds": [
+        "gongfa.liuguang-tachaobu"
+      ],
+      "techniqueIds": [
+        "gongfa.liuguang-tachaobu.liuguang-liuying"
+      ],
+      "keywords": [
+        "流光·留影",
+        "留影"
+      ],
+      "scenario": "主角留下流光留影继续交锋。",
+      "wrongVerdict": "每道留影都成为独立完整战斗分身。",
+      "correction": "留影短暂承接身形动作，不自动复制完整能力与资源。",
+      "sourceRefs": [
+        "gongfa.liuguang-tachaobu.liuguang-liuying.definition",
+        "gongfa.liuguang-tachaobu.liuguang-liuying.definition",
+        "gongfa.liuguang-tachaobu.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.liuguang-tachaobu.huanba-zhuchao",
+      "registryIds": [
+        "gongfa.liuguang-tachaobu"
+      ],
+      "techniqueIds": [
+        "gongfa.liuguang-tachaobu.huanba-zhuchao"
+      ],
+      "keywords": [
+        "换把·逐潮",
+        "逐潮",
+        "换把"
+      ],
+      "scenario": "主角换把逐潮，同时继续弓弦演奏。",
+      "wrongVerdict": "移动必然打断一切演奏或必然无负担连续演奏。",
+      "correction": "换位可与变奏配合，仍评估控制与承载，不作两种绝对化判断。",
+      "sourceRefs": [
+        "gongfa.liuguang-tachaobu.huanba-zhuchao.definition",
+        "gongfa.liuguang-tachaobu.huanba-zhuchao.definition",
+        "gongfa.liuguang-tachaobu.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.liuguang-tachaobu.yibu-xiansheng",
+      "registryIds": [
+        "gongfa.liuguang-tachaobu"
+      ],
+      "techniqueIds": [
+        "gongfa.liuguang-tachaobu.yibu-xiansheng"
+      ],
+      "keywords": [
+        "一步·先声",
+        "先声",
+        "一步"
+      ],
+      "scenario": "主角根据起手征兆一步先声，对方临时收招。",
+      "wrongVerdict": "先声冻结敌人的时间或预知其未来。",
+      "correction": "先手来自可读征兆与落点判断，不是冻结时间。",
+      "sourceRefs": [
+        "gongfa.liuguang-tachaobu.yibu-xiansheng.definition",
+        "gongfa.liuguang-tachaobu.yibu-xiansheng.definition",
+        "gongfa.liuguang-tachaobu.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.liuguang-tachaobu.liuguang-wudingmen",
+      "registryIds": [
+        "gongfa.liuguang-tachaobu"
+      ],
+      "techniqueIds": [
+        "gongfa.liuguang-tachaobu.liuguang-wudingmen"
+      ],
+      "keywords": [
+        "流光·无定门",
+        "无定门"
+      ],
+      "scenario": "敌人以范围封锁覆盖多个落点。",
+      "wrongVerdict": "无定门保证主角在任何封锁下无伤脱离。",
+      "correction": "多落点变化仍受实际联系、范围覆盖与控制条件限制。",
+      "sourceRefs": [
+        "gongfa.liuguang-tachaobu.liuguang-wudingmen.definition",
+        "gongfa.liuguang-tachaobu.liuguang-wudingmen.definition",
+        "gongfa.liuguang-tachaobu.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.xianhai-gongmingpian.tingxian-bianluo",
+      "registryIds": [
+        "gongfa.xianhai-gongmingpian"
+      ],
+      "techniqueIds": [
+        "gongfa.xianhai-gongmingpian.tingxian-bianluo"
+      ],
+      "keywords": [
+        "听弦·辨络",
+        "辨络",
+        "听弦"
+      ],
+      "scenario": "主角尚未观察到敌方术式联系。",
+      "wrongVerdict": "听弦辨络立即获得全部内部结构。",
+      "correction": "辨络依据观察或接触，不凭空建立完整未知联系。",
+      "sourceRefs": [
+        "gongfa.xianhai-gongmingpian.tingxian-bianluo.definition",
+        "gongfa.xianhai-gongmingpian.tingxian-bianluo.definition",
+        "gongfa.xianhai-gongmingpian.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.xianhai-gongmingpian.duanxian-shixu",
+      "registryIds": [
+        "gongfa.xianhai-gongmingpian"
+      ],
+      "techniqueIds": [
+        "gongfa.xianhai-gongmingpian.duanxian-shixu"
+      ],
+      "keywords": [
+        "断弦·失续",
+        "失续",
+        "断弦"
+      ],
+      "scenario": "主角断开敌方术式的一段衔接。",
+      "wrongVerdict": "断弦直接摧毁整件法宝和全部术式。",
+      "correction": "联系中断与本体毁灭分别裁定。",
+      "sourceRefs": [
+        "gongfa.xianhai-gongmingpian.duanxian-shixu.definition",
+        "gongfa.xianhai-gongmingpian.duanxian-shixu.definition",
+        "gongfa.xianhai-gongmingpian.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.xianhai-gongmingpian.jiexian-gaidiao",
+      "registryIds": [
+        "gongfa.xianhai-gongmingpian"
+      ],
+      "techniqueIds": [
+        "gongfa.xianhai-gongmingpian.jiexian-gaidiao"
+      ],
+      "keywords": [
+        "借弦·改调",
+        "改调",
+        "借弦"
+      ],
+      "scenario": "主角借弦改变敌方离体力量的去向。",
+      "wrongVerdict": "因此永久吸收对方属性与传承。",
+      "correction": "改接借力不等于吸收、夺取属性或复制能力。",
+      "sourceRefs": [
+        "gongfa.xianhai-gongmingpian.jiexian-gaidiao.definition",
+        "gongfa.xianhai-gongmingpian.jiexian-gaidiao.definition",
+        "gongfa.xianhai-gongmingpian.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.xianhai-gongmingpian.daoxian-nixu",
+      "registryIds": [
+        "gongfa.xianhai-gongmingpian"
+      ],
+      "techniqueIds": [
+        "gongfa.xianhai-gongmingpian.daoxian-nixu"
+      ],
+      "keywords": [
+        "倒弦·逆序",
+        "逆序",
+        "倒弦"
+      ],
+      "scenario": "敌方攻击只有极短暂且简单的结构。",
+      "wrongVerdict": "倒弦对任何力量都能无限逆序控制。",
+      "correction": "核对可接触联系与时序，瞬发即散对象可能缺少干涉窗口。",
+      "sourceRefs": [
+        "gongfa.xianhai-gongmingpian.daoxian-nixu.definition",
+        "gongfa.xianhai-gongmingpian.daoxian-nixu.definition",
+        "gongfa.xianhai-gongmingpian.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.xianhai-gongmingpian.jiyin-kongpai",
+      "registryIds": [
+        "gongfa.xianhai-gongmingpian"
+      ],
+      "techniqueIds": [
+        "gongfa.xianhai-gongmingpian.jiyin-kongpai"
+      ],
+      "keywords": [
+        "寂音·空拍",
+        "空拍",
+        "寂音"
+      ],
+      "scenario": "寂音空拍打断局部衔接。",
+      "wrongVerdict": "将局部断续解释成全场时间停止。",
+      "correction": "按局部结构与节奏影响裁定，不扩大为时停。",
+      "sourceRefs": [
+        "gongfa.xianhai-gongmingpian.jiyin-kongpai.definition",
+        "gongfa.xianhai-gongmingpian.jiyin-kongpai.definition",
+        "gongfa.xianhai-gongmingpian.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.xianhai-gongmingpian.xianhai-hezou",
+      "registryIds": [
+        "gongfa.xianhai-gongmingpian"
+      ],
+      "techniqueIds": [
+        "gongfa.xianhai-gongmingpian.xianhai-hezou"
+      ],
+      "keywords": [
+        "弦海·合奏",
+        "合奏"
+      ],
+      "scenario": "主角提出六法合奏，但其中节点和标记尚未建立。",
+      "wrongVerdict": "一次合奏声明自动激活全体系所有增益。",
+      "correction": "逐项检查对象和承载；合奏不是固定免费连招。",
+      "sourceRefs": [
+        "gongfa.xianhai-gongmingpian.xianhai-hezou.definition",
+        "gongfa.xianhai-gongmingpian.xianhai-hezou.definition",
+        "gongfa.xianhai-gongmingpian.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.gongfa.xianhai-gongmingpian.xianhai-zhongzhang-shitiao",
+      "registryIds": [
+        "gongfa.xianhai-gongmingpian"
+      ],
+      "techniqueIds": [
+        "gongfa.xianhai-gongmingpian.xianhai-zhongzhang-shitiao"
+      ],
+      "keywords": [
+        "弦海·终章失调",
+        "终章失调"
+      ],
+      "scenario": "敌方多路结构中一条联系受到终章失调。",
+      "wrongVerdict": "无条件判定全部能力永久失效。",
+      "correction": "依据被干涉的联系和传播条件判断，不能升级为全能力封禁。",
+      "sourceRefs": [
+        "gongfa.xianhai-gongmingpian.xianhai-zhongzhang-shitiao.definition",
+        "gongfa.xianhai-gongmingpian.xianhai-zhongzhang-shitiao.definition",
+        "gongfa.xianhai-gongmingpian.source.section-4"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-01",
+      "interactionId": "six-arts.interaction-01",
+      "registryIds": [
+        "gongfa.taiyi-canglanjing",
+        "gongfa.chengxin-tinglanjue"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "太一沧澜经与澄心听澜诀"
+      ],
+      "scenario": "交锋中主角尝试以《太一沧澜经》配合《澄心听澜诀》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "太一提供听澜所需神魂承载。神魂过载时仍可能延迟、误判或术式失控。",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.source.section-4",
+        "gongfa.taiyi-canglanjing.source.section-9",
+        "gongfa.taiyi-canglanjing.source.section-10",
+        "gongfa.chengxin-tinglanjue.source.section-4",
+        "gongfa.chengxin-tinglanjue.source.section-9",
+        "gongfa.chengxin-tinglanjue.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-02",
+      "interactionId": "six-arts.interaction-02",
+      "registryIds": [
+        "gongfa.taiyi-canglanjing",
+        "gongfa.wuxiang-shuijingfa"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "太一沧澜经与无相水镜法"
+      ],
+      "scenario": "交锋中主角尝试以《太一沧澜经》配合《无相水镜法》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "太一提供节点水元并支撑维持。正在维持节点的水元不能提前回收。",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.source.section-4",
+        "gongfa.taiyi-canglanjing.source.section-9",
+        "gongfa.taiyi-canglanjing.source.section-10",
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-03",
+      "interactionId": "six-arts.interaction-03",
+      "registryIds": [
+        "gongfa.taiyi-canglanjing",
+        "gongfa.liuguang-tachaobu"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "太一沧澜经与流光踏潮步"
+      ],
+      "scenario": "交锋中主角尝试以《太一沧澜经》配合《流光踏潮步》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "太一提供连续换位所需水元与落点联系。水元供给不代替有效落点或解除封界。",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.source.section-4",
+        "gongfa.taiyi-canglanjing.source.section-9",
+        "gongfa.taiyi-canglanjing.source.section-10",
+        "gongfa.liuguang-tachaobu.source.section-4",
+        "gongfa.liuguang-tachaobu.source.section-9",
+        "gongfa.liuguang-tachaobu.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-04",
+      "interactionId": "six-arts.interaction-04",
+      "registryIds": [
+        "gongfa.taiyi-canglanjing",
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "太一沧澜经与叠浪玄潮诀"
+      ],
+      "scenario": "交锋中主角尝试以《太一沧澜经》配合《叠浪玄潮诀》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "提高水元纯度、潮势稳定性、持续时间和多线承载。不自动增加潮势层数或无限回收正在控制的潮势。",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.source.section-4",
+        "gongfa.taiyi-canglanjing.source.section-9",
+        "gongfa.taiyi-canglanjing.source.section-10",
+        "gongfa.dielang-xuanchaojue.source.section-4",
+        "gongfa.dielang-xuanchaojue.source.section-9",
+        "gongfa.dielang-xuanchaojue.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-05",
+      "interactionId": "six-arts.interaction-05",
+      "registryIds": [
+        "gongfa.taiyi-canglanjing",
+        "gongfa.xianhai-gongmingpian"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "太一沧澜经与弦海共鸣篇"
+      ],
+      "scenario": "交锋中主角尝试以《太一沧澜经》配合《弦海共鸣篇》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "提供稳定的干涉媒介与神魂承载。承载不产生尚未观察到的敌方联系。",
+      "sourceRefs": [
+        "gongfa.taiyi-canglanjing.source.section-4",
+        "gongfa.taiyi-canglanjing.source.section-9",
+        "gongfa.taiyi-canglanjing.source.section-10",
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-06",
+      "interactionId": "six-arts.interaction-06",
+      "registryIds": [
+        "gongfa.chengxin-tinglanjue",
+        "gongfa.wuxiang-shuijingfa"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "澄心听澜诀与无相水镜法"
+      ],
+      "scenario": "交锋中主角尝试以《澄心听澜诀》配合《无相水镜法》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "为水镜寻找节点与关键交替。标记不是已经建成的镜界节点。",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.source.section-4",
+        "gongfa.chengxin-tinglanjue.source.section-9",
+        "gongfa.chengxin-tinglanjue.source.section-10",
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-07",
+      "interactionId": "six-arts.interaction-07",
+      "registryIds": [
+        "gongfa.chengxin-tinglanjue",
+        "gongfa.liuguang-tachaobu"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "澄心听澜诀与流光踏潮步"
+      ],
+      "scenario": "交锋中主角尝试以《澄心听澜诀》配合《流光踏潮步》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "判断敌意和落点，支持一步先声。不预知未来；变招和假动作需要重新辨识。",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.source.section-4",
+        "gongfa.chengxin-tinglanjue.source.section-9",
+        "gongfa.chengxin-tinglanjue.source.section-10",
+        "gongfa.liuguang-tachaobu.source.section-4",
+        "gongfa.liuguang-tachaobu.source.section-9",
+        "gongfa.liuguang-tachaobu.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-08",
+      "interactionId": "six-arts.interaction-08",
+      "registryIds": [
+        "gongfa.chengxin-tinglanjue",
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "澄心听澜诀与叠浪玄潮诀"
+      ],
+      "scenario": "交锋中主角尝试以《澄心听澜诀》配合《叠浪玄潮诀》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "标记防御节奏，使叠浪沿标记留下弦势。感知成功不等于自动命中或摧毁防御。",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.source.section-4",
+        "gongfa.chengxin-tinglanjue.source.section-9",
+        "gongfa.chengxin-tinglanjue.source.section-10",
+        "gongfa.dielang-xuanchaojue.source.section-4",
+        "gongfa.dielang-xuanchaojue.source.section-9",
+        "gongfa.dielang-xuanchaojue.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-09",
+      "interactionId": "six-arts.interaction-09",
+      "registryIds": [
+        "gongfa.chengxin-tinglanjue",
+        "gongfa.xianhai-gongmingpian"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "澄心听澜诀与弦海共鸣篇"
+      ],
+      "scenario": "交锋中主角尝试以《澄心听澜诀》配合《弦海共鸣篇》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "为断弦、借调、倒序确定联系对象。未观察或接触到的联系不能凭空创建。",
+      "sourceRefs": [
+        "gongfa.chengxin-tinglanjue.source.section-4",
+        "gongfa.chengxin-tinglanjue.source.section-9",
+        "gongfa.chengxin-tinglanjue.source.section-10",
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-10",
+      "interactionId": "six-arts.interaction-10",
+      "registryIds": [
+        "gongfa.wuxiang-shuijingfa",
+        "gongfa.liuguang-tachaobu"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "无相水镜法与流光踏潮步"
+      ],
+      "scenario": "交锋中主角尝试以《无相水镜法》配合《流光踏潮步》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "镜界节点为换位提供入口和落点。节点毁坏、失去联系或落点被封锁时重新评估；镜身替劫不等于换位成功。",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10",
+        "gongfa.liuguang-tachaobu.source.section-4",
+        "gongfa.liuguang-tachaobu.source.section-9",
+        "gongfa.liuguang-tachaobu.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-11",
+      "interactionId": "six-arts.interaction-11",
+      "registryIds": [
+        "gongfa.wuxiang-shuijingfa",
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "无相水镜法与叠浪玄潮诀"
+      ],
+      "scenario": "交锋中主角尝试以《无相水镜法》配合《叠浪玄潮诀》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "保存潮势，重叠节点使叠浪获得多个落点。多个落点不等于凭空复制法力、固定伤害或必中。",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10",
+        "gongfa.dielang-xuanchaojue.source.section-4",
+        "gongfa.dielang-xuanchaojue.source.section-9",
+        "gongfa.dielang-xuanchaojue.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-12",
+      "interactionId": "six-arts.interaction-12",
+      "registryIds": [
+        "gongfa.wuxiang-shuijingfa",
+        "gongfa.xianhai-gongmingpian"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "无相水镜法与弦海共鸣篇"
+      ],
+      "scenario": "交锋中主角尝试以《无相水镜法》配合《弦海共鸣篇》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "把目标留在可接触范围，重叠节点支持接触多个联系。须先具备节点联系与目标联系，不是无范围限制的干涉。",
+      "sourceRefs": [
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10",
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-13",
+      "interactionId": "six-arts.interaction-13",
+      "registryIds": [
+        "gongfa.liuguang-tachaobu",
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "流光踏潮步与叠浪玄潮诀"
+      ],
+      "scenario": "交锋中主角尝试以《流光踏潮步》配合《叠浪玄潮诀》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "在换位中完成转弓和变奏。移动与演奏可协同；仍要评估控制、落点和神魂负担。",
+      "sourceRefs": [
+        "gongfa.liuguang-tachaobu.source.section-4",
+        "gongfa.liuguang-tachaobu.source.section-9",
+        "gongfa.liuguang-tachaobu.source.section-10",
+        "gongfa.dielang-xuanchaojue.source.section-4",
+        "gongfa.dielang-xuanchaojue.source.section-9",
+        "gongfa.dielang-xuanchaojue.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-14",
+      "interactionId": "six-arts.interaction-14",
+      "registryIds": [
+        "gongfa.liuguang-tachaobu",
+        "gongfa.xianhai-gongmingpian"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "流光踏潮步与弦海共鸣篇"
+      ],
+      "scenario": "交锋中主角尝试以《流光踏潮步》配合《弦海共鸣篇》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "取得法宝、阵法联系的接触位置。到达不等于已辨清联系或必然切断联系。",
+      "sourceRefs": [
+        "gongfa.liuguang-tachaobu.source.section-4",
+        "gongfa.liuguang-tachaobu.source.section-9",
+        "gongfa.liuguang-tachaobu.source.section-10",
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-15",
+      "interactionId": "six-arts.interaction-15",
+      "registryIds": [
+        "gongfa.xianhai-gongmingpian",
+        "gongfa.dielang-xuanchaojue"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "弦海共鸣篇与叠浪玄潮诀"
+      ],
+      "scenario": "交锋中主角尝试以《弦海共鸣篇》配合《叠浪玄潮诀》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "借弦将已打出的力量接入水势，叠浪可利用改道后的力量形成潮势。借用不等于吸收、夺取属性或复制传承。",
+      "sourceRefs": [
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10",
+        "gongfa.dielang-xuanchaojue.source.section-4",
+        "gongfa.dielang-xuanchaojue.source.section-9",
+        "gongfa.dielang-xuanchaojue.source.section-10"
+      ]
+    },
+    {
+      "id": "negative.six-arts.interaction-16",
+      "interactionId": "six-arts.interaction-16",
+      "registryIds": [
+        "gongfa.xianhai-gongmingpian",
+        "gongfa.wuxiang-shuijingfa"
+      ],
+      "techniqueIds": [],
+      "keywords": [
+        "弦海共鸣篇与无相水镜法"
+      ],
+      "scenario": "交锋中主角尝试以《弦海共鸣篇》配合《无相水镜法》，相关对象仍受敌方干扰。",
+      "wrongVerdict": "仅因同时提到两部功法，就把该联动视为必然成功并重复结算收益。",
+      "correction": "将敌方已离体力量接入水镜，改变落点。需可接触的联系；瞬发即散、结构少的力量效果弱。",
+      "sourceRefs": [
+        "gongfa.xianhai-gongmingpian.source.section-4",
+        "gongfa.xianhai-gongmingpian.source.section-9",
+        "gongfa.xianhai-gongmingpian.source.section-10",
+        "gongfa.wuxiang-shuijingfa.source.section-4",
+        "gongfa.wuxiang-shuijingfa.source.section-9",
+        "gongfa.wuxiang-shuijingfa.source.section-10"
+      ]
+    }
+  ]
+}

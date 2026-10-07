@@ -1,0 +1,96 @@
+{
+  "source": "E:/RP/体系架构协作/高武隐世设定-20261007/尘世命轨V2.2-高武隐世修订版.json",
+  "sha256": "b659b04e4d5f2e466b500554a440dbe2043e9030fff03a64b69712c521fb2019",
+  "entries": [
+    {
+      "uid": 3,
+      "title": "[mvu_update]",
+      "disabled": false,
+      "contentSha256": "0b22b643709bfc83f080f4ed20c78aa5527f6c48dacb67c8d5948af68cf6a991"
+    },
+    {
+      "uid": 5,
+      "title": "[mvu_update]变量输出格式",
+      "disabled": false,
+      "contentSha256": "237b32d90b8dc2926c1af1ec91a35b322bb29091291d55c2eadede755dec98de"
+    },
+    {
+      "uid": 12,
+      "title": "DC点数判定",
+      "disabled": false,
+      "contentSha256": "55531b7b2195779c2b1f883848fd58c5111b16861df7083e1ef1dead54bbb7fa"
+    },
+    {
+      "uid": 16,
+      "title": "修炼突破判定",
+      "disabled": false,
+      "contentSha256": "0f0b12259d96f96d38512c30f5bdd191adaf4a52a7a130ae573c7e053e70e5dc"
+    },
+    {
+      "uid": 22,
+      "title": "战斗",
+      "disabled": false,
+      "contentSha256": "3b55f3c3f4612ad781e3007ce5ad67781d6b33c07d7060d9d6d0c2818cc9641a"
+    },
+    {
+      "uid": 420,
+      "title": "高武隐世·核心运行总则",
+      "disabled": false,
+      "contentSha256": "e4edc3ac27abe33909d34a7976a91b3cc6e8db9eff2ba5e9fb549b2e4051d301"
+    },
+    {
+      "uid": 421,
+      "title": "法则显化与环境损伤",
+      "disabled": false,
+      "contentSha256": "05fbbd312105e543363f0dbd05a4d1c76d90e587981f386500bbe70ddeaa4812"
+    },
+    {
+      "uid": 422,
+      "title": "天网·相位隔离与紧急下沉",
+      "disabled": true,
+      "contentSha256": "86dbeec70f0ad6e0bf9e8961bc79d757bae9c3b2b5fa1a3604243834559d85d9"
+    },
+    {
+      "uid": 423,
+      "title": "下沉战界·映世与承载",
+      "disabled": true,
+      "contentSha256": "32d57b2ab4bfba37ff431bfd72f6bac8e254385d807c8b6bd44555c8dfe56b72"
+    },
+    {
+      "uid": 424,
+      "title": "战界·增援救人与复归",
+      "disabled": true,
+      "contentSha256": "e55f974e0da39ad4fd96080ea440ea06ade3de71b843e02a353cd3405fb962f1"
+    },
+    {
+      "uid": 425,
+      "title": "仙网·申报与法契",
+      "disabled": true,
+      "contentSha256": "a1c8708f982a9478961ecac84299643dbed0bccb6a49c7713a6afa05ef3ee8f0"
+    },
+    {
+      "uid": 426,
+      "title": "血煞红标与执约镇罚",
+      "disabled": true,
+      "contentSha256": "8e48f05dd616ab5beb3cd339bef9f6317e024e2216568c87f79727f607cf81ef"
+    },
+    {
+      "uid": 427,
+      "title": "地脉泄煞暗渠与归煞库",
+      "disabled": true,
+      "contentSha256": "afffa99d0299c847c78929eae31c4148c1ee375c97cbbb0221682bce80ac0fe5"
+    },
+    {
+      "uid": 433,
+      "title": "现实、战界与角色知情边界",
+      "disabled": false,
+      "contentSha256": "0329f0bec3fe6bc3aecbbc567c6f8d88851d2a38f7d91ef8019f10c763030bd4"
+    }
+  ],
+  "findings": [
+    "source is a reference, not live ST activation proof",
+    "422-427 disabled in this file",
+    "3 retains legacy simplified method schema; four battlefield fields absent",
+    "12/16/22 retain legacy DC, cultivation and pre-battle stop rules; no live migration performed"
+  ]
+}

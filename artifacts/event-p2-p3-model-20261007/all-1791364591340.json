@@ -1,0 +1,4460 @@
+{
+  "date": "2026-10-07T09:13:44.933Z",
+  "model": "gpt-6.1-sol",
+  "mock": false,
+  "policy": "high-martial-20261007-preparation-v1",
+  "routes": [
+    {
+      "id": "greeting",
+      "input": "下午好，今天的茶很好喝。",
+      "expected": "pass",
+      "passed": true,
+      "ms": 3340,
+      "route": {
+        "decision": "pass",
+        "actions": [],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "lore",
+      "input": "戏外：解释一下战界备案制度。",
+      "expected": "pass",
+      "passed": true,
+      "ms": 3490,
+      "route": {
+        "decision": "pass",
+        "actions": [],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "negated",
+      "input": "我不备案，也不攻击，继续喝茶。",
+      "expected": "pass",
+      "passed": true,
+      "ms": 3712,
+      "route": {
+        "decision": "pass",
+        "actions": [],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "quote",
+      "input": "我念着书中的台词：“进入战界，把他打倒。”然后合上书。",
+      "expected": "pass",
+      "passed": true,
+      "ms": 3282,
+      "route": {
+        "decision": "pass",
+        "actions": [],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "conditional",
+      "input": "如果明天有人攻击我，我才反击。现在没有敌人。",
+      "expected": "pass",
+      "passed": true,
+      "ms": 3843,
+      "route": {
+        "decision": "pass",
+        "actions": [],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "future",
+      "input": "明天可能和石衡约战，现在先吃饭。",
+      "expected": "pass",
+      "passed": true,
+      "ms": 6454,
+      "route": {
+        "decision": "pass",
+        "actions": [],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "unregistered_attack",
+      "input": "我不备案，直接用水击攻击石衡。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 5446,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "combat",
+            "intent": "用水击攻击石衡",
+            "opponentNames": [
+              "石衡"
+            ],
+            "source": {
+              "id": "input",
+              "quote": "直接用水击攻击石衡"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "attack_observed",
+              "purpose": "combat",
+              "confrontation": "linked",
+              "evidence": [
+                {
+                  "id": "input",
+                  "quote": "直接用水击攻击石衡"
+                },
+                {
+                  "id": "history:0",
+                  "quote": "林澜和石衡在试剑台相距五米，尚未交锋。"
+                }
+              ]
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": [
+        {
+          "actionKey": "a1",
+          "kind": "combat_action",
+          "battleId": "战界-001",
+          "mode": "resume_candidate",
+          "status": "staged",
+          "executable": false
+        }
+      ]
+    },
+    {
+      "id": "attack",
+      "input": "我现在用水击正面攻击五米内的石衡。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 8844,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "combat",
+            "intent": "用水击正面攻击五米内的石衡",
+            "opponentNames": [
+              "石衡"
+            ],
+            "source": {
+              "id": "input",
+              "quote": "我现在用水击正面攻击五米内的石衡。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "attack_observed",
+              "purpose": "combat",
+              "confrontation": "linked",
+              "evidence": [
+                {
+                  "id": "input",
+                  "quote": "我现在用水击正面攻击五米内的石衡。"
+                },
+                {
+                  "id": "history:0",
+                  "quote": "午后，林澜和石衡在试剑台相距五米，尚未交锋。"
+                }
+              ]
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": [
+        {
+          "actionKey": "a1",
+          "kind": "combat_action",
+          "battleId": "战界-001",
+          "mode": "resume_candidate",
+          "status": "staged",
+          "executable": false
+        }
+      ]
+    },
+    {
+      "id": "active_ooc",
+      "input": "戏外暂停：先说明一下战界和现实的区别。",
+      "expected": "pass",
+      "passed": true,
+      "ms": 2777,
+      "route": {
+        "decision": "pass",
+        "actions": [],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "active_wait",
+      "input": "我站在原地一动不动。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 6923,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "combat",
+            "intent": "在正在逼近的剑击中保持原地不动，承接当前攻防的裁定",
+            "opponentNames": [
+              "石衡"
+            ],
+            "source": {
+              "id": "input",
+              "quote": "我站在原地一动不动。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "attack_observed",
+              "purpose": "combat",
+              "confrontation": "linked",
+              "evidence": [
+                {
+                  "id": "history:0",
+                  "quote": "石衡已经举剑劈向你，剑刃正在逼近。"
+                }
+              ]
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": [
+        {
+          "actionKey": "a1",
+          "kind": "combat_action",
+          "battleId": "战界-001",
+          "mode": "resume_candidate",
+          "status": "staged",
+          "executable": false
+        }
+      ]
+    },
+    {
+      "id": "registration",
+      "input": "我现在办理明天切磋的预约备案；今天没有交战。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 5428,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "battlefield",
+            "intent": "现在办理明日切磋的预约备案",
+            "source": {
+              "id": "input",
+              "quote": "我现在办理明天切磋的预约备案"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "registration_request",
+              "purpose": "combat",
+              "confrontation": "none",
+              "evidence": [
+                {
+                  "id": "input",
+                  "quote": "我现在办理明天切磋的预约备案；今天没有交战。"
+                },
+                {
+                  "id": "history:0",
+                  "quote": "午后，林澜和石衡在试剑台相距五米，尚未交锋。"
+                }
+              ]
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "rescue",
+      "input": "我现在进入战界接应伤者。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 5202,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "battlefield",
+            "intent": "进入战界-001接应伤者",
+            "source": {
+              "id": "input",
+              "quote": "我现在进入战界接应伤者。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "entry_request",
+              "purpose": "rescue",
+              "confrontation": "none",
+              "evidence": [
+                {
+                  "id": "input",
+                  "quote": "我现在进入战界接应伤者。"
+                },
+                {
+                  "id": "history:0",
+                  "quote": "伤者困在战界-001入口，没有攻击者，入口允许救援。"
+                }
+              ]
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "tribulation",
+      "input": "我现在申请隔离突破余波，准备渡自然雷劫，没有人攻击我。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 9255,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "battlefield",
+            "intent": "申请隔离修炼突破及自然雷劫的余波",
+            "source": {
+              "id": "input",
+              "quote": "我现在申请隔离突破余波"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "registration_request",
+              "purpose": "cultivation",
+              "confrontation": "none",
+              "evidence": [
+                {
+                  "id": "input",
+                  "quote": "我现在申请隔离突破余波，准备渡自然雷劫，没有人攻击我。"
+                }
+              ]
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "perception",
+      "input": "我现在施展听澜探查门后的灵力活动。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 4212,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "perception",
+            "intent": "施展听澜，探查门后的灵力活动",
+            "source": {
+              "id": "input",
+              "quote": "我现在施展听澜探查门后的灵力活动。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "none",
+              "purpose": "none",
+              "confrontation": "none",
+              "evidence": []
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "cultivation",
+      "input": "我现在运转功法冲击筑基瓶颈。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 3697,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "cultivation",
+            "intent": "运转功法冲击筑基瓶颈",
+            "source": {
+              "id": "input",
+              "quote": "我现在运转功法冲击筑基瓶颈。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "none",
+              "purpose": "cultivation",
+              "confrontation": "none",
+              "evidence": []
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "emergency",
+      "input": "我紧急备案并用水击迎击石衡。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 10951,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "battlefield",
+            "intent": "申请紧急备案",
+            "source": {
+              "id": "input",
+              "quote": "我紧急备案"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "emergency_request",
+              "purpose": "combat",
+              "confrontation": "linked",
+              "evidence": [
+                {
+                  "id": "history:0",
+                  "quote": "石衡已向你发出灵力攻击，距离五米。"
+                },
+                {
+                  "id": "input",
+                  "quote": "我紧急备案并用水击迎击石衡。"
+                }
+              ]
+            }
+          },
+          {
+            "localKey": "a2",
+            "domain": "combat",
+            "intent": "用水击迎击石衡的灵力攻击",
+            "opponentNames": [
+              "石衡"
+            ],
+            "source": {
+              "id": "input",
+              "quote": "用水击迎击石衡"
+            },
+            "execution": "now",
+            "dependsOn": [
+              "a1"
+            ],
+            "worldSignal": {
+              "kind": "attack_observed",
+              "purpose": "combat",
+              "confrontation": "linked",
+              "evidence": [
+                {
+                  "id": "history:0",
+                  "quote": "石衡已向你发出灵力攻击，距离五米。"
+                }
+              ]
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": [
+        {
+          "actionKey": "a1",
+          "kind": "battlefield_link",
+          "battleId": "战界-001",
+          "mode": "resume_candidate",
+          "status": "staged",
+          "executable": false
+        },
+        {
+          "actionKey": "a2",
+          "kind": "combat_action",
+          "battleId": "战界-001",
+          "mode": "resume_candidate",
+          "status": "staged",
+          "executable": false
+        }
+      ]
+    },
+    {
+      "id": "recovery",
+      "input": "我现在运转疗伤法治疗自己的经脉伤势。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 7450,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "recovery",
+            "intent": "运转疗伤法治疗自身经脉伤势",
+            "source": {
+              "id": "input",
+              "quote": "我现在运转疗伤法治疗自己的经脉伤势。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "none",
+              "purpose": "none",
+              "confrontation": "none",
+              "evidence": []
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "alchemy",
+      "input": "我现在按回元丹方开炉炼制回元丹。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 4315,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "alchemy",
+            "intent": "按回元丹方开炉炼制回元丹",
+            "source": {
+              "id": "input",
+              "quote": "我现在按回元丹方开炉炼制回元丹。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "none",
+              "purpose": "none",
+              "confrontation": "none",
+              "evidence": []
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "crafting",
+      "input": "我现在把玄铁投入炉中，按图样炼制护腕。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 5077,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "crafting",
+            "intent": "将玄铁投入炉中，按图样炼制护腕",
+            "source": {
+              "id": "input",
+              "quote": "我现在把玄铁投入炉中，按图样炼制护腕。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "none",
+              "purpose": "none",
+              "confrontation": "none",
+              "evidence": []
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "formation",
+      "input": "我现在用破阵诀拆解眼前阵法。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 5711,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "formation",
+            "intent": "使用破阵诀拆解眼前阵法",
+            "source": {
+              "id": "input",
+              "quote": "我现在用破阵诀拆解眼前阵法。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "none",
+              "purpose": "none",
+              "confrontation": "unknown",
+              "evidence": []
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "mixed",
+      "input": "我先探查门后是否有敌人，若有才攻击。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 4181,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "perception",
+            "intent": "探查门后是否有敌人",
+            "source": {
+              "id": "input",
+              "quote": "我先探查门后是否有敌人"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "none",
+              "purpose": "none",
+              "confrontation": "unknown",
+              "evidence": []
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "pursuit",
+      "input": "我施展身法追上石衡。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 7102,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "a1",
+            "domain": "pursuit",
+            "intent": "施展身法追赶石衡",
+            "source": {
+              "id": "input",
+              "quote": "我施展身法追上石衡。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "none",
+              "purpose": "unknown",
+              "confrontation": "none",
+              "evidence": [
+                {
+                  "id": "history:0",
+                  "quote": "石衡已跑向东边小巷，尚未交锋。"
+                }
+              ]
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": []
+    },
+    {
+      "id": "ended_new_attack",
+      "input": "上一场已结束，但石衡突然再次攻击我，我用水击迎击。",
+      "expected": "adjudicate",
+      "passed": true,
+      "ms": 5878,
+      "route": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "combat_1",
+            "domain": "combat",
+            "intent": "应对石衡再次发起的攻击，以水击迎击",
+            "opponentNames": [
+              "石衡"
+            ],
+            "source": {
+              "id": "input",
+              "quote": "石衡突然再次攻击我，我用水击迎击。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "attack_observed",
+              "purpose": "combat",
+              "confrontation": "linked",
+              "evidence": [
+                {
+                  "id": "input",
+                  "quote": "石衡突然再次攻击我，我用水击迎击。"
+                }
+              ]
+            }
+          }
+        ],
+        "missingInformation": []
+      },
+      "candidates": [
+        {
+          "actionKey": "combat_1",
+          "kind": "combat_action",
+          "battleId": "战界-001",
+          "mode": "resume_candidate",
+          "status": "staged",
+          "executable": false
+        }
+      ]
+    },
+    {
+      "id": "unsupported",
+      "input": "我现在签署一份需要计算违约金的商业合约，请裁定合同法律效力。",
+      "expected": "unsupported",
+      "passed": true,
+      "ms": 3171,
+      "route": {
+        "decision": "unsupported",
+        "actions": [],
+        "missingInformation": []
+      },
+      "candidates": []
+    }
+  ],
+  "combat": [
+    {
+      "id": "round-1",
+      "passed": true,
+      "ms": 60230,
+      "result": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "combat:1",
+            "domain": "combat",
+            "intent": "施展水击攻击五米内的石衡，并处理石衡使用护衣抵挡的同一次攻防。",
+            "opponentNames": [
+              "石衡"
+            ],
+            "source": {
+              "id": "input",
+              "quote": "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "attack_observed",
+              "purpose": "combat",
+              "confrontation": "linked",
+              "evidence": [
+                {
+                  "id": "input",
+                  "quote": "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。"
+                },
+                {
+                  "id": "history:0",
+                  "quote": "林澜和石衡在战界-001内试剑，双方都清醒，距离五米。"
+                }
+              ]
+            }
+          }
+        ],
+        "missingInformation": [],
+        "framework": "auto-preparation-v1",
+        "policyId": "high-martial-20261007-preparation-v1",
+        "scope": {
+          "chatId": "real-model-fixture",
+          "branchUid": "fixture-branch",
+          "inputMessageUid": "fixture-input",
+          "originalInputHash": "4dd71b2d232db84b775edf92a88a9611a58d9b4ebd71c65f1e7986a8bc18ef39",
+          "anchorMessageId": 0,
+          "anchorSwipeId": 0
+        },
+        "battlefield": {
+          "current": {
+            "空间层": "下沉战界",
+            "战界ID": "战界-001",
+            "备案状态": "已备案",
+            "战斗状态": "进行中"
+          },
+          "acuHint": null,
+          "differences": [],
+          "mvuIssues": [],
+          "acuIssues": [
+            "acu_table_absent"
+          ],
+          "acuBranchKnown": false
+        },
+        "activationCandidates": [
+          {
+            "actionKey": "combat:1",
+            "kind": "combat_action",
+            "battleId": "战界-001",
+            "mode": "resume_candidate",
+            "status": "staged",
+            "executable": false
+          }
+        ],
+        "preparation": {
+          "status": "ready",
+          "executable": false,
+          "modules": [
+            {
+              "actionKey": "combat:1",
+              "domain": "combat",
+              "status": "ready",
+              "fields": {
+                "actors": [
+                  {
+                    "sourceId": "actor-candidates",
+                    "pointer": "/0/data",
+                    "value": {
+                      "姓名": "林澜",
+                      "境界": "筑基",
+                      "当前状态": "清醒，未受伤",
+                      "功法": {
+                        "水击诀": {
+                          "掌握状态": "已习得",
+                          "品阶": "凡阶",
+                          "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                          "招式": {
+                            "水击": {
+                              "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                              "条件": "清醒且当前灵力至少2点",
+                              "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                              "范围": "五米",
+                              "冷却": "无",
+                              "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                            }
+                          }
+                        }
+                      },
+                      "资源": {
+                        "灵力": {
+                          "当前": 10,
+                          "下限": 0,
+                          "上限": 10,
+                          "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                        }
+                      }
+                    },
+                    "sourceKind": "mvu",
+                    "branchKnown": true,
+                    "empty": false
+                  },
+                  {
+                    "sourceId": "actor-candidates",
+                    "pointer": "/1/data",
+                    "value": {
+                      "姓名": "石衡",
+                      "境界": "筑基",
+                      "当前状态": "清醒，未受伤",
+                      "功法": {
+                        "石衣诀": {
+                          "掌握状态": "已习得",
+                          "品阶": "凡阶",
+                          "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                          "招式": {
+                            "护衣": {
+                              "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                              "条件": "清醒且当前灵力至少2点",
+                              "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                              "范围": "五米",
+                              "冷却": "无",
+                              "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                            }
+                          }
+                        }
+                      },
+                      "资源": {
+                        "灵力": {
+                          "当前": 10,
+                          "下限": 0,
+                          "上限": 10,
+                          "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                        }
+                      }
+                    },
+                    "sourceKind": "mvu",
+                    "branchKnown": true,
+                    "empty": false
+                  }
+                ],
+                "methods": [
+                  {
+                    "sourceId": "mvu",
+                    "pointer": "/主角/功法/水击诀",
+                    "value": {
+                      "掌握状态": "已习得",
+                      "品阶": "凡阶",
+                      "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                      "招式": {
+                        "水击": {
+                          "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    },
+                    "sourceKind": "mvu",
+                    "branchKnown": true,
+                    "empty": false
+                  },
+                  {
+                    "sourceId": "mvu",
+                    "pointer": "/人物/石衡/功法/石衣诀",
+                    "value": {
+                      "掌握状态": "已习得",
+                      "品阶": "凡阶",
+                      "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                      "招式": {
+                        "护衣": {
+                          "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    },
+                    "sourceKind": "mvu",
+                    "branchKnown": true,
+                    "empty": false
+                  },
+                  {
+                    "sourceId": "input",
+                    "pointer": "",
+                    "quote": "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。",
+                    "value": "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。",
+                    "sourceKind": "intent",
+                    "branchKnown": true,
+                    "empty": false
+                  }
+                ],
+                "resources": [
+                  {
+                    "sourceId": "mvu",
+                    "pointer": "/主角/资源",
+                    "value": {
+                      "灵力": {
+                        "当前": 10,
+                        "下限": 0,
+                        "上限": 10,
+                        "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                      }
+                    },
+                    "sourceKind": "mvu",
+                    "branchKnown": true,
+                    "empty": false
+                  },
+                  {
+                    "sourceId": "mvu",
+                    "pointer": "/人物/石衡/资源",
+                    "value": {
+                      "灵力": {
+                        "当前": 10,
+                        "下限": 0,
+                        "上限": 10,
+                        "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                      }
+                    },
+                    "sourceKind": "mvu",
+                    "branchKnown": true,
+                    "empty": false
+                  }
+                ],
+                "situation": [
+                  {
+                    "sourceId": "mvu",
+                    "pointer": "/主角/当前状态",
+                    "value": "清醒，未受伤",
+                    "sourceKind": "mvu",
+                    "branchKnown": true,
+                    "empty": false
+                  },
+                  {
+                    "sourceId": "mvu",
+                    "pointer": "/人物/石衡/当前状态",
+                    "value": "清醒，未受伤",
+                    "sourceKind": "mvu",
+                    "branchKnown": true,
+                    "empty": false
+                  },
+                  {
+                    "sourceId": "history:0",
+                    "pointer": "",
+                    "quote": "林澜和石衡在战界-001内试剑，双方都清醒，距离五米。本轮将正常施展一次招式。",
+                    "value": "林澜和石衡在战界-001内试剑，双方都清醒，距离五米。本轮将正常施展一次招式。",
+                    "sourceKind": "history",
+                    "branchKnown": true,
+                    "empty": false
+                  },
+                  {
+                    "sourceId": "input",
+                    "pointer": "",
+                    "quote": "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。",
+                    "value": "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。",
+                    "sourceKind": "intent",
+                    "branchKnown": true,
+                    "empty": false
+                  }
+                ],
+                "battlefield": [
+                  {
+                    "sourceId": "mvu",
+                    "pointer": "/世界",
+                    "value": {
+                      "地点": "试剑台",
+                      "时间": "午后",
+                      "战界": {
+                        "空间层": "下沉战界",
+                        "战界ID": "战界-001",
+                        "备案状态": "已备案",
+                        "战斗状态": "进行中"
+                      }
+                    },
+                    "sourceKind": "mvu",
+                    "branchKnown": true,
+                    "empty": false
+                  }
+                ]
+              },
+              "missing": [],
+              "conflicts": [],
+              "roster": [
+                {
+                  "side": "player",
+                  "source": {
+                    "sourceId": "actor-candidates",
+                    "pointer": "/0/data"
+                  },
+                  "status": "ready",
+                  "missing": [],
+                  "actor": {
+                    "id": "actor:/主角",
+                    "name": "林澜",
+                    "cultivationRealm": "筑基",
+                    "resources": {
+                      "灵力": 10
+                    },
+                    "resourceDefinitions": [
+                      {
+                        "key": "灵力",
+                        "name": "灵力",
+                        "current": 10,
+                        "min": 0,
+                        "max": 10,
+                        "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                      }
+                    ],
+                    "techniques": [
+                      {
+                        "registryId": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                        "techniqueIds": [
+                          "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB"
+                        ]
+                      }
+                    ],
+                    "narrativeProfile": {
+                      "姓名": "林澜",
+                      "境界": "筑基",
+                      "当前状态": "清醒，未受伤",
+                      "功法": {
+                        "水击诀": {
+                          "掌握状态": "已习得",
+                          "品阶": "凡阶",
+                          "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                          "招式": {
+                            "水击": {
+                              "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                              "条件": "清醒且当前灵力至少2点",
+                              "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                              "范围": "五米",
+                              "冷却": "无",
+                              "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                            }
+                          }
+                        }
+                      },
+                      "资源": {
+                        "灵力": {
+                          "当前": 10,
+                          "下限": 0,
+                          "上限": 10,
+                          "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                        }
+                      }
+                    },
+                    "visibleInfo": {
+                      "cultivationRealm": "筑基",
+                      "currentState": "清醒，未受伤"
+                    },
+                    "hidden": {}
+                  },
+                  "registry": [
+                    {
+                      "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                      "name": "水击诀",
+                      "rank": "凡阶",
+                      "element": "用户当前定义",
+                      "corePrinciple": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                      "mechanics": [
+                        "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。"
+                      ],
+                      "techniques": [
+                        {
+                          "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB",
+                          "name": "水击",
+                          "school": "水击诀",
+                          "originalDefinition": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                          "mechanics": [
+                            "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。"
+                          ],
+                          "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "cooldown": "无",
+                          "range": "五米",
+                          "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                          "availability": {
+                            "default": "conditional",
+                            "conditions": [
+                              "清醒且当前灵力至少2点"
+                            ],
+                            "requires": []
+                          },
+                          "triggeredState": [],
+                          "visibility": "player",
+                          "ruleRefs": [
+                            "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB.definition"
+                          ],
+                          "narrativeDefinition": {
+                            "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                            "条件": "清醒且当前灵力至少2点",
+                            "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                            "范围": "五米",
+                            "冷却": "无",
+                            "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                          }
+                        }
+                      ],
+                      "synergies": [],
+                      "narrativeGuidance": [],
+                      "ruleRefs": [
+                        "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.definition"
+                      ],
+                      "version": "narrative-snapshot-v1",
+                      "visibility": "player",
+                      "narrativeDefinition": {
+                        "掌握状态": "已习得",
+                        "品阶": "凡阶",
+                        "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                        "招式": {
+                          "水击": {
+                            "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                            "条件": "清醒且当前灵力至少2点",
+                            "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                            "范围": "五米",
+                            "冷却": "无",
+                            "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                          }
+                        }
+                      },
+                      "narrativeCompiled": true
+                    }
+                  ],
+                  "resourceRules": [
+                    {
+                      "actorId": "actor:/主角",
+                      "resource": "灵力",
+                      "min": 0,
+                      "max": 10,
+                      "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                      "ruleRefs": [
+                        "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.resource.%E7%81%B5%E5%8A%9B"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "side": "enemy",
+                  "source": {
+                    "sourceId": "actor-candidates",
+                    "pointer": "/1/data"
+                  },
+                  "status": "ready",
+                  "missing": [],
+                  "actor": {
+                    "id": "actor:/人物/石衡",
+                    "name": "石衡",
+                    "cultivationRealm": "筑基",
+                    "resources": {
+                      "灵力": 10
+                    },
+                    "resourceDefinitions": [
+                      {
+                        "key": "灵力",
+                        "name": "灵力",
+                        "current": 10,
+                        "min": 0,
+                        "max": 10,
+                        "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                      }
+                    ],
+                    "techniques": [
+                      {
+                        "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                        "name": "护衣",
+                        "school": "石衣诀",
+                        "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                        "mechanics": [
+                          "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                        ],
+                        "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                        "cooldown": "无",
+                        "range": "五米",
+                        "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                        "availability": {
+                          "default": "conditional",
+                          "conditions": [
+                            "清醒且当前灵力至少2点"
+                          ],
+                          "requires": []
+                        },
+                        "triggeredState": [],
+                        "visibility": "internal",
+                        "ruleRefs": [
+                          "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                        ],
+                        "narrativeDefinition": {
+                          "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    ],
+                    "narrativeProfile": {
+                      "姓名": "石衡",
+                      "境界": "筑基",
+                      "当前状态": "清醒，未受伤",
+                      "功法": {
+                        "石衣诀": {
+                          "掌握状态": "已习得",
+                          "品阶": "凡阶",
+                          "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                          "招式": {
+                            "护衣": {
+                              "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                              "条件": "清醒且当前灵力至少2点",
+                              "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                              "范围": "五米",
+                              "冷却": "无",
+                              "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                            }
+                          }
+                        }
+                      },
+                      "资源": {
+                        "灵力": {
+                          "当前": 10,
+                          "下限": 0,
+                          "上限": 10,
+                          "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                        }
+                      }
+                    },
+                    "visibleInfo": {
+                      "cultivationRealm": "筑基",
+                      "currentState": "清醒，未受伤"
+                    },
+                    "hidden": {}
+                  },
+                  "registry": [
+                    {
+                      "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80",
+                      "name": "石衣诀",
+                      "rank": "凡阶",
+                      "element": "用户当前定义",
+                      "corePrinciple": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                      "mechanics": [
+                        "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。"
+                      ],
+                      "techniques": [
+                        {
+                          "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                          "name": "护衣",
+                          "school": "石衣诀",
+                          "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                          "mechanics": [
+                            "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                          ],
+                          "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "cooldown": "无",
+                          "range": "五米",
+                          "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                          "availability": {
+                            "default": "conditional",
+                            "conditions": [
+                              "清醒且当前灵力至少2点"
+                            ],
+                            "requires": []
+                          },
+                          "triggeredState": [],
+                          "visibility": "internal",
+                          "ruleRefs": [
+                            "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                          ],
+                          "narrativeDefinition": {
+                            "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                            "条件": "清醒且当前灵力至少2点",
+                            "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                            "范围": "五米",
+                            "冷却": "无",
+                            "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                          }
+                        }
+                      ],
+                      "synergies": [],
+                      "narrativeGuidance": [],
+                      "ruleRefs": [
+                        "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.definition"
+                      ],
+                      "version": "narrative-snapshot-v1",
+                      "visibility": "internal",
+                      "narrativeDefinition": {
+                        "掌握状态": "已习得",
+                        "品阶": "凡阶",
+                        "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                        "招式": {
+                          "护衣": {
+                            "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                            "条件": "清醒且当前灵力至少2点",
+                            "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                            "范围": "五米",
+                            "冷却": "无",
+                            "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                          }
+                        }
+                      },
+                      "narrativeCompiled": true
+                    }
+                  ],
+                  "resourceRules": [
+                    {
+                      "actorId": "actor:/人物/石衡",
+                      "resource": "灵力",
+                      "min": 0,
+                      "max": 10,
+                      "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                      "ruleRefs": [
+                        "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.resource.%E7%81%B5%E5%8A%9B"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "execution": {
+          "schema": "event_combat_commit_v1",
+          "beforeState": {
+            "schema": "battle_v2",
+            "version": 2,
+            "sessionId": "event-battle:live-1791364469209-0",
+            "scope": {
+              "chatId": "real-model-fixture",
+              "branchId": "fixture-branch",
+              "extension": "st-xybattle-sys"
+            },
+            "phase": "awaiting_player",
+            "round": 1,
+            "roundId": "event-battle:live-1791364469209-0-r1",
+            "actionSeq": 0,
+            "scene": {
+              "location": "试剑台",
+              "time": "午后",
+              "turn": 1,
+              "initiative": "pending",
+              "positions": {},
+              "publicEvents": [],
+              "battlefield": {
+                "空间层": "下沉战界",
+                "战界ID": "战界-001",
+                "备案状态": "已备案",
+                "战斗状态": "进行中"
+              },
+              "situation": [
+                "清醒，未受伤",
+                "清醒，未受伤",
+                "林澜和石衡在战界-001内试剑，双方都清醒，距离五米。本轮将正常施展一次招式。",
+                "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。"
+              ]
+            },
+            "actors": {
+              "player": {
+                "id": "actor:/主角",
+                "name": "林澜",
+                "cultivationRealm": "筑基",
+                "resources": {
+                  "灵力": 10
+                },
+                "resourceDefinitions": [
+                  {
+                    "key": "灵力",
+                    "name": "灵力",
+                    "current": 10,
+                    "min": 0,
+                    "max": 10,
+                    "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                  }
+                ],
+                "techniques": [
+                  {
+                    "registryId": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                    "techniqueIds": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB"
+                    ]
+                  }
+                ],
+                "narrativeProfile": {
+                  "姓名": "林澜",
+                  "境界": "筑基",
+                  "当前状态": "清醒，未受伤",
+                  "功法": {
+                    "水击诀": {
+                      "掌握状态": "已习得",
+                      "品阶": "凡阶",
+                      "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                      "招式": {
+                        "水击": {
+                          "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    }
+                  },
+                  "资源": {
+                    "灵力": {
+                      "当前": 10,
+                      "下限": 0,
+                      "上限": 10,
+                      "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                    }
+                  }
+                },
+                "visibleInfo": {
+                  "cultivationRealm": "筑基",
+                  "currentState": "清醒，未受伤"
+                },
+                "hidden": {}
+              },
+              "enemies": [
+                {
+                  "id": "actor:/人物/石衡",
+                  "name": "石衡",
+                  "cultivationRealm": "筑基",
+                  "resources": {
+                    "灵力": 10
+                  },
+                  "resourceDefinitions": [
+                    {
+                      "key": "灵力",
+                      "name": "灵力",
+                      "current": 10,
+                      "min": 0,
+                      "max": 10,
+                      "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                    }
+                  ],
+                  "techniques": [
+                    {
+                      "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                      "name": "护衣",
+                      "school": "石衣诀",
+                      "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "mechanics": [
+                        "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                      ],
+                      "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "cooldown": "无",
+                      "range": "五米",
+                      "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                      "availability": {
+                        "default": "conditional",
+                        "conditions": [
+                          "清醒且当前灵力至少2点"
+                        ],
+                        "requires": []
+                      },
+                      "triggeredState": [],
+                      "visibility": "internal",
+                      "ruleRefs": [
+                        "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                      ],
+                      "narrativeDefinition": {
+                        "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                        "条件": "清醒且当前灵力至少2点",
+                        "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                        "范围": "五米",
+                        "冷却": "无",
+                        "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                      }
+                    }
+                  ],
+                  "narrativeProfile": {
+                    "姓名": "石衡",
+                    "境界": "筑基",
+                    "当前状态": "清醒，未受伤",
+                    "功法": {
+                      "石衣诀": {
+                        "掌握状态": "已习得",
+                        "品阶": "凡阶",
+                        "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                        "招式": {
+                          "护衣": {
+                            "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                            "条件": "清醒且当前灵力至少2点",
+                            "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                            "范围": "五米",
+                            "冷却": "无",
+                            "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                          }
+                        }
+                      }
+                    },
+                    "资源": {
+                      "灵力": {
+                        "当前": 10,
+                        "下限": 0,
+                        "上限": 10,
+                        "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                      }
+                    }
+                  },
+                  "visibleInfo": {
+                    "cultivationRealm": "筑基",
+                    "currentState": "清醒，未受伤"
+                  },
+                  "hidden": {}
+                }
+              ]
+            },
+            "semanticState": {
+              "statuses": [],
+              "effects": [],
+              "positions": {},
+              "control": "均势"
+            },
+            "causalState": {
+              "schema": "battle_v2_causal",
+              "version": 1,
+              "scope": {
+                "chatId": "real-model-fixture",
+                "branchId": "fixture-branch",
+                "kind": "branch"
+              },
+              "clock": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0,
+                "totalStoryHours": 0
+              },
+              "anchors": [],
+              "relations": [],
+              "debts": [],
+              "cooldowns": {},
+              "ledger": [],
+              "appliedActions": {},
+              "updatedAt": "2026-10-07T09:14:43.985Z"
+            },
+            "combatLedger": {
+              "schema": "battle_combat_ledger_v1",
+              "revision": 0,
+              "objects": [],
+              "receipts": []
+            },
+            "ruleMemory": {
+              "schema": "battle_rule_memory_v1",
+              "versions": [],
+              "interactions": [],
+              "negativeCases": []
+            },
+            "resourceRules": [
+              {
+                "actorId": "actor:/主角",
+                "resource": "灵力",
+                "min": 0,
+                "max": 10,
+                "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.resource.%E7%81%B5%E5%8A%9B"
+                ]
+              },
+              {
+                "actorId": "actor:/人物/石衡",
+                "resource": "灵力",
+                "min": 0,
+                "max": 10,
+                "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.resource.%E7%81%B5%E5%8A%9B"
+                ]
+              }
+            ],
+            "registrySnapshot": [
+              {
+                "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                "name": "水击诀",
+                "rank": "凡阶",
+                "element": "用户当前定义",
+                "corePrinciple": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                "mechanics": [
+                  "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。"
+                ],
+                "techniques": [
+                  {
+                    "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB",
+                    "name": "水击",
+                    "school": "水击诀",
+                    "originalDefinition": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                    "mechanics": [
+                      "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。"
+                    ],
+                    "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                    "cooldown": "无",
+                    "range": "五米",
+                    "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                    "availability": {
+                      "default": "conditional",
+                      "conditions": [
+                        "清醒且当前灵力至少2点"
+                      ],
+                      "requires": []
+                    },
+                    "triggeredState": [],
+                    "visibility": "player",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB.definition"
+                    ],
+                    "narrativeDefinition": {
+                      "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                ],
+                "synergies": [],
+                "narrativeGuidance": [],
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.definition"
+                ],
+                "version": "narrative-snapshot-v1",
+                "visibility": "player",
+                "narrativeDefinition": {
+                  "掌握状态": "已习得",
+                  "品阶": "凡阶",
+                  "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                  "招式": {
+                    "水击": {
+                      "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                },
+                "narrativeCompiled": true
+              },
+              {
+                "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80",
+                "name": "石衣诀",
+                "rank": "凡阶",
+                "element": "用户当前定义",
+                "corePrinciple": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                "mechanics": [
+                  "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。"
+                ],
+                "techniques": [
+                  {
+                    "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                    "name": "护衣",
+                    "school": "石衣诀",
+                    "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                    "mechanics": [
+                      "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                    ],
+                    "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                    "cooldown": "无",
+                    "range": "五米",
+                    "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                    "availability": {
+                      "default": "conditional",
+                      "conditions": [
+                        "清醒且当前灵力至少2点"
+                      ],
+                      "requires": []
+                    },
+                    "triggeredState": [],
+                    "visibility": "internal",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                    ],
+                    "narrativeDefinition": {
+                      "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                ],
+                "synergies": [],
+                "narrativeGuidance": [],
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.definition"
+                ],
+                "version": "narrative-snapshot-v1",
+                "visibility": "internal",
+                "narrativeDefinition": {
+                  "掌握状态": "已习得",
+                  "品阶": "凡阶",
+                  "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                  "招式": {
+                    "护衣": {
+                      "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                },
+                "narrativeCompiled": true
+              }
+            ],
+            "history": [],
+            "pending": null,
+            "lastError": null,
+            "updatedAt": "2026-10-07T09:14:43.986Z"
+          },
+          "afterState": {
+            "schema": "battle_v2",
+            "version": 5,
+            "sessionId": "event-battle:live-1791364469209-0",
+            "scope": {
+              "chatId": "real-model-fixture",
+              "branchId": "fixture-branch",
+              "extension": "st-xybattle-sys"
+            },
+            "phase": "awaiting_next",
+            "round": 1,
+            "roundId": "event-battle:live-1791364469209-0-r1",
+            "actionSeq": 1,
+            "scene": {
+              "location": "试剑台",
+              "time": "午后",
+              "turn": 1,
+              "initiative": "pending",
+              "positions": {},
+              "publicEvents": [
+                "【对敌影响】石衡构筑护衣承接水击，大部分冲击被抵消，剩余冲击使其后退一步，未造成可确认伤势。",
+                "【状态变化】石衡的护衣于本轮结束后消散，未留下持续防护；双方均保持清醒，未建立持续制约。",
+                "【环境影响】水流与护衣碰撞产生局部飞溅，试剑台未发生结构性破坏。",
+                "【局势转移】林澜未发生位移，石衡沿冲击方向后退一步，双方距离较交锋前增大；林澜取得短暂主动，未形成持续压制。",
+                "【资源结算】林澜与石衡各施展一次招式，灵力均由10降至8。"
+              ],
+              "battlefield": {
+                "空间层": "下沉战界",
+                "战界ID": "战界-001",
+                "备案状态": "已备案",
+                "战斗状态": "进行中"
+              },
+              "situation": [
+                "清醒，未受伤",
+                "清醒，未受伤",
+                "林澜和石衡在战界-001内试剑，双方都清醒，距离五米。本轮将正常施展一次招式。",
+                "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。"
+              ]
+            },
+            "actors": {
+              "player": {
+                "id": "actor:/主角",
+                "name": "林澜",
+                "cultivationRealm": "筑基",
+                "resources": {
+                  "灵力": 8
+                },
+                "resourceDefinitions": [
+                  {
+                    "key": "灵力",
+                    "name": "灵力",
+                    "current": 8,
+                    "min": 0,
+                    "max": 10,
+                    "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                  }
+                ],
+                "techniques": [
+                  {
+                    "registryId": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                    "techniqueIds": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB"
+                    ]
+                  }
+                ],
+                "narrativeProfile": {
+                  "姓名": "林澜",
+                  "境界": "筑基",
+                  "当前状态": "清醒，未受伤",
+                  "功法": {
+                    "水击诀": {
+                      "掌握状态": "已习得",
+                      "品阶": "凡阶",
+                      "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                      "招式": {
+                        "水击": {
+                          "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    }
+                  },
+                  "资源": {
+                    "灵力": {
+                      "当前": 10,
+                      "下限": 0,
+                      "上限": 10,
+                      "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                    }
+                  }
+                },
+                "visibleInfo": {
+                  "cultivationRealm": "筑基",
+                  "currentState": "清醒，未受伤"
+                },
+                "hidden": {}
+              },
+              "enemies": [
+                {
+                  "id": "actor:/人物/石衡",
+                  "name": "石衡",
+                  "cultivationRealm": "筑基",
+                  "resources": {
+                    "灵力": 8
+                  },
+                  "resourceDefinitions": [
+                    {
+                      "key": "灵力",
+                      "name": "灵力",
+                      "current": 8,
+                      "min": 0,
+                      "max": 10,
+                      "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                    }
+                  ],
+                  "techniques": [
+                    {
+                      "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                      "name": "护衣",
+                      "school": "石衣诀",
+                      "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "mechanics": [
+                        "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                      ],
+                      "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "cooldown": "无",
+                      "range": "五米",
+                      "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                      "availability": {
+                        "default": "conditional",
+                        "conditions": [
+                          "清醒且当前灵力至少2点"
+                        ],
+                        "requires": []
+                      },
+                      "triggeredState": [],
+                      "visibility": "internal",
+                      "ruleRefs": [
+                        "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                      ],
+                      "narrativeDefinition": {
+                        "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                        "条件": "清醒且当前灵力至少2点",
+                        "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                        "范围": "五米",
+                        "冷却": "无",
+                        "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                      }
+                    }
+                  ],
+                  "narrativeProfile": {
+                    "姓名": "石衡",
+                    "境界": "筑基",
+                    "当前状态": "清醒，未受伤",
+                    "功法": {
+                      "石衣诀": {
+                        "掌握状态": "已习得",
+                        "品阶": "凡阶",
+                        "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                        "招式": {
+                          "护衣": {
+                            "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                            "条件": "清醒且当前灵力至少2点",
+                            "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                            "范围": "五米",
+                            "冷却": "无",
+                            "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                          }
+                        }
+                      }
+                    },
+                    "资源": {
+                      "灵力": {
+                        "当前": 10,
+                        "下限": 0,
+                        "上限": 10,
+                        "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                      }
+                    }
+                  },
+                  "visibleInfo": {
+                    "cultivationRealm": "筑基",
+                    "currentState": "清醒，未受伤"
+                  },
+                  "hidden": {}
+                }
+              ]
+            },
+            "semanticState": {
+              "statuses": [],
+              "effects": [],
+              "positions": {
+                "actor:/主角": {
+                  "movement": "本轮未发生位移"
+                },
+                "actor:/人物/石衡": {
+                  "movement": "相对交锋前沿水击冲击方向后退一步",
+                  "distanceToPlayer": "较交锋前增大；确切距离未定义"
+                }
+              },
+              "control": "林澜取得本次交锋的短暂主动；石衡后退一步，未形成持续压制"
+            },
+            "causalState": {
+              "schema": "battle_v2_causal",
+              "version": 1,
+              "scope": {
+                "chatId": "real-model-fixture",
+                "branchId": "fixture-branch",
+                "kind": "branch"
+              },
+              "clock": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0,
+                "totalStoryHours": 0
+              },
+              "anchors": [],
+              "relations": [],
+              "debts": [],
+              "cooldowns": {},
+              "ledger": [],
+              "appliedActions": {},
+              "updatedAt": "2026-10-07T09:14:43.985Z"
+            },
+            "combatLedger": {
+              "schema": "battle_combat_ledger_v1",
+              "revision": 0,
+              "objects": [],
+              "receipts": []
+            },
+            "ruleMemory": {
+              "schema": "battle_rule_memory_v1",
+              "versions": [],
+              "interactions": [],
+              "negativeCases": []
+            },
+            "resourceRules": [
+              {
+                "actorId": "actor:/主角",
+                "resource": "灵力",
+                "min": 0,
+                "max": 10,
+                "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.resource.%E7%81%B5%E5%8A%9B"
+                ]
+              },
+              {
+                "actorId": "actor:/人物/石衡",
+                "resource": "灵力",
+                "min": 0,
+                "max": 10,
+                "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.resource.%E7%81%B5%E5%8A%9B"
+                ]
+              }
+            ],
+            "registrySnapshot": [
+              {
+                "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                "name": "水击诀",
+                "rank": "凡阶",
+                "element": "用户当前定义",
+                "corePrinciple": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                "mechanics": [
+                  "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。"
+                ],
+                "techniques": [
+                  {
+                    "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB",
+                    "name": "水击",
+                    "school": "水击诀",
+                    "originalDefinition": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                    "mechanics": [
+                      "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。"
+                    ],
+                    "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                    "cooldown": "无",
+                    "range": "五米",
+                    "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                    "availability": {
+                      "default": "conditional",
+                      "conditions": [
+                        "清醒且当前灵力至少2点"
+                      ],
+                      "requires": []
+                    },
+                    "triggeredState": [],
+                    "visibility": "player",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB.definition"
+                    ],
+                    "narrativeDefinition": {
+                      "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                ],
+                "synergies": [],
+                "narrativeGuidance": [],
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.definition"
+                ],
+                "version": "narrative-snapshot-v1",
+                "visibility": "player",
+                "narrativeDefinition": {
+                  "掌握状态": "已习得",
+                  "品阶": "凡阶",
+                  "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                  "招式": {
+                    "水击": {
+                      "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                },
+                "narrativeCompiled": true
+              },
+              {
+                "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80",
+                "name": "石衣诀",
+                "rank": "凡阶",
+                "element": "用户当前定义",
+                "corePrinciple": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                "mechanics": [
+                  "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。"
+                ],
+                "techniques": [
+                  {
+                    "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                    "name": "护衣",
+                    "school": "石衣诀",
+                    "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                    "mechanics": [
+                      "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                    ],
+                    "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                    "cooldown": "无",
+                    "range": "五米",
+                    "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                    "availability": {
+                      "default": "conditional",
+                      "conditions": [
+                        "清醒且当前灵力至少2点"
+                      ],
+                      "requires": []
+                    },
+                    "triggeredState": [],
+                    "visibility": "internal",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                    ],
+                    "narrativeDefinition": {
+                      "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                ],
+                "synergies": [],
+                "narrativeGuidance": [],
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.definition"
+                ],
+                "version": "narrative-snapshot-v1",
+                "visibility": "internal",
+                "narrativeDefinition": {
+                  "掌握状态": "已习得",
+                  "品阶": "凡阶",
+                  "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                  "招式": {
+                    "护衣": {
+                      "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                },
+                "narrativeCompiled": true
+              }
+            ],
+            "history": [],
+            "pending": null,
+            "lastError": null,
+            "updatedAt": "2026-10-07T09:15:29.436Z"
+          },
+          "records": [
+            {
+              "rollbackState": {
+                "schema": "battle_v2",
+                "version": 2,
+                "sessionId": "event-battle:live-1791364469209-0",
+                "scope": {
+                  "chatId": "real-model-fixture",
+                  "branchId": "fixture-branch",
+                  "extension": "st-xybattle-sys"
+                },
+                "phase": "awaiting_player",
+                "round": 1,
+                "roundId": "event-battle:live-1791364469209-0-r1",
+                "actionSeq": 0,
+                "scene": {
+                  "location": "试剑台",
+                  "time": "午后",
+                  "turn": 1,
+                  "initiative": "pending",
+                  "positions": {},
+                  "publicEvents": [],
+                  "battlefield": {
+                    "空间层": "下沉战界",
+                    "战界ID": "战界-001",
+                    "备案状态": "已备案",
+                    "战斗状态": "进行中"
+                  },
+                  "situation": [
+                    "清醒，未受伤",
+                    "清醒，未受伤",
+                    "林澜和石衡在战界-001内试剑，双方都清醒，距离五米。本轮将正常施展一次招式。",
+                    "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。"
+                  ]
+                },
+                "actors": {
+                  "player": {
+                    "id": "actor:/主角",
+                    "name": "林澜",
+                    "cultivationRealm": "筑基",
+                    "resources": {
+                      "灵力": 10
+                    },
+                    "resourceDefinitions": [
+                      {
+                        "key": "灵力",
+                        "name": "灵力",
+                        "current": 10,
+                        "min": 0,
+                        "max": 10,
+                        "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                      }
+                    ],
+                    "techniques": [
+                      {
+                        "registryId": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                        "techniqueIds": [
+                          "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB"
+                        ]
+                      }
+                    ],
+                    "narrativeProfile": {
+                      "姓名": "林澜",
+                      "境界": "筑基",
+                      "当前状态": "清醒，未受伤",
+                      "功法": {
+                        "水击诀": {
+                          "掌握状态": "已习得",
+                          "品阶": "凡阶",
+                          "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                          "招式": {
+                            "水击": {
+                              "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                              "条件": "清醒且当前灵力至少2点",
+                              "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                              "范围": "五米",
+                              "冷却": "无",
+                              "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                            }
+                          }
+                        }
+                      },
+                      "资源": {
+                        "灵力": {
+                          "当前": 10,
+                          "下限": 0,
+                          "上限": 10,
+                          "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                        }
+                      }
+                    },
+                    "visibleInfo": {
+                      "cultivationRealm": "筑基",
+                      "currentState": "清醒，未受伤"
+                    },
+                    "hidden": {}
+                  },
+                  "enemies": [
+                    {
+                      "id": "actor:/人物/石衡",
+                      "name": "石衡",
+                      "cultivationRealm": "筑基",
+                      "resources": {
+                        "灵力": 10
+                      },
+                      "resourceDefinitions": [
+                        {
+                          "key": "灵力",
+                          "name": "灵力",
+                          "current": 10,
+                          "min": 0,
+                          "max": 10,
+                          "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                        }
+                      ],
+                      "techniques": [
+                        {
+                          "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                          "name": "护衣",
+                          "school": "石衣诀",
+                          "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                          "mechanics": [
+                            "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                          ],
+                          "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "cooldown": "无",
+                          "range": "五米",
+                          "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                          "availability": {
+                            "default": "conditional",
+                            "conditions": [
+                              "清醒且当前灵力至少2点"
+                            ],
+                            "requires": []
+                          },
+                          "triggeredState": [],
+                          "visibility": "internal",
+                          "ruleRefs": [
+                            "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                          ],
+                          "narrativeDefinition": {
+                            "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                            "条件": "清醒且当前灵力至少2点",
+                            "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                            "范围": "五米",
+                            "冷却": "无",
+                            "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                          }
+                        }
+                      ],
+                      "narrativeProfile": {
+                        "姓名": "石衡",
+                        "境界": "筑基",
+                        "当前状态": "清醒，未受伤",
+                        "功法": {
+                          "石衣诀": {
+                            "掌握状态": "已习得",
+                            "品阶": "凡阶",
+                            "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                            "招式": {
+                              "护衣": {
+                                "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                                "条件": "清醒且当前灵力至少2点",
+                                "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                                "范围": "五米",
+                                "冷却": "无",
+                                "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                              }
+                            }
+                          }
+                        },
+                        "资源": {
+                          "灵力": {
+                            "当前": 10,
+                            "下限": 0,
+                            "上限": 10,
+                            "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                          }
+                        }
+                      },
+                      "visibleInfo": {
+                        "cultivationRealm": "筑基",
+                        "currentState": "清醒，未受伤"
+                      },
+                      "hidden": {}
+                    }
+                  ]
+                },
+                "semanticState": {
+                  "statuses": [],
+                  "effects": [],
+                  "positions": {},
+                  "control": "均势"
+                },
+                "causalState": {
+                  "schema": "battle_v2_causal",
+                  "version": 1,
+                  "scope": {
+                    "chatId": "real-model-fixture",
+                    "branchId": "fixture-branch",
+                    "kind": "branch"
+                  },
+                  "clock": {
+                    "day": 0,
+                    "hour": 0,
+                    "minute": 0,
+                    "totalStoryHours": 0
+                  },
+                  "anchors": [],
+                  "relations": [],
+                  "debts": [],
+                  "cooldowns": {},
+                  "ledger": [],
+                  "appliedActions": {},
+                  "updatedAt": "2026-10-07T09:14:43.985Z"
+                },
+                "combatLedger": {
+                  "schema": "battle_combat_ledger_v1",
+                  "revision": 0,
+                  "objects": [],
+                  "receipts": []
+                },
+                "ruleMemory": {
+                  "schema": "battle_rule_memory_v1",
+                  "versions": [],
+                  "interactions": [],
+                  "negativeCases": []
+                },
+                "resourceRules": [
+                  {
+                    "actorId": "actor:/主角",
+                    "resource": "灵力",
+                    "min": 0,
+                    "max": 10,
+                    "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.resource.%E7%81%B5%E5%8A%9B"
+                    ]
+                  },
+                  {
+                    "actorId": "actor:/人物/石衡",
+                    "resource": "灵力",
+                    "min": 0,
+                    "max": 10,
+                    "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.resource.%E7%81%B5%E5%8A%9B"
+                    ]
+                  }
+                ],
+                "registrySnapshot": [
+                  {
+                    "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                    "name": "水击诀",
+                    "rank": "凡阶",
+                    "element": "用户当前定义",
+                    "corePrinciple": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                    "mechanics": [
+                      "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。"
+                    ],
+                    "techniques": [
+                      {
+                        "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB",
+                        "name": "水击",
+                        "school": "水击诀",
+                        "originalDefinition": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                        "mechanics": [
+                          "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。"
+                        ],
+                        "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                        "cooldown": "无",
+                        "range": "五米",
+                        "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                        "availability": {
+                          "default": "conditional",
+                          "conditions": [
+                            "清醒且当前灵力至少2点"
+                          ],
+                          "requires": []
+                        },
+                        "triggeredState": [],
+                        "visibility": "player",
+                        "ruleRefs": [
+                          "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB.definition"
+                        ],
+                        "narrativeDefinition": {
+                          "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    ],
+                    "synergies": [],
+                    "narrativeGuidance": [],
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.definition"
+                    ],
+                    "version": "narrative-snapshot-v1",
+                    "visibility": "player",
+                    "narrativeDefinition": {
+                      "掌握状态": "已习得",
+                      "品阶": "凡阶",
+                      "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                      "招式": {
+                        "水击": {
+                          "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    },
+                    "narrativeCompiled": true
+                  },
+                  {
+                    "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80",
+                    "name": "石衣诀",
+                    "rank": "凡阶",
+                    "element": "用户当前定义",
+                    "corePrinciple": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                    "mechanics": [
+                      "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。"
+                    ],
+                    "techniques": [
+                      {
+                        "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                        "name": "护衣",
+                        "school": "石衣诀",
+                        "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                        "mechanics": [
+                          "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                        ],
+                        "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                        "cooldown": "无",
+                        "range": "五米",
+                        "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                        "availability": {
+                          "default": "conditional",
+                          "conditions": [
+                            "清醒且当前灵力至少2点"
+                          ],
+                          "requires": []
+                        },
+                        "triggeredState": [],
+                        "visibility": "internal",
+                        "ruleRefs": [
+                          "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                        ],
+                        "narrativeDefinition": {
+                          "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    ],
+                    "synergies": [],
+                    "narrativeGuidance": [],
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.definition"
+                    ],
+                    "version": "narrative-snapshot-v1",
+                    "visibility": "internal",
+                    "narrativeDefinition": {
+                      "掌握状态": "已习得",
+                      "品阶": "凡阶",
+                      "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                      "招式": {
+                        "护衣": {
+                          "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    },
+                    "narrativeCompiled": true
+                  }
+                ],
+                "pending": null,
+                "lastError": null,
+                "updatedAt": "2026-10-07T09:14:43.986Z"
+              },
+              "actionId": "live-1791364469209-0:combat:1",
+              "roundId": "event-battle:live-1791364469209-0-r1",
+              "action": {
+                "label": "施展水击攻击五米内的石衡，并处理石衡使用护衣抵挡的同一次攻防。",
+                "techniqueId": null,
+                "intent": "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。"
+              },
+              "status": "committed",
+              "version": 4,
+              "before": {
+                "statuses": [],
+                "effects": [],
+                "positions": {},
+                "control": "均势"
+              },
+              "causalBefore": {
+                "schema": "battle_v2_causal",
+                "version": 1,
+                "scope": {
+                  "chatId": "real-model-fixture",
+                  "branchId": "fixture-branch",
+                  "kind": "branch"
+                },
+                "clock": {
+                  "day": 0,
+                  "hour": 0,
+                  "minute": 0,
+                  "totalStoryHours": 0
+                },
+                "anchors": [],
+                "relations": [],
+                "debts": [],
+                "cooldowns": {},
+                "ledger": [],
+                "appliedActions": {},
+                "updatedAt": "2026-10-07T09:14:43.985Z"
+              },
+              "adjudication": {
+                "exchange": {
+                  "playerResult": "水击已完成，余力将石衡逼退一步；林澜未受伤、未位移，取得短暂主动，灵力由10降至8，无新增持续状态。",
+                  "opponents": [
+                    {
+                      "actorId": "actor:/人物/石衡",
+                      "response": "在本次水击到来时构筑护衣，正面承接冲击。",
+                      "result": "沿水击冲击方向后退一步，保持清醒，未受可确认伤势，未被持续束缚或压制；灵力由10降至8，回合结束时护衣已消散。",
+                      "techniques": [
+                        {
+                          "techniqueId": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                          "manifestation": "灵力在身周凝成护衣，覆盖受击处并承接迎面水流；护衣于本轮结束后消散。",
+                          "interaction": "护衣抵消水击的大部分正面冲击，剩余冲击仍使石衡后退一步；未发生伤害反弹，护衣未被击碎。"
+                        }
+                      ]
+                    }
+                  ],
+                  "environmentResult": "碰撞处出现局部水流飞溅，未造成试剑台结构性损坏或大范围环境变化。",
+                  "boundaries": [
+                    "未结算气血伤害，未造成可确认创伤或击杀。",
+                    "水击未绕过护衣，护衣未被击碎，其消散属于本轮期限届满。",
+                    "石衡仅后退一步，未被击倒或持续束缚；林澜未发生位移。",
+                    "未发生反弹伤害、心智控制或经脉阻滞。",
+                    "交锋前仅确认目标位于五米内，未定义步长，故不确定交锋后精确距离及是否仍在五米内。",
+                    "未造成地面破裂或大范围气象变化。"
+                  ]
+                },
+                "summary": "林澜施展水击，石衡以护衣抵消大部分冲击，仍被余力逼退一步，未造成可确认伤势。护衣于本轮结束后消散；水流碰撞产生局部飞溅，试剑台未受结构性破坏。双方各消耗灵力2点，林澜取得本次交锋的短暂主动。",
+                "before": {
+                  "statuses": [],
+                  "effects": [],
+                  "positions": {},
+                  "control": "均势"
+                },
+                "after": {
+                  "statuses": [],
+                  "effects": [],
+                  "positions": {
+                    "actor:/主角": {
+                      "movement": "本轮未发生位移"
+                    },
+                    "actor:/人物/石衡": {
+                      "movement": "相对交锋前沿水击冲击方向后退一步",
+                      "distanceToPlayer": "较交锋前增大；确切距离未定义"
+                    }
+                  },
+                  "control": "林澜取得本次交锋的短暂主动；石衡后退一步，未形成持续压制"
+                },
+                "reason": "动作文本与林澜已掌握的水击定义一致，故确认使用水击。双方均清醒、灵力为10，满足各自招式至少2点灵力的施展条件；石衡位于五米内，水击射程有效。石衡在同次攻防中构筑护衣，正面承接水流冲击。水击不能绕过护衣，护衣抵消大部分冲击，但不构成完全免疫；依据双方明确的对抗条款，剩余冲击裁定为使石衡后退一步，不追加伤势、经脉阻滞或防御击碎。护衣按期限于本轮结束后消散，不作为下一轮持续效果保留。双方各实际施展一次招式，各扣除灵力2点，无被动恢复、无冷却及其他因果期限变更。环境影响限于水流碰撞后的局部飞溅，不推定地面破坏或大范围气象变化。",
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.definition",
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB.definition",
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.definition",
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition",
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.resource.%E7%81%B5%E5%8A%9B",
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.resource.%E7%81%B5%E5%8A%9B"
+                ],
+                "publicEvents": [
+                  "【对敌影响】石衡构筑护衣承接水击，大部分冲击被抵消，剩余冲击使其后退一步，未造成可确认伤势。",
+                  "【状态变化】石衡的护衣于本轮结束后消散，未留下持续防护；双方均保持清醒，未建立持续制约。",
+                  "【环境影响】水流与护衣碰撞产生局部飞溅，试剑台未发生结构性破坏。",
+                  "【局势转移】林澜未发生位移，石衡沿冲击方向后退一步，双方距离较交锋前增大；林澜取得短暂主动，未形成持续压制。",
+                  "【资源结算】林澜与石衡各施展一次招式，灵力均由10降至8。"
+                ],
+                "resourceChanges": [
+                  {
+                    "actorId": "actor:/主角",
+                    "resource": "灵力",
+                    "before": 10,
+                    "after": 8,
+                    "reason": "本轮施展一次水击，依定义消耗灵力2点，无被动回合恢复。",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB.definition",
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.resource.%E7%81%B5%E5%8A%9B"
+                    ]
+                  },
+                  {
+                    "actorId": "actor:/人物/石衡",
+                    "resource": "灵力",
+                    "before": 10,
+                    "after": 8,
+                    "reason": "本轮施展一次护衣，依定义消耗灵力2点，无被动回合恢复。",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition",
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.resource.%E7%81%B5%E5%8A%9B"
+                    ]
+                  }
+                ],
+                "confidence": 0.98
+              },
+              "after": {
+                "statuses": [],
+                "effects": [],
+                "positions": {
+                  "actor:/主角": {
+                    "movement": "本轮未发生位移"
+                  },
+                  "actor:/人物/石衡": {
+                    "movement": "相对交锋前沿水击冲击方向后退一步",
+                    "distanceToPlayer": "较交锋前增大；确切距离未定义"
+                  }
+                },
+                "control": "林澜取得本次交锋的短暂主动；石衡后退一步，未形成持续压制"
+              },
+              "causalAfter": {
+                "schema": "battle_v2_causal",
+                "version": 1,
+                "scope": {
+                  "chatId": "real-model-fixture",
+                  "branchId": "fixture-branch",
+                  "kind": "branch"
+                },
+                "clock": {
+                  "day": 0,
+                  "hour": 0,
+                  "minute": 0,
+                  "totalStoryHours": 0
+                },
+                "anchors": [],
+                "relations": [],
+                "debts": [],
+                "cooldowns": {},
+                "ledger": [],
+                "appliedActions": {},
+                "updatedAt": "2026-10-07T09:14:43.985Z"
+              },
+              "createdAt": "2026-10-07T09:15:29.435Z",
+              "narrativePacket": {
+                "type": "BATTLE_SCENE_PACKET",
+                "schema": "battle_scene_v3",
+                "sessionId": "event-battle:live-1791364469209-0",
+                "roundId": "event-battle:live-1791364469209-0-r1",
+                "actionId": "live-1791364469209-0:combat:1",
+                "scope": {
+                  "chatId": "real-model-fixture",
+                  "branchId": "fixture-branch"
+                },
+                "playerAction": {
+                  "action": "施展水击攻击五米内的石衡，并处理石衡使用护衣抵挡的同一次攻防。",
+                  "intent": "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。"
+                },
+                "exchange": {
+                  "playerResult": "水击已完成，余力将石衡逼退一步；林澜未受伤、未位移，取得短暂主动，灵力由10降至8，无新增持续状态。",
+                  "opponents": [
+                    {
+                      "name": "石衡",
+                      "response": "在本次水击到来时构筑护衣，正面承接冲击。",
+                      "result": "沿水击冲击方向后退一步，保持清醒，未受可确认伤势，未被持续束缚或压制；灵力由10降至8，回合结束时护衣已消散。",
+                      "techniques": [
+                        {
+                          "manifestation": "灵力在身周凝成护衣，覆盖受击处并承接迎面水流；护衣于本轮结束后消散。",
+                          "interaction": "护衣抵消水击的大部分正面冲击，剩余冲击仍使石衡后退一步；未发生伤害反弹，护衣未被击碎。"
+                        }
+                      ]
+                    }
+                  ],
+                  "environmentResult": "碰撞处出现局部水流飞溅，未造成试剑台结构性损坏或大范围环境变化。",
+                  "boundaries": [
+                    "未结算气血伤害，未造成可确认创伤或击杀。",
+                    "水击未绕过护衣，护衣未被击碎，其消散属于本轮期限届满。",
+                    "石衡仅后退一步，未被击倒或持续束缚；林澜未发生位移。",
+                    "未发生反弹伤害、心智控制或经脉阻滞。",
+                    "交锋前仅确认目标位于五米内，未定义步长，故不确定交锋后精确距离及是否仍在五米内。",
+                    "未造成地面破裂或大范围气象变化。"
+                  ]
+                }
+              }
+            }
+          ],
+          "packet": {
+            "type": "XY_EVENT_RESULT",
+            "eventId": "live-1791364469209-0",
+            "results": [
+              {
+                "type": "BATTLE_SCENE_PACKET",
+                "schema": "battle_scene_v3",
+                "sessionId": "event-battle:live-1791364469209-0",
+                "roundId": "event-battle:live-1791364469209-0-r1",
+                "actionId": "live-1791364469209-0:combat:1",
+                "scope": {
+                  "chatId": "real-model-fixture",
+                  "branchId": "fixture-branch"
+                },
+                "playerAction": {
+                  "action": "施展水击攻击五米内的石衡，并处理石衡使用护衣抵挡的同一次攻防。",
+                  "intent": "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。"
+                },
+                "exchange": {
+                  "playerResult": "水击已完成，余力将石衡逼退一步；林澜未受伤、未位移，取得短暂主动，灵力由10降至8，无新增持续状态。",
+                  "opponents": [
+                    {
+                      "name": "石衡",
+                      "response": "在本次水击到来时构筑护衣，正面承接冲击。",
+                      "result": "沿水击冲击方向后退一步，保持清醒，未受可确认伤势，未被持续束缚或压制；灵力由10降至8，回合结束时护衣已消散。",
+                      "techniques": [
+                        {
+                          "manifestation": "灵力在身周凝成护衣，覆盖受击处并承接迎面水流；护衣于本轮结束后消散。",
+                          "interaction": "护衣抵消水击的大部分正面冲击，剩余冲击仍使石衡后退一步；未发生伤害反弹，护衣未被击碎。"
+                        }
+                      ]
+                    }
+                  ],
+                  "environmentResult": "碰撞处出现局部水流飞溅，未造成试剑台结构性损坏或大范围环境变化。",
+                  "boundaries": [
+                    "未结算气血伤害，未造成可确认创伤或击杀。",
+                    "水击未绕过护衣，护衣未被击碎，其消散属于本轮期限届满。",
+                    "石衡仅后退一步，未被击倒或持续束缚；林澜未发生位移。",
+                    "未发生反弹伤害、心智控制或经脉阻滞。",
+                    "交锋前仅确认目标位于五米内，未定义步长，故不确定交锋后精确距离及是否仍在五米内。",
+                    "未造成地面破裂或大范围气象变化。"
+                  ]
+                }
+              }
+            ]
+          },
+          "status": "validated",
+          "modules": [
+            "combat"
+          ]
+        }
+      }
+    },
+    {
+      "id": "round-2",
+      "passed": true,
+      "ms": 61899,
+      "result": {
+        "decision": "adjudicate",
+        "actions": [
+          {
+            "localKey": "action:1",
+            "domain": "combat",
+            "intent": "继续当前试剑，施展水击攻击石衡",
+            "opponentNames": [
+              "石衡"
+            ],
+            "source": {
+              "id": "input",
+              "quote": "我再次施展水击攻击石衡。"
+            },
+            "execution": "now",
+            "dependsOn": [],
+            "worldSignal": {
+              "kind": "attack_observed",
+              "purpose": "training",
+              "confrontation": "linked",
+              "evidence": [
+                {
+                  "id": "input",
+                  "quote": "我再次施展水击攻击石衡。"
+                },
+                {
+                  "id": "history:0",
+                  "quote": "林澜和石衡在战界-001内试剑，双方都清醒，距离五米。"
+                }
+              ]
+            }
+          }
+        ],
+        "missingInformation": [],
+        "framework": "auto-preparation-v1",
+        "policyId": "high-martial-20261007-preparation-v1",
+        "scope": {
+          "chatId": "real-model-fixture",
+          "branchUid": "fixture-branch",
+          "inputMessageUid": "fixture-input",
+          "originalInputHash": "0fac2913f4ed64f005293c6a370ff3236a2dd8c94a8573200421340611d67cff",
+          "anchorMessageId": 0,
+          "anchorSwipeId": 0
+        },
+        "battlefield": {
+          "current": {
+            "空间层": "下沉战界",
+            "战界ID": "战界-001",
+            "备案状态": "已备案",
+            "战斗状态": "进行中"
+          },
+          "acuHint": null,
+          "differences": [],
+          "mvuIssues": [],
+          "acuIssues": [
+            "acu_table_absent"
+          ],
+          "acuBranchKnown": false
+        },
+        "activationCandidates": [
+          {
+            "actionKey": "action:1",
+            "kind": "combat_action",
+            "battleId": "战界-001",
+            "mode": "resume_candidate",
+            "status": "staged",
+            "executable": false
+          }
+        ],
+        "preparation": {
+          "status": "ready",
+          "reusedSessionId": "event-battle:live-1791364469209-0",
+          "executable": false,
+          "modules": []
+        },
+        "execution": {
+          "schema": "event_combat_commit_v1",
+          "beforeState": {
+            "schema": "battle_v2",
+            "version": 5,
+            "sessionId": "event-battle:live-1791364469209-0",
+            "scope": {
+              "chatId": "real-model-fixture",
+              "branchId": "fixture-branch",
+              "extension": "st-xybattle-sys"
+            },
+            "phase": "awaiting_next",
+            "round": 1,
+            "roundId": "event-battle:live-1791364469209-0-r1",
+            "actionSeq": 1,
+            "scene": {
+              "location": "试剑台",
+              "time": "午后",
+              "turn": 1,
+              "initiative": "pending",
+              "positions": {},
+              "publicEvents": [
+                "【对敌影响】石衡构筑护衣承接水击，大部分冲击被抵消，剩余冲击使其后退一步，未造成可确认伤势。",
+                "【状态变化】石衡的护衣于本轮结束后消散，未留下持续防护；双方均保持清醒，未建立持续制约。",
+                "【环境影响】水流与护衣碰撞产生局部飞溅，试剑台未发生结构性破坏。",
+                "【局势转移】林澜未发生位移，石衡沿冲击方向后退一步，双方距离较交锋前增大；林澜取得短暂主动，未形成持续压制。",
+                "【资源结算】林澜与石衡各施展一次招式，灵力均由10降至8。"
+              ],
+              "battlefield": {
+                "空间层": "下沉战界",
+                "战界ID": "战界-001",
+                "备案状态": "已备案",
+                "战斗状态": "进行中"
+              },
+              "situation": [
+                "清醒，未受伤",
+                "清醒，未受伤",
+                "林澜和石衡在战界-001内试剑，双方都清醒，距离五米。本轮将正常施展一次招式。",
+                "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。"
+              ]
+            },
+            "actors": {
+              "player": {
+                "id": "actor:/主角",
+                "name": "林澜",
+                "cultivationRealm": "筑基",
+                "resources": {
+                  "灵力": 8
+                },
+                "resourceDefinitions": [
+                  {
+                    "key": "灵力",
+                    "name": "灵力",
+                    "current": 8,
+                    "min": 0,
+                    "max": 10,
+                    "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                  }
+                ],
+                "techniques": [
+                  {
+                    "registryId": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                    "techniqueIds": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB"
+                    ]
+                  }
+                ],
+                "narrativeProfile": {
+                  "姓名": "林澜",
+                  "境界": "筑基",
+                  "当前状态": "清醒，未受伤",
+                  "功法": {
+                    "水击诀": {
+                      "掌握状态": "已习得",
+                      "品阶": "凡阶",
+                      "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                      "招式": {
+                        "水击": {
+                          "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    }
+                  },
+                  "资源": {
+                    "灵力": {
+                      "当前": 10,
+                      "下限": 0,
+                      "上限": 10,
+                      "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                    }
+                  }
+                },
+                "visibleInfo": {
+                  "cultivationRealm": "筑基",
+                  "currentState": "清醒，未受伤"
+                },
+                "hidden": {}
+              },
+              "enemies": [
+                {
+                  "id": "actor:/人物/石衡",
+                  "name": "石衡",
+                  "cultivationRealm": "筑基",
+                  "resources": {
+                    "灵力": 8
+                  },
+                  "resourceDefinitions": [
+                    {
+                      "key": "灵力",
+                      "name": "灵力",
+                      "current": 8,
+                      "min": 0,
+                      "max": 10,
+                      "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                    }
+                  ],
+                  "techniques": [
+                    {
+                      "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                      "name": "护衣",
+                      "school": "石衣诀",
+                      "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "mechanics": [
+                        "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                      ],
+                      "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "cooldown": "无",
+                      "range": "五米",
+                      "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                      "availability": {
+                        "default": "conditional",
+                        "conditions": [
+                          "清醒且当前灵力至少2点"
+                        ],
+                        "requires": []
+                      },
+                      "triggeredState": [],
+                      "visibility": "internal",
+                      "ruleRefs": [
+                        "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                      ],
+                      "narrativeDefinition": {
+                        "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                        "条件": "清醒且当前灵力至少2点",
+                        "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                        "范围": "五米",
+                        "冷却": "无",
+                        "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                      }
+                    }
+                  ],
+                  "narrativeProfile": {
+                    "姓名": "石衡",
+                    "境界": "筑基",
+                    "当前状态": "清醒，未受伤",
+                    "功法": {
+                      "石衣诀": {
+                        "掌握状态": "已习得",
+                        "品阶": "凡阶",
+                        "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                        "招式": {
+                          "护衣": {
+                            "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                            "条件": "清醒且当前灵力至少2点",
+                            "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                            "范围": "五米",
+                            "冷却": "无",
+                            "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                          }
+                        }
+                      }
+                    },
+                    "资源": {
+                      "灵力": {
+                        "当前": 10,
+                        "下限": 0,
+                        "上限": 10,
+                        "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                      }
+                    }
+                  },
+                  "visibleInfo": {
+                    "cultivationRealm": "筑基",
+                    "currentState": "清醒，未受伤"
+                  },
+                  "hidden": {}
+                }
+              ]
+            },
+            "semanticState": {
+              "statuses": [],
+              "effects": [],
+              "positions": {
+                "actor:/主角": {
+                  "movement": "本轮未发生位移"
+                },
+                "actor:/人物/石衡": {
+                  "movement": "相对交锋前沿水击冲击方向后退一步",
+                  "distanceToPlayer": "较交锋前增大；确切距离未定义"
+                }
+              },
+              "control": "林澜取得本次交锋的短暂主动；石衡后退一步，未形成持续压制"
+            },
+            "causalState": {
+              "schema": "battle_v2_causal",
+              "version": 1,
+              "scope": {
+                "chatId": "real-model-fixture",
+                "branchId": "fixture-branch",
+                "kind": "branch"
+              },
+              "clock": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0,
+                "totalStoryHours": 0
+              },
+              "anchors": [],
+              "relations": [],
+              "debts": [],
+              "cooldowns": {},
+              "ledger": [],
+              "appliedActions": {},
+              "updatedAt": "2026-10-07T09:14:43.985Z"
+            },
+            "combatLedger": {
+              "schema": "battle_combat_ledger_v1",
+              "revision": 0,
+              "objects": [],
+              "receipts": []
+            },
+            "ruleMemory": {
+              "schema": "battle_rule_memory_v1",
+              "versions": [],
+              "interactions": [],
+              "negativeCases": []
+            },
+            "resourceRules": [
+              {
+                "actorId": "actor:/主角",
+                "resource": "灵力",
+                "min": 0,
+                "max": 10,
+                "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.resource.%E7%81%B5%E5%8A%9B"
+                ]
+              },
+              {
+                "actorId": "actor:/人物/石衡",
+                "resource": "灵力",
+                "min": 0,
+                "max": 10,
+                "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.resource.%E7%81%B5%E5%8A%9B"
+                ]
+              }
+            ],
+            "registrySnapshot": [
+              {
+                "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                "name": "水击诀",
+                "rank": "凡阶",
+                "element": "用户当前定义",
+                "corePrinciple": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                "mechanics": [
+                  "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。"
+                ],
+                "techniques": [
+                  {
+                    "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB",
+                    "name": "水击",
+                    "school": "水击诀",
+                    "originalDefinition": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                    "mechanics": [
+                      "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。"
+                    ],
+                    "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                    "cooldown": "无",
+                    "range": "五米",
+                    "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                    "availability": {
+                      "default": "conditional",
+                      "conditions": [
+                        "清醒且当前灵力至少2点"
+                      ],
+                      "requires": []
+                    },
+                    "triggeredState": [],
+                    "visibility": "player",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB.definition"
+                    ],
+                    "narrativeDefinition": {
+                      "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                ],
+                "synergies": [],
+                "narrativeGuidance": [],
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.definition"
+                ],
+                "version": "narrative-snapshot-v1",
+                "visibility": "player",
+                "narrativeDefinition": {
+                  "掌握状态": "已习得",
+                  "品阶": "凡阶",
+                  "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                  "招式": {
+                    "水击": {
+                      "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                },
+                "narrativeCompiled": true
+              },
+              {
+                "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80",
+                "name": "石衣诀",
+                "rank": "凡阶",
+                "element": "用户当前定义",
+                "corePrinciple": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                "mechanics": [
+                  "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。"
+                ],
+                "techniques": [
+                  {
+                    "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                    "name": "护衣",
+                    "school": "石衣诀",
+                    "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                    "mechanics": [
+                      "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                    ],
+                    "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                    "cooldown": "无",
+                    "range": "五米",
+                    "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                    "availability": {
+                      "default": "conditional",
+                      "conditions": [
+                        "清醒且当前灵力至少2点"
+                      ],
+                      "requires": []
+                    },
+                    "triggeredState": [],
+                    "visibility": "internal",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                    ],
+                    "narrativeDefinition": {
+                      "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                ],
+                "synergies": [],
+                "narrativeGuidance": [],
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.definition"
+                ],
+                "version": "narrative-snapshot-v1",
+                "visibility": "internal",
+                "narrativeDefinition": {
+                  "掌握状态": "已习得",
+                  "品阶": "凡阶",
+                  "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                  "招式": {
+                    "护衣": {
+                      "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                },
+                "narrativeCompiled": true
+              }
+            ],
+            "history": [],
+            "pending": null,
+            "lastError": null,
+            "updatedAt": "2026-10-07T09:15:29.436Z"
+          },
+          "afterState": {
+            "schema": "battle_v2",
+            "version": 9,
+            "sessionId": "event-battle:live-1791364469209-0",
+            "scope": {
+              "chatId": "real-model-fixture",
+              "branchId": "fixture-branch",
+              "extension": "st-xybattle-sys"
+            },
+            "phase": "awaiting_next",
+            "round": 2,
+            "roundId": "event-battle:live-1791364469209-0-r2",
+            "actionSeq": 2,
+            "scene": {
+              "location": "试剑台",
+              "time": "午后",
+              "turn": 2,
+              "initiative": "pending",
+              "positions": {},
+              "publicEvents": [
+                "【对敌影响】石衡构筑护衣承接水击，大部分冲击被抵消，剩余冲击使其后退一步，未造成可确认伤势。",
+                "【状态变化】石衡的护衣于本轮结束后消散，未留下持续防护；双方均保持清醒，未建立持续制约。",
+                "【环境影响】水流与护衣碰撞产生局部飞溅，试剑台未发生结构性破坏。",
+                "【局势转移】林澜未发生位移，石衡沿冲击方向后退一步，双方距离较交锋前增大；林澜取得短暂主动，未形成持续压制。",
+                "【资源结算】林澜与石衡各施展一次招式，灵力均由10降至8。",
+                "【对敌影响】石衡本轮重新凝成护衣，抵消水击的大部分冲击，仍沿冲击方向后退一步；保持清醒，未受伤，未发生护衣被击穿。",
+                "【状态结算】石衡本轮构筑的护衣在本轮结束时消散，未留下持续防护或控制效果。",
+                "【环境影响】水流碰撞产生局部水花与轻微气流扰动；试剑台未发生结构破坏。",
+                "【局势转移】林澜本轮未位移，石衡相对本轮开始的位置再后退一步，双方距离进一步增大，具体米数未确定；林澜获得短暂主动，未建立持续压制。",
+                "【资源结算】林澜与石衡各施展一次招式，灵力均由8点降至6点。"
+              ],
+              "battlefield": {
+                "空间层": "下沉战界",
+                "战界ID": "战界-001",
+                "备案状态": "已备案",
+                "战斗状态": "进行中"
+              },
+              "situation": [
+                "清醒，未受伤",
+                "清醒，未受伤",
+                "林澜和石衡在战界-001内试剑，双方都清醒，距离五米。本轮将正常施展一次招式。",
+                "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。"
+              ]
+            },
+            "actors": {
+              "player": {
+                "id": "actor:/主角",
+                "name": "林澜",
+                "cultivationRealm": "筑基",
+                "resources": {
+                  "灵力": 6
+                },
+                "resourceDefinitions": [
+                  {
+                    "key": "灵力",
+                    "name": "灵力",
+                    "current": 6,
+                    "min": 0,
+                    "max": 10,
+                    "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                  }
+                ],
+                "techniques": [
+                  {
+                    "registryId": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                    "techniqueIds": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB"
+                    ]
+                  }
+                ],
+                "narrativeProfile": {
+                  "姓名": "林澜",
+                  "境界": "筑基",
+                  "当前状态": "清醒，未受伤",
+                  "功法": {
+                    "水击诀": {
+                      "掌握状态": "已习得",
+                      "品阶": "凡阶",
+                      "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                      "招式": {
+                        "水击": {
+                          "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    }
+                  },
+                  "资源": {
+                    "灵力": {
+                      "当前": 10,
+                      "下限": 0,
+                      "上限": 10,
+                      "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                    }
+                  }
+                },
+                "visibleInfo": {
+                  "cultivationRealm": "筑基",
+                  "currentState": "清醒，未受伤"
+                },
+                "hidden": {}
+              },
+              "enemies": [
+                {
+                  "id": "actor:/人物/石衡",
+                  "name": "石衡",
+                  "cultivationRealm": "筑基",
+                  "resources": {
+                    "灵力": 6
+                  },
+                  "resourceDefinitions": [
+                    {
+                      "key": "灵力",
+                      "name": "灵力",
+                      "current": 6,
+                      "min": 0,
+                      "max": 10,
+                      "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                    }
+                  ],
+                  "techniques": [
+                    {
+                      "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                      "name": "护衣",
+                      "school": "石衣诀",
+                      "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "mechanics": [
+                        "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                      ],
+                      "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "cooldown": "无",
+                      "range": "五米",
+                      "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                      "availability": {
+                        "default": "conditional",
+                        "conditions": [
+                          "清醒且当前灵力至少2点"
+                        ],
+                        "requires": []
+                      },
+                      "triggeredState": [],
+                      "visibility": "internal",
+                      "ruleRefs": [
+                        "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                      ],
+                      "narrativeDefinition": {
+                        "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                        "条件": "清醒且当前灵力至少2点",
+                        "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                        "范围": "五米",
+                        "冷却": "无",
+                        "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                      }
+                    }
+                  ],
+                  "narrativeProfile": {
+                    "姓名": "石衡",
+                    "境界": "筑基",
+                    "当前状态": "清醒，未受伤",
+                    "功法": {
+                      "石衣诀": {
+                        "掌握状态": "已习得",
+                        "品阶": "凡阶",
+                        "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                        "招式": {
+                          "护衣": {
+                            "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                            "条件": "清醒且当前灵力至少2点",
+                            "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                            "范围": "五米",
+                            "冷却": "无",
+                            "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                          }
+                        }
+                      }
+                    },
+                    "资源": {
+                      "灵力": {
+                        "当前": 10,
+                        "下限": 0,
+                        "上限": 10,
+                        "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                      }
+                    }
+                  },
+                  "visibleInfo": {
+                    "cultivationRealm": "筑基",
+                    "currentState": "清醒，未受伤"
+                  },
+                  "hidden": {}
+                }
+              ]
+            },
+            "semanticState": {
+              "statuses": [],
+              "effects": [],
+              "positions": {
+                "actor:/主角": {
+                  "movement": "本轮未发生位移"
+                },
+                "actor:/人物/石衡": {
+                  "movement": "相对本轮交锋前沿水击冲击方向再后退一步",
+                  "distanceToPlayer": "较本轮交锋前进一步增大；确切距离未定义"
+                }
+              },
+              "control": "林澜取得本轮交锋的短暂主动；石衡重新施展护衣后仍被逼退一步，未形成持续压制"
+            },
+            "causalState": {
+              "schema": "battle_v2_causal",
+              "version": 2,
+              "scope": {
+                "chatId": "real-model-fixture",
+                "branchId": "fixture-branch",
+                "kind": "branch"
+              },
+              "clock": {
+                "day": 0,
+                "hour": 0,
+                "minute": 0,
+                "totalStoryHours": 0
+              },
+              "anchors": [],
+              "relations": [],
+              "debts": [],
+              "cooldowns": {},
+              "ledger": [],
+              "appliedActions": {
+                "clock:event-battle:live-1791364469209-0-r1": {
+                  "hash": "{\"elapsedStoryHours\":0,\"storyTime\":{\"day\":0,\"hour\":0,\"minute\":0,\"totalStoryHours\":0}}",
+                  "entryIds": [],
+                  "version": 2
+                }
+              },
+              "updatedAt": "2026-10-07T09:15:35.017Z"
+            },
+            "combatLedger": {
+              "schema": "battle_combat_ledger_v1",
+              "revision": 0,
+              "objects": [],
+              "receipts": []
+            },
+            "ruleMemory": {
+              "schema": "battle_rule_memory_v1",
+              "versions": [],
+              "interactions": [],
+              "negativeCases": []
+            },
+            "resourceRules": [
+              {
+                "actorId": "actor:/主角",
+                "resource": "灵力",
+                "min": 0,
+                "max": 10,
+                "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.resource.%E7%81%B5%E5%8A%9B"
+                ]
+              },
+              {
+                "actorId": "actor:/人物/石衡",
+                "resource": "灵力",
+                "min": 0,
+                "max": 10,
+                "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.resource.%E7%81%B5%E5%8A%9B"
+                ]
+              }
+            ],
+            "registrySnapshot": [
+              {
+                "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                "name": "水击诀",
+                "rank": "凡阶",
+                "element": "用户当前定义",
+                "corePrinciple": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                "mechanics": [
+                  "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。"
+                ],
+                "techniques": [
+                  {
+                    "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB",
+                    "name": "水击",
+                    "school": "水击诀",
+                    "originalDefinition": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                    "mechanics": [
+                      "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。"
+                    ],
+                    "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                    "cooldown": "无",
+                    "range": "五米",
+                    "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                    "availability": {
+                      "default": "conditional",
+                      "conditions": [
+                        "清醒且当前灵力至少2点"
+                      ],
+                      "requires": []
+                    },
+                    "triggeredState": [],
+                    "visibility": "player",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB.definition"
+                    ],
+                    "narrativeDefinition": {
+                      "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                ],
+                "synergies": [],
+                "narrativeGuidance": [],
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.definition"
+                ],
+                "version": "narrative-snapshot-v1",
+                "visibility": "player",
+                "narrativeDefinition": {
+                  "掌握状态": "已习得",
+                  "品阶": "凡阶",
+                  "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                  "招式": {
+                    "水击": {
+                      "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                },
+                "narrativeCompiled": true
+              },
+              {
+                "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80",
+                "name": "石衣诀",
+                "rank": "凡阶",
+                "element": "用户当前定义",
+                "corePrinciple": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                "mechanics": [
+                  "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。"
+                ],
+                "techniques": [
+                  {
+                    "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                    "name": "护衣",
+                    "school": "石衣诀",
+                    "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                    "mechanics": [
+                      "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                    ],
+                    "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                    "cooldown": "无",
+                    "range": "五米",
+                    "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                    "availability": {
+                      "default": "conditional",
+                      "conditions": [
+                        "清醒且当前灵力至少2点"
+                      ],
+                      "requires": []
+                    },
+                    "triggeredState": [],
+                    "visibility": "internal",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                    ],
+                    "narrativeDefinition": {
+                      "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                ],
+                "synergies": [],
+                "narrativeGuidance": [],
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.definition"
+                ],
+                "version": "narrative-snapshot-v1",
+                "visibility": "internal",
+                "narrativeDefinition": {
+                  "掌握状态": "已习得",
+                  "品阶": "凡阶",
+                  "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                  "招式": {
+                    "护衣": {
+                      "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                      "条件": "清醒且当前灵力至少2点",
+                      "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                      "范围": "五米",
+                      "冷却": "无",
+                      "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                    }
+                  }
+                },
+                "narrativeCompiled": true
+              }
+            ],
+            "history": [],
+            "pending": null,
+            "lastError": null,
+            "updatedAt": "2026-10-07T09:16:31.336Z"
+          },
+          "records": [
+            {
+              "rollbackState": {
+                "schema": "battle_v2",
+                "version": 6,
+                "sessionId": "event-battle:live-1791364469209-0",
+                "scope": {
+                  "chatId": "real-model-fixture",
+                  "branchId": "fixture-branch",
+                  "extension": "st-xybattle-sys"
+                },
+                "phase": "awaiting_player",
+                "round": 2,
+                "roundId": "event-battle:live-1791364469209-0-r2",
+                "actionSeq": 1,
+                "scene": {
+                  "location": "试剑台",
+                  "time": "午后",
+                  "turn": 2,
+                  "initiative": "pending",
+                  "positions": {},
+                  "publicEvents": [
+                    "【对敌影响】石衡构筑护衣承接水击，大部分冲击被抵消，剩余冲击使其后退一步，未造成可确认伤势。",
+                    "【状态变化】石衡的护衣于本轮结束后消散，未留下持续防护；双方均保持清醒，未建立持续制约。",
+                    "【环境影响】水流与护衣碰撞产生局部飞溅，试剑台未发生结构性破坏。",
+                    "【局势转移】林澜未发生位移，石衡沿冲击方向后退一步，双方距离较交锋前增大；林澜取得短暂主动，未形成持续压制。",
+                    "【资源结算】林澜与石衡各施展一次招式，灵力均由10降至8。"
+                  ],
+                  "battlefield": {
+                    "空间层": "下沉战界",
+                    "战界ID": "战界-001",
+                    "备案状态": "已备案",
+                    "战斗状态": "进行中"
+                  },
+                  "situation": [
+                    "清醒，未受伤",
+                    "清醒，未受伤",
+                    "林澜和石衡在战界-001内试剑，双方都清醒，距离五米。本轮将正常施展一次招式。",
+                    "我现在施展水击攻击五米内的石衡，石衡使用护衣抵挡。"
+                  ]
+                },
+                "actors": {
+                  "player": {
+                    "id": "actor:/主角",
+                    "name": "林澜",
+                    "cultivationRealm": "筑基",
+                    "resources": {
+                      "灵力": 8
+                    },
+                    "resourceDefinitions": [
+                      {
+                        "key": "灵力",
+                        "name": "灵力",
+                        "current": 8,
+                        "min": 0,
+                        "max": 10,
+                        "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                      }
+                    ],
+                    "techniques": [
+                      {
+                        "registryId": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                        "techniqueIds": [
+                          "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB"
+                        ]
+                      }
+                    ],
+                    "narrativeProfile": {
+                      "姓名": "林澜",
+                      "境界": "筑基",
+                      "当前状态": "清醒，未受伤",
+                      "功法": {
+                        "水击诀": {
+                          "掌握状态": "已习得",
+                          "品阶": "凡阶",
+                          "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                          "招式": {
+                            "水击": {
+                              "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                              "条件": "清醒且当前灵力至少2点",
+                              "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                              "范围": "五米",
+                              "冷却": "无",
+                              "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                            }
+                          }
+                        }
+                      },
+                      "资源": {
+                        "灵力": {
+                          "当前": 10,
+                          "下限": 0,
+                          "上限": 10,
+                          "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                        }
+                      }
+                    },
+                    "visibleInfo": {
+                      "cultivationRealm": "筑基",
+                      "currentState": "清醒，未受伤"
+                    },
+                    "hidden": {}
+                  },
+                  "enemies": [
+                    {
+                      "id": "actor:/人物/石衡",
+                      "name": "石衡",
+                      "cultivationRealm": "筑基",
+                      "resources": {
+                        "灵力": 8
+                      },
+                      "resourceDefinitions": [
+                        {
+                          "key": "灵力",
+                          "name": "灵力",
+                          "current": 8,
+                          "min": 0,
+                          "max": 10,
+                          "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                        }
+                      ],
+                      "techniques": [
+                        {
+                          "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                          "name": "护衣",
+                          "school": "石衣诀",
+                          "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                          "mechanics": [
+                            "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                          ],
+                          "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "cooldown": "无",
+                          "range": "五米",
+                          "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                          "availability": {
+                            "default": "conditional",
+                            "conditions": [
+                              "清醒且当前灵力至少2点"
+                            ],
+                            "requires": []
+                          },
+                          "triggeredState": [],
+                          "visibility": "internal",
+                          "ruleRefs": [
+                            "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                          ],
+                          "narrativeDefinition": {
+                            "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                            "条件": "清醒且当前灵力至少2点",
+                            "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                            "范围": "五米",
+                            "冷却": "无",
+                            "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                          }
+                        }
+                      ],
+                      "narrativeProfile": {
+                        "姓名": "石衡",
+                        "境界": "筑基",
+                        "当前状态": "清醒，未受伤",
+                        "功法": {
+                          "石衣诀": {
+                            "掌握状态": "已习得",
+                            "品阶": "凡阶",
+                            "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                            "招式": {
+                              "护衣": {
+                                "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                                "条件": "清醒且当前灵力至少2点",
+                                "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                                "范围": "五米",
+                                "冷却": "无",
+                                "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                              }
+                            }
+                          }
+                        },
+                        "资源": {
+                          "灵力": {
+                            "当前": 10,
+                            "下限": 0,
+                            "上限": 10,
+                            "定义": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复"
+                          }
+                        }
+                      },
+                      "visibleInfo": {
+                        "cultivationRealm": "筑基",
+                        "currentState": "清醒，未受伤"
+                      },
+                      "hidden": {}
+                    }
+                  ]
+                },
+                "semanticState": {
+                  "statuses": [],
+                  "effects": [],
+                  "positions": {
+                    "actor:/主角": {
+                      "movement": "本轮未发生位移"
+                    },
+                    "actor:/人物/石衡": {
+                      "movement": "相对交锋前沿水击冲击方向后退一步",
+                      "distanceToPlayer": "较交锋前增大；确切距离未定义"
+                    }
+                  },
+                  "control": "林澜取得本次交锋的短暂主动；石衡后退一步，未形成持续压制"
+                },
+                "causalState": {
+                  "schema": "battle_v2_causal",
+                  "version": 2,
+                  "scope": {
+                    "chatId": "real-model-fixture",
+                    "branchId": "fixture-branch",
+                    "kind": "branch"
+                  },
+                  "clock": {
+                    "day": 0,
+                    "hour": 0,
+                    "minute": 0,
+                    "totalStoryHours": 0
+                  },
+                  "anchors": [],
+                  "relations": [],
+                  "debts": [],
+                  "cooldowns": {},
+                  "ledger": [],
+                  "appliedActions": {
+                    "clock:event-battle:live-1791364469209-0-r1": {
+                      "hash": "{\"elapsedStoryHours\":0,\"storyTime\":{\"day\":0,\"hour\":0,\"minute\":0,\"totalStoryHours\":0}}",
+                      "entryIds": [],
+                      "version": 2
+                    }
+                  },
+                  "updatedAt": "2026-10-07T09:15:35.017Z"
+                },
+                "combatLedger": {
+                  "schema": "battle_combat_ledger_v1",
+                  "revision": 0,
+                  "objects": [],
+                  "receipts": []
+                },
+                "ruleMemory": {
+                  "schema": "battle_rule_memory_v1",
+                  "versions": [],
+                  "interactions": [],
+                  "negativeCases": []
+                },
+                "resourceRules": [
+                  {
+                    "actorId": "actor:/主角",
+                    "resource": "灵力",
+                    "min": 0,
+                    "max": 10,
+                    "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.resource.%E7%81%B5%E5%8A%9B"
+                    ]
+                  },
+                  {
+                    "actorId": "actor:/人物/石衡",
+                    "resource": "灵力",
+                    "min": 0,
+                    "max": 10,
+                    "definition": "施法消耗资源，每施展一次已定义招式扣2点，无被动回合恢复",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.resource.%E7%81%B5%E5%8A%9B"
+                    ]
+                  }
+                ],
+                "registrySnapshot": [
+                  {
+                    "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80",
+                    "name": "水击诀",
+                    "rank": "凡阶",
+                    "element": "用户当前定义",
+                    "corePrinciple": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                    "mechanics": [
+                      "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。"
+                    ],
+                    "techniques": [
+                      {
+                        "id": "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB",
+                        "name": "水击",
+                        "school": "水击诀",
+                        "originalDefinition": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                        "mechanics": [
+                          "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。"
+                        ],
+                        "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                        "cooldown": "无",
+                        "range": "五米",
+                        "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                        "availability": {
+                          "default": "conditional",
+                          "conditions": [
+                            "清醒且当前灵力至少2点"
+                          ],
+                          "requires": []
+                        },
+                        "triggeredState": [],
+                        "visibility": "player",
+                        "ruleRefs": [
+                          "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB.definition"
+                        ],
+                        "narrativeDefinition": {
+                          "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    ],
+                    "synergies": [],
+                    "narrativeGuidance": [],
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.definition"
+                    ],
+                    "version": "narrative-snapshot-v1",
+                    "visibility": "player",
+                    "narrativeDefinition": {
+                      "掌握状态": "已习得",
+                      "品阶": "凡阶",
+                      "定义": "操纵近身水流进行一次正面冲击。不能绕开已成型的护衣，也不控制敌人心智。",
+                      "招式": {
+                        "水击": {
+                          "定义": "发出一股水流冲击五米内单个目标；敌人护衣能抵消大部分冲击，可以将敌人逼退一步但不能凭此直接击杀。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    },
+                    "narrativeCompiled": true
+                  },
+                  {
+                    "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80",
+                    "name": "石衣诀",
+                    "rank": "凡阶",
+                    "element": "用户当前定义",
+                    "corePrinciple": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                    "mechanics": [
+                      "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。"
+                    ],
+                    "techniques": [
+                      {
+                        "id": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                        "name": "护衣",
+                        "school": "石衣诀",
+                        "originalDefinition": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                        "mechanics": [
+                          "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。"
+                        ],
+                        "cost": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                        "cooldown": "无",
+                        "range": "五米",
+                        "counterplay": "护衣抵消大部分冲击，水击可以使受击者后退一步",
+                        "availability": {
+                          "default": "conditional",
+                          "conditions": [
+                            "清醒且当前灵力至少2点"
+                          ],
+                          "requires": []
+                        },
+                        "triggeredState": [],
+                        "visibility": "internal",
+                        "ruleRefs": [
+                          "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition"
+                        ],
+                        "narrativeDefinition": {
+                          "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    ],
+                    "synergies": [],
+                    "narrativeGuidance": [],
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.definition"
+                    ],
+                    "version": "narrative-snapshot-v1",
+                    "visibility": "internal",
+                    "narrativeDefinition": {
+                      "掌握状态": "已习得",
+                      "品阶": "凡阶",
+                      "定义": "以灵力凝成护衣。仅减弱普通水击，不提供无敌，不反弹伤害。",
+                      "招式": {
+                        "护衣": {
+                          "定义": "本轮构筑护衣，能减弱同阶一次普通水击；本轮结束后消散。",
+                          "条件": "清醒且当前灵力至少2点",
+                          "代价": "每次施展消耗灵力2点；无论攻防成功与否都消耗",
+                          "范围": "五米",
+                          "冷却": "无",
+                          "对抗": "护衣抵消大部分冲击，水击可以使受击者后退一步"
+                        }
+                      }
+                    },
+                    "narrativeCompiled": true
+                  }
+                ],
+                "pending": null,
+                "lastError": null,
+                "updatedAt": "2026-10-07T09:15:35.017Z"
+              },
+              "actionId": "live-1791364529439-1:action:1",
+              "roundId": "event-battle:live-1791364469209-0-r2",
+              "action": {
+                "label": "继续当前试剑，施展水击攻击石衡",
+                "techniqueId": null,
+                "intent": "我再次施展水击攻击石衡。"
+              },
+              "status": "committed",
+              "version": 8,
+              "before": {
+                "statuses": [],
+                "effects": [],
+                "positions": {
+                  "actor:/主角": {
+                    "movement": "本轮未发生位移"
+                  },
+                  "actor:/人物/石衡": {
+                    "movement": "相对交锋前沿水击冲击方向后退一步",
+                    "distanceToPlayer": "较交锋前增大；确切距离未定义"
+                  }
+                },
+                "control": "林澜取得本次交锋的短暂主动；石衡后退一步，未形成持续压制"
+              },
+              "causalBefore": {
+                "schema": "battle_v2_causal",
+                "version": 2,
+                "scope": {
+                  "chatId": "real-model-fixture",
+                  "branchId": "fixture-branch",
+                  "kind": "branch"
+                },
+                "clock": {
+                  "day": 0,
+                  "hour": 0,
+                  "minute": 0,
+                  "totalStoryHours": 0
+                },
+                "anchors": [],
+                "relations": [],
+                "debts": [],
+                "cooldowns": {},
+                "ledger": [],
+                "appliedActions": {
+                  "clock:event-battle:live-1791364469209-0-r1": {
+                    "hash": "{\"elapsedStoryHours\":0,\"storyTime\":{\"day\":0,\"hour\":0,\"minute\":0,\"totalStoryHours\":0}}",
+                    "entryIds": [],
+                    "version": 2
+                  }
+                },
+                "updatedAt": "2026-10-07T09:15:35.017Z"
+              },
+              "adjudication": {
+                "exchange": {
+                  "playerResult": "水击完成一次正面冲击，逼使石衡再退一步；林澜保持原位、清醒且未受伤，灵力降至6点，未建立持续控制效果。",
+                  "opponents": [
+                    {
+                      "actorId": "actor:/人物/石衡",
+                      "response": "本轮重新以灵力凝成护衣，正面承接水流冲击。",
+                      "result": "相对本轮交锋前再后退一步，仍清醒且未受伤；未被击穿防护，未反弹伤害，未陷入持续控制。灵力降至6点，回合结束后无护衣残留。",
+                      "techniques": [
+                        {
+                          "techniqueId": "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3",
+                          "manifestation": "石衡体表凝成灵力护衣，水流在其正面碰撞并散开，作用集中于受击处。",
+                          "interaction": "护衣抵消本次水击的大部分冲击，未完全消除推动作用；剩余冲击使石衡后退一步，护衣在本轮结束时消散。"
+                        }
+                      ]
+                    }
+                  ],
+                  "environmentResult": "冲击接触处出现局部水花与轻微气流扰动，未造成台面碎裂、沟壑或大范围气象变化。",
+                  "boundaries": [
+                    "未造成已确认的气血伤害、经脉损伤或击杀。",
+                    "水击未绕过或击穿护衣，护衣未反弹伤害。",
+                    "林澜未发生位移；石衡本轮位移仅为后退一步。",
+                    "具体交锋距离未提供，不能据本轮结果推定下一轮目标仍在五米射程内。",
+                    "护衣本轮结束即消散，无持续防护、持续压制或额外资源恢复。",
+                    "试剑台未发生结构破坏。"
+                  ]
+                },
+                "summary": "林澜再次施展水击，石衡重新构筑护衣抵消大部分冲击，仍被余势逼退一步，未受伤。双方各消耗2点灵力；护衣在本轮结束时消散。水流碰撞仅造成局部水花与轻微气流扰动，未造成试剑台结构破坏。",
+                "before": {
+                  "statuses": [],
+                  "effects": [],
+                  "positions": {
+                    "actor:/主角": {
+                      "movement": "本轮未发生位移"
+                    },
+                    "actor:/人物/石衡": {
+                      "movement": "相对交锋前沿水击冲击方向后退一步",
+                      "distanceToPlayer": "较交锋前增大；确切距离未定义"
+                    }
+                  },
+                  "control": "林澜取得本次交锋的短暂主动；石衡后退一步，未形成持续压制"
+                },
+                "after": {
+                  "statuses": [],
+                  "effects": [],
+                  "positions": {
+                    "actor:/主角": {
+                      "movement": "本轮未发生位移"
+                    },
+                    "actor:/人物/石衡": {
+                      "movement": "相对本轮交锋前沿水击冲击方向再后退一步",
+                      "distanceToPlayer": "较本轮交锋前进一步增大；确切距离未定义"
+                    }
+                  },
+                  "control": "林澜取得本轮交锋的短暂主动；石衡重新施展护衣后仍被逼退一步，未形成持续压制"
+                },
+                "reason": "动作文本明确对应林澜已习得的水击。双方均清醒，当前灵力均为8点，满足各自招式至少2点灵力的施展条件，且两招均无冷却。本次按继续当前试剑的近距交锋语境处理有效交互，不补出具体距离；该距离判断是本轮裁定的语境假设，并非已提供的测距事实。before 的 effects 为空，不能把上轮护衣当作仍在生效；石衡本轮选择重新施展已掌握的护衣，因此须重新支付2点灵力。水击为单次正面水流冲击，不能绕开护衣；新构筑的护衣抵消大部分冲击，剩余冲击依双方招式明确规定将石衡逼退一步，不追加创伤、经脉损伤、反弹或持续控制。护衣仅持续本轮，结算时消散，不写入回合结束后的持续效果。双方资源以本轮面板的8点为起点，各结算为6点，不重复扣除前轮消耗，也不进行被动恢复。没有因果期限或冷却状态变化。",
+                "ruleRefs": [
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.definition",
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB.definition",
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition",
+                  "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.resource.%E7%81%B5%E5%8A%9B",
+                  "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.resource.%E7%81%B5%E5%8A%9B"
+                ],
+                "publicEvents": [
+                  "【对敌影响】石衡本轮重新凝成护衣，抵消水击的大部分冲击，仍沿冲击方向后退一步；保持清醒，未受伤，未发生护衣被击穿。",
+                  "【状态结算】石衡本轮构筑的护衣在本轮结束时消散，未留下持续防护或控制效果。",
+                  "【环境影响】水流碰撞产生局部水花与轻微气流扰动；试剑台未发生结构破坏。",
+                  "【局势转移】林澜本轮未位移，石衡相对本轮开始的位置再后退一步，双方距离进一步增大，具体米数未确定；林澜获得短暂主动，未建立持续压制。",
+                  "【资源结算】林澜与石衡各施展一次招式，灵力均由8点降至6点。"
+                ],
+                "resourceChanges": [
+                  {
+                    "actorId": "actor:/主角",
+                    "resource": "灵力",
+                    "before": 8,
+                    "after": 6,
+                    "reason": "本轮施展一次水击，按定义消耗2点灵力。",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.%E6%B0%B4%E5%87%BB%E8%AF%80.%E6%B0%B4%E5%87%BB.definition",
+                      "narrative.actor%3A%2F%E4%B8%BB%E8%A7%92.resource.%E7%81%B5%E5%8A%9B"
+                    ]
+                  },
+                  {
+                    "actorId": "actor:/人物/石衡",
+                    "resource": "灵力",
+                    "before": 8,
+                    "after": 6,
+                    "reason": "本轮重新施展一次护衣，按定义消耗2点灵力。",
+                    "ruleRefs": [
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.%E7%9F%B3%E8%A1%A3%E8%AF%80.%E6%8A%A4%E8%A1%A3.definition",
+                      "narrative.actor%3A%2F%E4%BA%BA%E7%89%A9%2F%E7%9F%B3%E8%A1%A1.resource.%E7%81%B5%E5%8A%9B"
+                    ]
+                  }
+                ],
+                "confidence": 0.85
+              },
+              "after": {
+                "statuses": [],
+                "effects": [],
+                "positions": {
+                  "actor:/主角": {
+                    "movement": "本轮未发生位移"
+                  },
+                  "actor:/人物/石衡": {
+                    "movement": "相对本轮交锋前沿水击冲击方向再后退一步",
+                    "distanceToPlayer": "较本轮交锋前进一步增大；确切距离未定义"
+                  }
+                },
+                "control": "林澜取得本轮交锋的短暂主动；石衡重新施展护衣后仍被逼退一步，未形成持续压制"
+              },
+              "causalAfter": {
+                "schema": "battle_v2_causal",
+                "version": 2,
+                "scope": {
+                  "chatId": "real-model-fixture",
+                  "branchId": "fixture-branch",
+                  "kind": "branch"
+                },
+                "clock": {
+                  "day": 0,
+                  "hour": 0,
+                  "minute": 0,
+                  "totalStoryHours": 0
+                },
+                "anchors": [],
+                "relations": [],
+                "debts": [],
+                "cooldowns": {},
+                "ledger": [],
+                "appliedActions": {
+                  "clock:event-battle:live-1791364469209-0-r1": {
+                    "hash": "{\"elapsedStoryHours\":0,\"storyTime\":{\"day\":0,\"hour\":0,\"minute\":0,\"totalStoryHours\":0}}",
+                    "entryIds": [],
+                    "version": 2
+                  }
+                },
+                "updatedAt": "2026-10-07T09:15:35.017Z"
+              },
+              "createdAt": "2026-10-07T09:16:31.336Z",
+              "narrativePacket": {
+                "type": "BATTLE_SCENE_PACKET",
+                "schema": "battle_scene_v3",
+                "sessionId": "event-battle:live-1791364469209-0",
+                "roundId": "event-battle:live-1791364469209-0-r2",
+                "actionId": "live-1791364529439-1:action:1",
+                "scope": {
+                  "chatId": "real-model-fixture",
+                  "branchId": "fixture-branch"
+                },
+                "playerAction": {
+                  "action": "继续当前试剑，施展水击攻击石衡",
+                  "intent": "我再次施展水击攻击石衡。"
+                },
+                "exchange": {
+                  "playerResult": "水击完成一次正面冲击，逼使石衡再退一步；林澜保持原位、清醒且未受伤，灵力降至6点，未建立持续控制效果。",
+                  "opponents": [
+                    {
+                      "name": "石衡",
+                      "response": "本轮重新以灵力凝成护衣，正面承接水流冲击。",
+                      "result": "相对本轮交锋前再后退一步，仍清醒且未受伤；未被击穿防护，未反弹伤害，未陷入持续控制。灵力降至6点，回合结束后无护衣残留。",
+                      "techniques": [
+                        {
+                          "manifestation": "石衡体表凝成灵力护衣，水流在其正面碰撞并散开，作用集中于受击处。",
+                          "interaction": "护衣抵消本次水击的大部分冲击，未完全消除推动作用；剩余冲击使石衡后退一步，护衣在本轮结束时消散。"
+                        }
+                      ]
+                    }
+                  ],
+                  "environmentResult": "冲击接触处出现局部水花与轻微气流扰动，未造成台面碎裂、沟壑或大范围气象变化。",
+                  "boundaries": [
+                    "未造成已确认的气血伤害、经脉损伤或击杀。",
+                    "水击未绕过或击穿护衣，护衣未反弹伤害。",
+                    "林澜未发生位移；石衡本轮位移仅为后退一步。",
+                    "具体交锋距离未提供，不能据本轮结果推定下一轮目标仍在五米射程内。",
+                    "护衣本轮结束即消散，无持续防护、持续压制或额外资源恢复。",
+                    "试剑台未发生结构破坏。"
+                  ]
+                }
+              }
+            }
+          ],
+          "packet": {
+            "type": "XY_EVENT_RESULT",
+            "eventId": "live-1791364529439-1",
+            "results": [
+              {
+                "type": "BATTLE_SCENE_PACKET",
+                "schema": "battle_scene_v3",
+                "sessionId": "event-battle:live-1791364469209-0",
+                "roundId": "event-battle:live-1791364469209-0-r2",
+                "actionId": "live-1791364529439-1:action:1",
+                "scope": {
+                  "chatId": "real-model-fixture",
+                  "branchId": "fixture-branch"
+                },
+                "playerAction": {
+                  "action": "继续当前试剑，施展水击攻击石衡",
+                  "intent": "我再次施展水击攻击石衡。"
+                },
+                "exchange": {
+                  "playerResult": "水击完成一次正面冲击，逼使石衡再退一步；林澜保持原位、清醒且未受伤，灵力降至6点，未建立持续控制效果。",
+                  "opponents": [
+                    {
+                      "name": "石衡",
+                      "response": "本轮重新以灵力凝成护衣，正面承接水流冲击。",
+                      "result": "相对本轮交锋前再后退一步，仍清醒且未受伤；未被击穿防护，未反弹伤害，未陷入持续控制。灵力降至6点，回合结束后无护衣残留。",
+                      "techniques": [
+                        {
+                          "manifestation": "石衡体表凝成灵力护衣，水流在其正面碰撞并散开，作用集中于受击处。",
+                          "interaction": "护衣抵消本次水击的大部分冲击，未完全消除推动作用；剩余冲击使石衡后退一步，护衣在本轮结束时消散。"
+                        }
+                      ]
+                    }
+                  ],
+                  "environmentResult": "冲击接触处出现局部水花与轻微气流扰动，未造成台面碎裂、沟壑或大范围气象变化。",
+                  "boundaries": [
+                    "未造成已确认的气血伤害、经脉损伤或击杀。",
+                    "水击未绕过或击穿护衣，护衣未反弹伤害。",
+                    "林澜未发生位移；石衡本轮位移仅为后退一步。",
+                    "具体交锋距离未提供，不能据本轮结果推定下一轮目标仍在五米射程内。",
+                    "护衣本轮结束即消散，无持续防护、持续压制或额外资源恢复。",
+                    "试剑台未发生结构破坏。"
+                  ]
+                }
+              }
+            ]
+          },
+          "status": "validated",
+          "modules": [
+            "combat"
+          ]
+        }
+      }
+    }
+  ],
+  "requests": 29,
+  "summary": {
+    "routes": "24/24",
+    "combat": "2/2"
+  }
+}

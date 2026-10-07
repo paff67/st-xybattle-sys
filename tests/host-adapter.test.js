@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { BattleHostAdapter, createHostAdapter } from '../src/host-adapter.js';
 import { BattleController } from '../src/battle-controller.js';
 import { MainStoryNarrator, MockAdjudicator } from '../src/adapters.js';
+import { JSDOM } from 'jsdom';
+import { parseBattlePackets } from '../src/host-input-bridge.js';
 
 // These stubs follow the reviewed TavernHelper signatures. This suite is offline;
 // it does not verify a loaded extension, browser events, or a running ST server.
@@ -17,7 +19,7 @@ class Events {
 function rawAssistant(text = 'A', extra = { unrelated: 'keep' }) {
   return { name: 'Assistant', is_user: false, mes: text, swipe_id: 0, swipes: [text, 'B'], variables: [{ stats: { qi: 9 } }, { stats: { qi: 4 } }], extra: clone(extra), swipe_info: [clone(extra), { otherBranch: true }] };
 }
-function fixture({ noHelper = false, noSave = false } = {}) {
+function fixture({ noHelper = false, noSave = false, documentRef } = {}) {
   const events = new Events(), page = new Events(), calls = { read: [], write: [], save: 0, inject: [], uninject: 0 };
   let context = { chatId: 'chat-1', chat: [rawAssistant()], eventSource: events };
   let disk = null;
@@ -41,7 +43,7 @@ function fixture({ noHelper = false, noSave = false } = {}) {
     injectPrompts(prompts, options) { calls.inject.push([prompts, options]); let removed = false; return { uninject() { if (!removed) calls.uninject += 1; removed = true; } }; }
   };
   const windowRef = { addEventListener: (name, handler) => page.on(name, handler), removeEventListener: (name, handler) => page.off(name, handler) };
-  const options = { contextProvider: () => context, helper: noHelper ? null : helper, windowRef };
+  const options = { contextProvider: () => context, helper: noHelper ? null : helper, windowRef, documentRef };
   const adapter = new BattleHostAdapter(options);
   return { adapter, helper, events, page, calls, options, context: () => context, disk: () => disk, changeChat(chatId, chat = [rawAssistant('New')]) { context = { ...context, chatId, chat }; }, reload() { context.chat = clone(disk); }, selectSwipe(index) { const raw = context.chat[0]; raw.swipe_id = index; raw.mes = raw.swipes[index]; raw.extra = clone(raw.swipe_info[index]); } };
 }
@@ -50,12 +52,214 @@ function data(scope, version = 3, actionId = 'action-1', status = 'committed') {
 }
 async function queue(host) { const scope = host.adapter.scope(), item = data(scope); assert.equal((await host.adapter.persistReceipt(item.receipt, item.state, scope)).confirmed, true); assert.equal((await host.adapter.injectScenePacket(item.packet, scope)).queued, true); return item; }
 
+test('committed controller action automatically sends the native composer once and tracks normal story completion', async () => {
+  const dom = new JSDOM('<textarea id="send_textarea">玩家原始文字</textarea><button id="send_but">发送</button>');
+  const host = fixture({ documentRef: dom.window.document });
+  const controller = await attachedController(host);
+  const input = dom.window.document.querySelector('textarea');
+  let clicks = 0, started;
+  dom.window.document.querySelector('button').addEventListener('click', () => {
+    clicks += 1;
+    started = (async () => {
+      await host.events.emit('GENERATION_STARTED', 'normal');
+      await host.events.emit('GENERATION_AFTER_COMMANDS', 'normal');
+      host.context().chat.push({ is_user: true, mes: input.value });
+      input.value = '';
+      await host.events.emit('USER_MESSAGE_RENDERED', host.context().chat.length - 1);
+    })();
+  });
+  try {
+    controller.start();
+    await controller.submit({ actionId: 'auto-send', label: '试探' });
+    await started;
+    assert.equal(clicks, 1);
+    assert.match(host.context().chat.at(-1).mes, /^玩家原始文字/);
+    assert.equal(parseBattlePackets(host.context().chat.at(-1).mes).length, 1);
+    assert.equal(host.calls.inject.length, 0, 'input and extension prompt must not both inject');
+    assert.equal(host.adapter.sendQueuedScenePacket(host.adapter.scope()).deduplicated, true);
+    assert.equal(clicks, 1);
+    assert.equal(controller.bridgeQueuedAction, 'auto-send');
+    host.context().chat.push(rawAssistant('<think>正文思考</think>主剧情正文'));
+    await host.events.emit('GENERATION_ENDED');
+    assert.equal(controller.bridgeQueuedAction, null);
+    assert.equal(controller.state.history.at(-1).status, 'complete');
+    assert.equal(controller.adjudicator.calls.length, 1);
+    assert.doesNotMatch(JSON.stringify(controller.playerView().timeline), /正文思考|主剧情正文/);
+  } finally { controller.dispose(); dom.window.close(); }
+});
+
+test('auto-send waits for a valid native button and refuses busy, stale or changed-scope sends', async () => {
+  const dom = new JSDOM('<textarea id="send_textarea">草稿</textarea><button id="send_but" disabled>发送</button>');
+  const host = fixture({ documentRef: dom.window.document });
+  let clicks = 0;
+  const button = dom.window.document.querySelector('button'); button.addEventListener('click', () => { clicks += 1; });
+  try {
+    const item = await queue(host);
+    assert.equal(host.adapter.sendQueuedScenePacket(item.receipt.scope).requested, false);
+    assert.match(dom.window.document.querySelector('textarea').value, /草稿/);
+    button.disabled = false;
+    await host.events.emit('GENERATION_STARTED', 'normal');
+    assert.match(host.adapter.sendQueuedScenePacket(item.receipt.scope).reason, /正在生成/);
+    await host.events.emit('GENERATION_STOPPED');
+    await queue(host);
+    const newer = data(item.receipt.scope, 4, 'newer');
+    await host.adapter.persistReceipt(newer.receipt, newer.state, item.receipt.scope);
+    assert.match(host.adapter.sendQueuedScenePacket(item.receipt.scope).reason, /过期/);
+    host.changeChat('different-chat');
+    assert.equal(host.adapter.sendQueuedScenePacket(item.receipt.scope).requested, false);
+    assert.equal(clicks, 0);
+  } finally { host.adapter.dispose(); dom.window.close(); }
+});
+
+test('extension-prompt fallback injects the same minimal facts as the input-box transport', async () => {
+  const host = fixture(), scope = host.adapter.scope(), item = data(scope);
+  item.packet = { ...item.packet, committedFacts: ['无伤试探', '无伤试探'], publicEvents: ['旧事件'], storyAiDirective: '递归旧包', playerVisibleContext: { player: { currentState: '尚未交手' } }, location: '清晨演示台', descriptionRequirements: ['剧烈冲击'] };
+  await host.adapter.persistReceipt(item.receipt, item.state, scope);
+  assert.equal((await host.adapter.injectScenePacket(item.packet, scope)).queued, true);
+  await host.events.emit('GENERATION_AFTER_COMMANDS', 'normal');
+  const content = host.calls.inject[0][0][0].content;
+  assert.deepEqual(JSON.parse(content).committedFacts, ['无伤试探']);
+  assert.doesNotMatch(content, /旧事件|递归旧包|尚未交手|清晨|剧烈冲击/);
+  host.adapter.dispose();
+});
+
+test('startup repairs old completed actions whose packet and prose have both been deleted', async () => {
+  const host = fixture(), storage = controllerStorage();
+  let controller = await attachedController(host, { storage });
+  controller.start();
+  const before = clone(controller.state.semanticState);
+  await controller.submit({ actionId: 'legacy-deleted', label: '旧版行动', techniqueId: 'xianshi' });
+  const record = controller.state.history[0];
+  delete record.rollbackState;
+  delete record.storyLink;
+  record.status = 'complete'; record.narrative = { text: '已经删除的正文', metadata: { source: 'SillyTavern normal generation' } };
+  controller.state.version += 1; controller.emit(); await controller.checkpoints;
+  controller.dispose();
+  const adapter = new BattleHostAdapter(host.options);
+  controller = new BattleController({ storage, hostAdapter: adapter, chatId: 'chat-1', branchId: 'message:0:swipe:0', adjudicator: new MockAdjudicator(), narrator: new MainStoryNarrator() });
+  try {
+    await controller.ready; await controller.checkpoints;
+    assert.equal(controller.state.history.length, 0);
+    assert.deepEqual(controller.state.semanticState, before);
+    assert.equal(controller.state.hostSync.status, 'confirmed');
+    assert.equal(host.disk()[0].extra.battle_v2.receipts['legacy-deleted'], undefined);
+  } finally { controller.dispose(); }
+});
+
+test('deleting a sent battle exchange rolls back while its original assistant anchor survives, then reload keeps rollback', async () => {
+  const dom = new JSDOM('<textarea id="send_textarea"></textarea><button id="send_but">发送</button>');
+  const host = fixture({ documentRef: dom.window.document });
+  const storage = controllerStorage();
+  let controller = await attachedController(host, { storage });
+  const input = dom.window.document.querySelector('textarea');
+  let generation;
+  dom.window.document.querySelector('button').addEventListener('click', () => {
+    generation = (async () => {
+      await host.events.emit('GENERATION_STARTED', 'normal');
+      await host.events.emit('GENERATION_AFTER_COMMANDS', 'normal');
+      host.context().chat.push({ is_user: true, mes: input.value }); input.value = '';
+      await host.events.emit('USER_MESSAGE_RENDERED', host.context().chat.length - 1);
+      host.context().chat.push(rawAssistant('本轮正文'));
+      await host.events.emit('GENERATION_ENDED');
+    })();
+  });
+  try {
+    controller.start(); await controller.checkpoints;
+    const before = clone(controller.state);
+    await controller.submit({ actionId: 'deleted-exchange', label: '建立弦势', techniqueId: 'xianshi' }); await generation;
+    assert.equal(controller.state.history[0].storyLink.sent, true);
+    assert.ok(controller.state.semanticState.statuses.includes('xianshi:triggered'));
+    host.context().chat.pop(); // Only prose deleted: committed action survives.
+    await host.events.emit('MESSAGE_DELETED', 2);
+    assert.equal(controller.state.history.length, 1);
+    host.context().chat.pop(); // Packet deleted: revert this action.
+    await host.events.emit('MESSAGE_DELETED', 1); await controller.checkpoints;
+    assert.equal(host.adapter.scope().messageId, 0);
+    assert.deepEqual(controller.state.semanticState, before.semanticState);
+    assert.deepEqual(controller.state.actors, before.actors);
+    assert.deepEqual(controller.state.causalState, before.causalState);
+    assert.deepEqual(controller.state.scene.publicEvents, before.scene.publicEvents);
+    assert.equal(controller.state.phase, 'awaiting_player');
+    assert.equal(controller.state.history.length, 0);
+    assert.equal(controller.state.hostSync.status, 'confirmed');
+    assert.equal(host.disk()[0].extra.battle_v2.receipts['deleted-exchange'], undefined);
+    host.reload();
+    const restored = await attachedController(host, { storage });
+    controller.dispose(); controller = restored;
+    assert.equal(controller.state.history.length, 0);
+    assert.deepEqual(controller.state.semanticState, before.semanticState);
+  } finally { controller.dispose(); dom.window.close(); }
+});
+
 test('scope uses ST chat/message/swipe and stays anchored when generation appends floors', async () => {
   const host = fixture(), first = host.adapter.scope();
   assert.equal(first.chatId, 'chat-1'); assert.equal(first.messageId, 0); assert.equal(first.swipeId, 0); assert.equal(first.branchId, 'message:0:swipe:0');
   host.context().chat.push({ is_user: true, mes: 'Original prompt' }, rawAssistant('Generated'));
   assert.deepEqual(host.adapter.scope(), first);
   host.selectSwipe(1); const next = host.adapter.scope(); assert.equal(next.swipeId, 1); assert.equal(next.messageUid, first.messageUid); assert.ok(next.scopeEpoch > first.scopeEpoch);
+});
+
+test('deleting all assistant messages clears the branch battle snapshot and waits for a new anchor', async () => {
+  const host = fixture(), storage = controllerStorage(), controller = await attachedController(host, { storage });
+  try {
+    controller.start();
+    controller.state.actors.enemies = [{ id: 'old-enemy', name: '旧敌手' }];
+    controller.state.semanticState.statuses = ['xianshi:triggered'];
+    controller.emit();
+    host.context().chat.length = 0;
+    host.context().chat.push({ is_user: true, mes: '只剩用户消息' });
+    await host.events.emit('MESSAGE_DELETED', 0);
+    await controller.ready;
+    await controller.checkpoints;
+    assert.equal(host.adapter.scope().available, false);
+    assert.equal(controller.state.phase, 'idle');
+    assert.deepEqual(controller.state.actors.enemies, []);
+    assert.deepEqual(controller.state.semanticState.statuses, []);
+    assert.equal(controller.state.history.length, 0);
+    assert.equal(controller.state.hostSync.status, 'unavailable');
+    assert.equal(controller.state.hostSync.reason, null);
+    assert.deepEqual(controller.storage.readSession().actors.enemies, []);
+  } finally { controller.dispose(); }
+});
+
+test('deleted anchor rolls back to the surviving assistant checkpoint instead of local stale state', async () => {
+  const host = fixture(), storage = controllerStorage(), controller = await attachedController(host, { storage });
+  try {
+    controller.start();
+    controller.state.actors.enemies = [{ id: 'checkpoint-enemy', name: '检查点敌手' }];
+    controller.state.semanticState.statuses = ['checkpoint:active'];
+    controller.emit();
+    await controller.checkpoints;
+    host.context().chat.push({ is_user: true, mes: '后续用户消息' }, rawAssistant('后续正文'));
+    const deleted = host.context().chat.pop();
+    assert.equal(deleted.is_user, false);
+    await host.events.emit('MESSAGE_DELETED', 2);
+    await controller.ready;
+    await controller.checkpoints;
+    assert.equal(host.adapter.scope().available, true);
+    assert.equal(controller.state.phase, 'awaiting_player');
+    assert.deepEqual(controller.state.actors.enemies, [{ id: 'checkpoint-enemy', name: '检查点敌手' }]);
+    assert.deepEqual(controller.state.semanticState.statuses, ['checkpoint:active']);
+  } finally { controller.dispose(); }
+});
+
+test('surviving checkpoint follows its stable message uid when earlier messages are deleted', async () => {
+  const host = fixture(), storage = controllerStorage(), controller = await attachedController(host, { storage });
+  try {
+    controller.start();
+    controller.state.actors.enemies = [{ id: 'uid-enemy', name: 'UID 敌手' }];
+    controller.emit();
+    await controller.checkpoints;
+    const original = host.context().chat[0];
+    host.context().chat.unshift({ is_user: true, mes: '后来插入的用户消息' });
+    await host.events.emit('MESSAGE_DELETED', 0);
+    await controller.ready;
+    await controller.checkpoints;
+    assert.equal(host.adapter.scope().messageId, 1);
+    assert.equal(controller.state.phase, 'awaiting_player');
+    assert.equal(controller.state.actors.enemies[0].id, 'uid-enemy');
+    assert.equal(host.adapter.scope().messageUid, original.extra.battle_v2_message_uuid);
+  } finally { controller.dispose(); }
 });
 
 test('helper persistence resends all swipes and preserves unrelated fields and MVU data', async () => {

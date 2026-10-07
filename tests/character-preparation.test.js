@@ -1,58 +1,95 @@
 import test from 'node:test';
+import { fullCombatProfile } from './fixtures/combat-profile.js';
 import assert from 'node:assert/strict';
-import { prepareEnemyCandidates, confirmEnemyCandidates, applyConfirmedEnemies } from '../src/character-preparation.js';
 import { BattleController } from '../src/battle-controller.js';
+import { applyConfirmedEnemies, confirmEnemyCandidates, prepareEnemyCandidates } from '../src/character-preparation.js';
+import { createInitialState, getAiReadContext } from '../src/battle-state.js';
 
-class MemoryStorage {
-  items = new Map();
-  getItem(key) { return this.items.get(key) ?? null; }
-  setItem(key, value) { this.items.set(key, String(value)); }
-  removeItem(key) { this.items.delete(key); }
-}
+const scope = { chatId: 'character-chat', branchId: 'swipe-a', messageId: 12 };
 
-function inferenceFixture() {
-  return {
-    async inferCandidates() {
-      return [{ id: 'enemy-1', name: '厉沧海', explicitFacts: { cultivationRealm: '假丹境', observed: { technique: '平川断澜' } } }];
-    },
-    async completeCandidate({ candidate }) {
-      return {
-        id: candidate.id,
-        name: '厉沧海',
-        cultivationRealm: '假丹境',
-        combatStyle: '潮汐剑修',
-        visibleInfo: { stance: '按剑', position: '中距' },
-        techniques: [{ id: 'li-pingchuan', name: '平川断澜', category: '剑招', originalDefinition: '以潮线压缩退路', mechanics: ['改变站位'], availability: { default: 'available', conditions: [] }, visibility: 'public', ruleRefs: ['fixture.technique'] }],
-        hidden: { reservePlan: '诱导对手先手' }
-      };
-    }
-  };
-}
-
-test('AI completion creates a full candidate draft and no source wins automatically', async () => {
-  const preparation = await prepareEnemyCandidates({ enemies: [{ id: 'enemy-1', name: '演示对手', visibleInfo: { stance: '守势' } }] }, { inference: inferenceFixture() });
+test('character sources merge by field and remain outside battle state until confirmation', async () => {
+  const context = { scope, enemies: [{ id: 'enemy', name: '旧称', realm: '上下文' }] };
+  const preparation = await prepareEnemyCandidates(context, {
+    mvu: async () => ({ id: 'enemy', name: '现名', realm: '动态境界' }),
+    database: async () => ({ id: 'enemy', name: '档案名', resources: { qi: 10 } }),
+    inference: { inferCandidates: async () => [{ id: 'enemy', name: '旧称', inferred: { realm: '猜测境界' } }] }
+  });
   const candidate = preparation.candidates[0];
-  assert.equal(candidate.name, '厉沧海');
-  assert.equal(candidate.fields.cultivationRealm, '假丹境');
+  assert.equal(candidate.fields.realm, '动态境界');
+  assert.equal(candidate.fields.name, '现名');
+  assert.equal(candidate.fields.resources.qi, 10);
+  assert.equal(candidate.provenance.realm.source, 'mvu_dynamic');
+  assert.ok(candidate.conflicts.some((conflict) => conflict.path === 'realm' && conflict.keptValue === '动态境界'));
+  assert.deepEqual(candidate.conflicts.find((conflict) => conflict.path === 'realm').values.map((item) => item.source), ['ai_inferred', 'context_explicit', 'mvu_dynamic']);
+  assert.equal(new Set(Object.values(candidate.provenance).map((item) => item.priority)).size, 1);
+  assert.equal(candidate.sourceStatus.mvu_dynamic.status, 'matched');
+  const state = createInitialState({ chatId: scope.chatId, branchId: scope.branchId, enemies: [] });
+  assert.deepEqual(state.actors.enemies, []);
+  assert.deepEqual(getAiReadContext(state).actors.enemies, []);
+  const confirmed = confirmEnemyCandidates(preparation, { enemy: { name: '用户定名' } });
+  const applied = applyConfirmedEnemies(state, confirmed);
+  assert.equal(applied.actors.enemies[0].name, '用户定名');
+  assert.equal(applied.characterPreparation.status, 'confirmed');
+  assert.deepEqual(state.actors.enemies, []);
+});
+
+test('unmatched source profiles and malformed AI candidates are not assigned to an enemy', async () => {
+  const preparation = await prepareEnemyCandidates({ scope, enemies: [{ id: 'enemy', name: '敌人' }] }, {
+    database: { getCharacter: async () => [{ id: 'other', name: '旁人', realm: '不可串用' }] },
+    inference: { inferCandidates: async () => [{}, { id: 'ai-enemy', name: '新敌', fields: { realm: '推断' }, inferred: true }] }
+  });
+  assert.equal(preparation.candidates.length, 2);
+  assert.equal(preparation.candidates[0].sourceStatus.database.status, 'missing');
+  assert.equal(preparation.candidates[0].fields.realm, undefined);
+  assert.equal(preparation.candidates[1].fields.realm, '推断');
+  assert.equal(preparation.candidates[1].provenance.realm.source, 'ai_inferred');
+  assert.equal(preparation.candidates[1].fields.fields, undefined);
+});
+
+test('controller cancels stale character reads and rejects duplicate confirmed identities', async () => {
+  const controller = new BattleController({ chatId: scope.chatId, branchId: scope.branchId, initialEnemies: [{ id: 'enemy', name: '敌人' }] });
+  let release;
+  const pending = controller.prepareCharacters({ inference: { inferCandidates: () => new Promise((resolve) => { release = resolve; }) } });
+  await new Promise((resolve) => setImmediate(resolve));
+  controller.cancelCharacterPreparation();
+  release([]);
+  await assert.rejects(pending, /取消/);
+  assert.equal(controller.characterConfirmationPanel(), null);
+  await controller.prepareCharacters();
+  assert.equal(controller.state.characterPreparation, undefined);
+  assert.throws(() => controller.confirmCharacters({ enemy: { id: 'player' } }), /主角重复/);
+  assert.equal(controller.state.characterPreparation, undefined);
+  controller.confirmCharacters({ enemy: { name: '已确认' } });
+  assert.equal(controller.state.actors.enemies[0].name, '已确认');
+});
+
+test('failed optional field fill keeps the extracted candidate reviewable', async () => {
+  const preparation = await prepareEnemyCandidates({ scope, enemies: [{ id: 'enemy', name: '敌人' }] }, {
+    inference: {
+      inferCandidates: async () => [{ id: 'enemy', name: '敌人', explicitFacts: { cultivation: '假丹境' } }],
+      fillMissingFields: async () => { throw new Error('补全服务超时'); }
+    }
+  });
+  assert.equal(preparation.candidates.length, 1);
+  assert.equal(preparation.candidates[0].fields.cultivation, '假丹境');
+  assert.equal(preparation.candidates[0].sourceStatus.ai_fill.status, 'read_failed');
+  assert.match(preparation.candidates[0].sourceStatus.ai_fill.error, /补全服务超时/);
+});
+
+test('AI completion builds a full opponent draft and requires explicit user confirmation', async () => {
+  const preparation = await prepareEnemyCandidates({ scope, enemies: [{ id: 'enemy', name: '演示对手', visibleInfo: { stance: '守势' } }] }, {
+    inference: {
+      inferCandidates: async () => [{ id: 'enemy', name: '厉沧海', explicitFacts: { cultivationRealm: '假丹境' } }],
+      completeCandidate: async ({ candidate }) => ({ ...fullCombatProfile(), id: candidate.id })
+    }
+  });
+  const candidate = preparation.candidates[0];
+  assert.equal(candidate.fields.name, '厉沧海');
   assert.equal(candidate.fields.techniques[0].name, '平川断澜');
   assert.equal(candidate.confirmation.status, 'pending');
   assert.equal(candidate.provenance.name.priority, 0);
-  assert.ok(candidate.conflicts.length >= 1);
-
-  const confirmed = confirmEnemyCandidates(preparation, { [candidate.id]: { ...candidate.fields, name: '用户确认的厉沧海' } });
-  const state = applyConfirmedEnemies({ phase: 'idle', version: 1, actors: { player: { id: 'player' }, enemies: [] } }, confirmed);
-  assert.equal(state.actors.enemies[0].name, '用户确认的厉沧海');
-  assert.equal(state.characterPreparation.status, 'confirmed');
-  assert.equal(state.characterPreparation.candidates[0].confirmation.status, 'confirmed');
-});
-
-test('controller refuses to start an unconfirmed candidate and starts after user confirmation', async () => {
-  const controller = new BattleController({ storage: new MemoryStorage(), chatId: 'character-test', characterInference: inferenceFixture(), initialEnemies: [{ id: 'enemy-1', name: '演示对手' }] });
-  await controller.prepareCharacters();
-  assert.throws(() => controller.start(), /确认/);
-  const candidate = controller.state.characterPreparation.candidates[0];
-  controller.confirmCharacters({ [candidate.id]: { ...candidate.fields, name: '厉沧海' } });
-  controller.start();
-  assert.equal(controller.state.phase, 'awaiting_player');
-  assert.equal(controller.state.actors.enemies[0].name, '厉沧海');
+  const confirmed = confirmEnemyCandidates(preparation, { enemy: { ...candidate.fields, name: '用户确认的厉沧海' } });
+  const applied = applyConfirmedEnemies(createInitialState({ chatId: scope.chatId, branchId: scope.branchId, enemies: [] }), confirmed);
+  assert.equal(applied.actors.enemies[0].name, '用户确认的厉沧海');
+  assert.equal(applied.actors.enemies[0].techniques[0].name, '平川断澜');
 });

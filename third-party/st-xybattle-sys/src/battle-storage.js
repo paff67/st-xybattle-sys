@@ -12,7 +12,7 @@ export class BattleStorage{
   readLogs(){return this.read(this.key('logs'),[]);}
   replaceLogs(logs){this.write(this.key('logs'),stripSecrets(logs));return logs;}
   appendLog(entry){const logs=[...this.readLogs(),{...entry,at:new Date().toISOString()}].slice(-300);return this.replaceLogs(logs);}
-  clear(){for(const kind of['session','logs'])this.storage?.removeItem(this.key(kind));this.memory.clear();}
+  clear(){for(const kind of['session','logs']){const key=this.key(kind);if(typeof this.storage?.removeItem==='function')this.storage.removeItem(key);else if(this.storage?.setItem)this.storage.setItem(key,'');}this.memory.clear();}
   read(key,fallback){const raw=this.storage?.getItem(key)||this.memory.get(key);if(!raw)return fallback;try{return JSON.parse(raw);}catch{return fallback;}}
   write(key,value){const raw=JSON.stringify(value);if(this.storage)this.storage.setItem(key,raw);else this.memory.set(key,raw);}
 }

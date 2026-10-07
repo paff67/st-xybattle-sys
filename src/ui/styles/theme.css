@@ -1,0 +1,105 @@
+/* ==========================================================================
+   "水·弦" 仙道战场 · Awwwards-Quality Design Tokens & Base Styles
+   ========================================================================== */
+
+:root {
+  /* 幽溟水色 (Deep Water & Void Palette) */
+  --xy-bg-void: #03070d;
+  --xy-bg-abyss: #07101e;
+  --xy-bg-surface-1: rgba(10, 22, 40, 0.82);
+  --xy-bg-surface-2: rgba(15, 32, 58, 0.72);
+  --xy-bg-surface-3: rgba(22, 46, 82, 0.55);
+  --xy-bg-card: rgba(12, 26, 48, 0.88);
+  --xy-bg-glass: rgba(16, 35, 64, 0.45);
+
+  /* 沧浪青与碧玉 (Cyan, Water & Jade Resonance) */
+  --xy-cyan-50: #f0f9ff;
+  --xy-cyan-100: #e0f2fe;
+  --xy-cyan-200: #bae6fd;
+  --xy-cyan-300: #7dd3fc;
+  --xy-cyan-400: #38bdf8;
+  --xy-cyan-500: #0ea5e9;
+  --xy-cyan-glow: rgba(56, 189, 248, 0.35);
+
+  --xy-jade-300: #5eead4;
+  --xy-jade-400: #2dd4bf;
+  --xy-jade-500: #14b8a6;
+  --xy-jade-glow: rgba(45, 212, 191, 0.28);
+
+  /* 灵弦流金 (Resonant Astral Gold) */
+  --xy-gold-200: #fde68a;
+  --xy-gold-300: #fcd34d;
+  --xy-gold-400: #fbbf24;
+  --xy-gold-500: #f59e0b;
+  --xy-gold-glow: rgba(251, 191, 36, 0.32);
+
+  /* 赤砂敌芒 (Cinnabar & Hostile Crimson) */
+  --xy-crimson-300: #fda4af;
+  --xy-crimson-400: #fb7185;
+  --xy-crimson-500: #f43f5e;
+  --xy-crimson-600: #e11d48;
+  --xy-crimson-glow: rgba(244, 63, 94, 0.3);
+
+  /* 墨韵文字 (Text Hierarchies) */
+  --xy-text-title: #f8fafc;
+  --xy-text-body: #cbd5e1;
+  --xy-text-muted: #64748b;
+  --xy-text-hint: #475569;
+
+  /* 琉璃边界与光晕 (Glass Borders & Shimmers) */
+  --xy-border-subtle: rgba(56, 189, 248, 0.12);
+  --xy-border-glow: rgba(56, 189, 248, 0.32);
+  --xy-border-gold: rgba(251, 191, 36, 0.28);
+  --xy-border-crimson: rgba(244, 63, 94, 0.28);
+
+  /* 缓动与节奏 (Crafted Easing & Timing) */
+  --xy-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --xy-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --xy-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 字体族定义 */
+  --xy-font-serif: "Songti SC", "Noto Serif SC", "Source Han Serif CN", STSong, "SimSun", Georgia, serif;
+  --xy-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --xy-font-mono: "JetBrains Mono", "SF Mono", Consolas, "Courier New", monospace;
+}
+
+/* 动效动画 */
+@keyframes xy-pulse-glow {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.04); }
+}
+
+@keyframes xy-chord-vibrate {
+  0% { transform: translateY(0); }
+  20% { transform: translateY(-2px); }
+  40% { transform: translateY(2px); }
+  60% { transform: translateY(-1px); }
+  80% { transform: translateY(1px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes xy-water-ripple {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes xy-flow-sine {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* 基础滚动条 */
+.xy-custom-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.xy-custom-scroll::-webkit-scrollbar-track {
+  background: rgba(4, 9, 18, 0.4);
+}
+.xy-custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.25);
+  border-radius: 999px;
+}
+.xy-custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.5);
+}

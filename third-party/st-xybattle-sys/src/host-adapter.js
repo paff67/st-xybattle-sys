@@ -1,9 +1,22 @@
+import { projectScenePacket } from './scene-packet.js';
 // Contract evidence: docs/host-contract-review.md. Fixtures are not live-host acceptance.
+import { HostInputBridge } from './host-input-bridge.js';
+import { HostDisplayFolding } from './host-display-folding.js';
+import { battlePacketKey, parseBattlePacketMarkers } from './battle-packet-markers.js';
 const clone = (value) => value == null ? value : JSON.parse(JSON.stringify(value));
 const integer = (value) => value != null && value !== '' && Number.isInteger(Number(value)) && Number(value) >= 0 ? Number(value) : null;
 const assistant = (message) => !!message && (message.role === 'assistant' || (message.role == null && message.is_user === false && message.extra?.type !== 'narrator'));
 const scopeFields = ['chatId', 'branchId', 'messageId', 'swipeId', 'messageUid'];
-const matches = (expected, current, lease = false) => !!expected && !!current && scopeFields.every((key) => expected[key] == null || String(expected[key]) === String(current[key])) && (!lease || expected.scopeEpoch == null || expected.scopeEpoch === current.scopeEpoch);
+const matches = (expected, current, lease = false) => {
+  if (!expected || !current) return false;
+  const stableAnchor = expected.messageUid != null && current.messageUid != null && String(expected.messageUid) === String(current.messageUid);
+  const sameFields = scopeFields.every((key) => {
+    if (expected[key] == null) return true;
+    if (stableAnchor && (key === 'messageId' || key === 'branchId')) return true;
+    return String(expected[key]) === String(current[key]);
+  });
+  return sameFields && (!lease || expected.scopeEpoch == null || expected.scopeEpoch === current.scopeEpoch);
+};
 const persistedScope = (scope) => Object.fromEntries(scopeFields.map((key) => [key, scope[key]]));
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
@@ -20,11 +33,13 @@ function messageUid(message) {
 }
 
 export class BattleHostAdapter {
-  constructor({ contextProvider = () => globalThis.SillyTavern?.getContext?.() || {}, helper, eventEmitter, eventTypes, windowRef = globalThis, extensionName = 'st-xybattle-sys' } = {}) {
-    Object.assign(this, { contextProvider, helperDependency: helper, eventEmitterDependency: eventEmitter, eventTypesDependency: eventTypes, windowRef, extensionName });
+  constructor({ contextProvider = () => globalThis.SillyTavern?.getContext?.() || {}, helper, eventEmitter, eventTypes, windowRef = globalThis, documentRef = globalThis.document, inputBridge, displayFolding, extensionName = 'st-xybattle-sys' } = {}) {
+    Object.assign(this, { contextProvider, helperDependency: helper, eventEmitterDependency: eventEmitter, eventTypesDependency: eventTypes, windowRef, documentRef, extensionName });
     this.anchor = null; this.currentScope = null; this.epoch = 0; this.messageUids = new WeakMap();
-    this.scopeListeners = new Set(); this.narrativeListeners = new Set(); this.disposers = []; this.boundEmitter = null;
-    this.packet = null; this.activePacket = null; this.injected = false; this.lastInjection = null;
+    this.transcriptListeners = new Set(); this.sentListeners = new Set(); this.scopeListeners = new Set(); this.narrativeListeners = new Set(); this.disposers = []; this.boundEmitter = null;
+    this.packet = null; this.activePacket = null; this.injected = false; this.lastInjection = null; this.generationBusy = false;
+    this.inputBridge = inputBridge || new HostInputBridge({ contextProvider, documentRef, windowRef, bindPageLifecycle: false, getInputElement: (_context, doc) => doc?.querySelector?.('#send_textarea, textarea#send_textarea, textarea[data-testid="send-textarea"]') || null });
+    this.displayFolding = displayFolding || new HostDisplayFolding({ documentRef });
     this.writeQueue = Promise.resolve(); this.uncertainScopes = new Set(); this.disposed = false; this.start();
   }
   context() { return this.contextProvider() || {}; }
@@ -38,11 +53,18 @@ export class BattleHostAdapter {
   }
   storedAnchorId(context, chatId) {
     if (!Array.isArray(context.chat)) return null;
+    const candidates = [];
     for (let index = context.chat.length - 1; index >= 0; index -= 1) {
-      const raw = context.chat[index], store = raw?.swipe_info?.[raw.swipe_id ?? 0]?.battle_v2 || raw?.extra?.battle_v2;
-      if (assistant(raw) && store?.schema === 'battle_v2_host_store' && store.scope?.chatId === chatId && store.scope?.messageId === index && store.scope?.swipeId === (raw.swipe_id ?? 0)) return index;
+      const raw = context.chat[index], swipeId = raw?.swipe_id ?? 0;
+      const info = raw?.swipe_info?.[swipeId] || raw?.swipes_info?.[swipeId] || raw?.extra || {};
+      const store = info?.battle_v2;
+      if (!assistant(raw) || store?.schema !== 'battle_v2_host_store' || String(store.scope?.chatId) !== String(chatId) || String(store.scope?.swipeId) !== String(swipeId)) continue;
+      const exactIndex = String(store.scope?.messageId) === String(index) ? 1 : 0;
+      const version = Number(store.version ?? store.state?.version ?? 0);
+      candidates.push({ index, exactIndex, version: Number.isFinite(version) ? version : 0, updatedAt: Date.parse(store.state?.updatedAt || '') || 0 });
     }
-    return null;
+    candidates.sort((a, b) => b.exactIndex - a.exactIndex || b.version - a.version || b.updatedAt - a.updatedAt || b.index - a.index);
+    return candidates[0]?.index ?? null;
   }
   readMessageSync(id, context = this.context()) {
     const helper = this.helper();
@@ -75,6 +97,15 @@ export class BattleHostAdapter {
     }
     let message;
     try { message = id == null ? null : this.readMessageSync(id, context); } catch { message = null; }
+    // A deleted anchor must not pin the adapter to a dead array index. Re-scan
+    // surviving assistant messages for the latest durable battle checkpoint.
+    if (id != null && !assistant(message)) {
+      this.anchor = null;
+      id = this.storedAnchorId(context, chatId);
+      recovered = id != null;
+      if (id == null) id = this.latestAssistantId(context);
+      try { message = id == null ? null : this.readMessageSync(id, context); } catch { message = null; }
+    }
     const raw = context.chat?.[id] || (explicitId === id ? context.message : null);
     if (!chatId || !assistant(message) || integer(message?.swipe_id) == null) {
       this.publishScope({ chatId: chatId || 'default-chat', branchId: 'main', messageId: null, swipeId: null, messageUid: null, available: false, writable: false });
@@ -109,10 +140,18 @@ export class BattleHostAdapter {
     const context = this.context(), helper = this.helper();
     const read = typeof helper?.getChatMessages === 'function' ? 'tavern-helper' : Array.isArray(context.chat) ? 'context-chat' : 'unavailable';
     const write = read === 'tavern-helper' && typeof helper?.setChatMessages === 'function' ? 'tavern-helper' : Array.isArray(context.chat) ? 'context-chat' : 'unavailable';
-    return { read, write, save: typeof context.saveChat === 'function' ? 'awaitable-save-chat' : write === 'tavern-helper' ? 'debounced-only' : 'unavailable', injection: typeof helper?.injectPrompts === 'function' && this.boundEmitter ? 'once-generation-event' : 'unavailable', events: !!this.boundEmitter, liveVerified: false };
+    const input = this.inputBridge?.capability?.() || { input: 'unavailable' };
+    const injection = input.input === 'available' && this.boundEmitter ? 'input-box-once-generation-event' : typeof helper?.injectPrompts === 'function' && this.boundEmitter ? 'once-generation-event' : 'unavailable';
+    return { read, write, save: typeof context.saveChat === 'function' ? 'awaitable-save-chat' : write === 'tavern-helper' ? 'debounced-only' : 'unavailable', injection, input: input.input, display: this.displayFolding ? 'dom-projection' : 'unavailable', events: !!this.boundEmitter, liveVerified: false };
   }
   async ready() { this.start(); return { scope: this.scope(), capability: this.capability() }; }
   subscribeScopeChange(listener) { this.scopeListeners.add(listener); return () => this.scopeListeners.delete(listener); }
+  subscribeTranscriptChange(listener) { this.transcriptListeners.add(listener); return () => this.transcriptListeners.delete(listener); }
+  subscribePacketSent(listener) { this.sentListeners.add(listener); return () => this.sentListeners.delete(listener); }
+  hasSentPacket(record) {
+    return (this.context().chat || []).some((message) => (message.is_user || message.role === 'user') && parseBattlePacketMarkers(String(message.mes ?? message.message ?? '')).some((entry) => entry.packet.actionId === record.actionId && (!entry.packet.sessionId || entry.packet.sessionId === record.narrativePacket?.sessionId)));
+  }
+  hasNarrative(record) { return !!record.narrative?.text && (this.context().chat || []).some((message) => assistant(message) && (message.mes ?? message.message) === record.narrative.text); }
   subscribeNarrative(listener) { this.narrativeListeners.add(listener); return () => this.narrativeListeners.delete(listener); }
   async loadSession(expectedScope = this.scope()) {
     const capability = this.capability();
@@ -156,6 +195,10 @@ export class BattleHostAdapter {
         if ((rank[receipt.status] ?? -1) < (rank[oldReceipt.status] ?? -1) && !receipt.rewrittenAt) throw new Error('Receipt status cannot regress');
       }
       const next = { ...(previous || {}), schema: 'battle_v2_host_store', scope: persistedScope(scope), version: Math.max(version, previous?.version || 0), state: state ? { ...state, scope: { ...state.scope, ...persistedScope(scope) } } : previous?.state || null, receipts: { ...previous?.receipts } };
+      if (state?.rollback?.reason === 'host-message-deleted' && version > (previous?.version || 0)) {
+        for (const id of state.rollback.removedActionIds || []) if (!state.history.some((record) => record.actionId === id)) delete next.receipts[id];
+        next.lastActionId = state.history.filter((record) => ['committed', 'complete'].includes(record.status)).at(-1)?.actionId || null;
+      }
       if (cleanReceipt) { next.receipts[receipt.actionId] = cleanReceipt; next.lastActionId = receipt.actionId; }
       if (!this.uncertainScopes.has(key) && previous && canonical(previous) === canonical(next)) return { persisted: true, confirmed: true, scope, capability, deduplicated: true, version: next.version };
       const infos = message.swipes_info.map((info) => clone(info || {}));
@@ -185,9 +228,40 @@ export class BattleHostAdapter {
       if (this.uncertainScopes.has(canonical(persistedScope(scope)))) throw new Error('Host persistence is unconfirmed after a failed save');
       if (!receipt || ['prepared', 'judging'].includes(receipt.status)) throw new Error('Scene packet has no persisted committed receipt');
       if (packet.version != null && Number(packet.version) !== store.version) throw new Error('Scene packet version mismatch');
-      this.clearScenePacket(); this.packet = { ...clone(packet), packet: clone(packet), scope, version: store.version };
-      return { queued: true, injected: false, scope, capability: this.capability() };
+      const key = battlePacketKey(packet, { branchId: scope.branchId, version: store.version });
+      if (!key) throw new Error('Scene packet identity is incomplete');
+      if (this.packet?.key === key || this.activePacket?.key === key) return { queued: true, injected: !!this.activePacket, deduplicated: true, scope, capability: this.capability() };
+      this.clearScenePacket();
+      packet = projectScenePacket(packet);
+      const inputResult = this.inputBridge?.append?.(packet, { ...scope, version: store.version });
+      if (inputResult?.conflict) throw new Error(inputResult.reason || 'Input contains a conflicting XY_BATTLE_PACKET');
+      this.packet = { ...clone(packet), packet: clone(packet), scope, version: store.version, key, transportCandidate: inputResult?.queued ? 'input-box' : null, inputResult };
+      return { queued: true, injected: false, scope, transport: inputResult?.queued ? 'input-box' : 'extension-prompt', pendingVerification: !!inputResult?.queued, capability: this.capability() };
     } catch (error) { this.clearScenePacket(); return { queued: false, injected: false, reason: error.message, stale: true, capability: this.capability() }; }
+  }
+  sendQueuedScenePacket(expectedScope = this.packet?.scope || this.activePacket?.scope) {
+    const pending = this.packet || this.activePacket;
+    if (!pending) return { requested: false, reason: '没有待发送的场景包' };
+    try {
+      const scope = this.validateScope(expectedScope, { writable: true });
+      const store = this.readMessageSync(scope.messageId)?.swipes_info?.[scope.swipeId]?.battle_v2;
+      if (store?.version !== pending.version || !store.receipts?.[pending.packet.actionId]) throw new Error('场景包已过期，请重新注入本轮裁定');
+      if (pending.sendRequested || this.activePacket) return { requested: true, deduplicated: true };
+      if (this.generationBusy) throw new Error('酒馆正在生成，请结束当前生成后点击“发送主剧情”重试');
+      const button = this.documentRef?.querySelector?.('#send_but');
+      const input = this.documentRef?.querySelector?.('#send_textarea, textarea[data-testid="send-textarea"]');
+      const style = button && (this.documentRef?.defaultView || this.windowRef)?.getComputedStyle?.(button);
+      if (!button || typeof button.click !== 'function' || button.disabled || button.hidden || button.getAttribute('aria-disabled') === 'true' || button.classList.contains('disabled') || style?.display === 'none' || style?.visibility === 'hidden' || input?.disabled) throw new Error('酒馆发送按钮当前不可用，场景包已保留，可点击“发送主剧情”重试');
+      // Send through the native composer to preserve normal presets, worldbook
+      // recall, user-message creation and all existing generation hooks.
+      if (pending.transportCandidate !== 'input-box' || !this.inputBridge?.verify?.(pending.packet, { ...scope, version: pending.version })?.valid) throw new Error('输入框场景包校验失败，未自动发送');
+      pending.sendRequested = true; // Set before click: host hooks may run synchronously.
+      button.click();
+      return { requested: true, transport: 'native-send-button' };
+    } catch (error) {
+      pending.sendRequested = false;
+      return { requested: false, reason: error.message };
+    }
   }
   beforeGeneration(...args) {
     if (!this.packet || this.activePacket) return;
@@ -199,14 +273,25 @@ export class BattleHostAdapter {
       const store = this.readMessageSync(pending.scope.messageId)?.swipes_info?.[pending.scope.swipeId]?.battle_v2;
       if (!store || store.version !== pending.version || !store.receipts?.[pending.packet.actionId]) throw new Error('Scene packet version/scope changed before generation');
       const context = this.context(), baselineId = this.latestAssistantId(context), baselineText = baselineId == null ? null : context.chat[baselineId]?.mes;
-      const result = this.helper().injectPrompts([{ id: `${this.extensionName}:battle_v2:${pending.packet.actionId}`, role: 'system', position: 'in_chat', depth: 0, should_scan: false, content: JSON.stringify(pending.packet), filter: () => { try { this.validateScope(pending.scope); return this.readMessageSync(pending.scope.messageId)?.swipes_info?.[pending.scope.swipeId]?.battle_v2?.version === pending.version; } catch { return false; } } }], { once: true });
+      const inputResult = pending.transportCandidate === 'input-box' ? this.inputBridge?.verify?.(pending.packet, { ...pending.scope, version: pending.version }) : { valid: false };
+      if (inputResult?.valid) {
+        this.activePacket = { ...pending, baselineId, baselineText, transport: 'input-box', inputResult }; this.packet = null; this.injected = true;
+        this.lastInjection = { injected: true, transport: 'input-box', verified: false, pendingVerification: true, deduplicated: !!inputResult.deduplicated, actionId: pending.packet.actionId, scope: pending.scope };
+        return;
+      }
+      this.inputBridge?.clear?.();
+      const helper = this.helper();
+      if (typeof helper?.injectPrompts !== 'function') throw new Error(inputResult?.reason || 'injectPrompts is unavailable');
+      const result = helper.injectPrompts([{ id: `${this.extensionName}:battle_v2:${pending.packet.actionId}`, role: 'system', position: 'in_chat', depth: 0, should_scan: false, content: JSON.stringify(pending.packet), filter: () => { try { this.validateScope(pending.scope); return this.readMessageSync(pending.scope.messageId)?.swipes_info?.[pending.scope.swipeId]?.battle_v2?.version === pending.version; } catch { return false; } } }], { once: true });
       if (typeof result?.uninject !== 'function') throw new Error('injectPrompts did not return its documented uninject handle');
-      this.activePacket = { ...pending, uninject: result.uninject, baselineId, baselineText }; this.packet = null; this.injected = true;
-      this.lastInjection = { injected: true, actionId: pending.packet.actionId, scope: pending.scope };
+      this.activePacket = { ...pending, uninject: result.uninject, baselineId, baselineText, transport: 'extension-prompt' }; this.packet = null; this.injected = true;
+      this.lastInjection = { injected: true, transport: 'extension-prompt', actionId: pending.packet.actionId, scope: pending.scope };
     } catch (error) { this.clearScenePacket(); this.lastInjection = { injected: false, reason: error.message }; }
   }
   async finishGeneration(status) {
+    this.generationBusy = false;
     const active = this.activePacket; this.clearScenePacket(); if (!active) return;
+    if (active.transport === 'input-box' && active.inputVerified !== true) this.lastInjection = { ...this.lastInjection, transport: 'input-box', verified: false, pendingVerification: false, reason: 'The rendered user message was not observed with an exact XY_BATTLE_PACKET' };
     try {
       this.validateScope(active.scope);
       if (this.readMessageSync(active.scope.messageId)?.swipes_info?.[active.scope.swipeId]?.battle_v2?.version !== active.version) throw new Error('Scene packet version changed during generation');
@@ -214,13 +299,41 @@ export class BattleHostAdapter {
       let text = message?.mes ?? message?.message ?? '';
       if (id != null && typeof this.helper()?.getChatMessages === 'function') text = this.helper().getChatMessages(id, { include_swipes: false })?.[0]?.message ?? text;
       const complete = status === 'complete' && typeof text === 'string' && text.trim() && (id !== active.baselineId || text !== active.baselineText);
-      const event = { actionId: active.packet.actionId, scope: active.scope, text: complete ? text : '', status: complete ? 'complete' : 'stopped', packet: clone(active.packet), messageId: id };
+      const event = { actionId: active.packet.actionId, scope: active.scope, text: complete ? text : '', status: complete ? 'complete' : 'stopped', packet: clone(active.packet), messageId: id, transport: active.transport, inputVerified: active.inputVerified };
       for (const listener of this.narrativeListeners) await listener(event);
     } catch (error) { this.lastInjection = { injected: false, reason: error.message, stale: true }; }
   }
+  verifyRenderedUserMessage(messageId) {
+    const active = this.activePacket;
+    if (!active || active.transport !== 'input-box') return;
+    const context = this.context();
+    const id = integer(messageId) ?? (Array.isArray(context.chat) ? context.chat.reduce((found, item, index) => item?.is_user || item?.role === 'user' ? index : found, null) : null);
+    const raw = id == null ? null : context.chat?.[id];
+    const text = raw?.mes ?? raw?.message ?? '';
+    const exact = parseBattlePacketMarkers(String(text)).some((entry) => entry.key === active.key);
+    active.inputVerified = exact;
+    if (exact) {
+      for (const listener of this.sentListeners) listener({ actionId: active.packet.actionId, scope: active.scope, transport: 'input-box' });
+      this.lastInjection = { ...this.lastInjection, transport: 'input-box', verified: true, pendingVerification: false }; return; }
+    // The host created a user message without the marker. The input transport
+    // is therefore not authoritative; add one extension prompt before prompt
+    // assembly, with no simultaneous input marker transport.
+    const helper = this.helper();
+    try {
+      if (typeof helper?.injectPrompts !== 'function') throw new Error('injectPrompts is unavailable after input verification failed');
+      const result = helper.injectPrompts([{ id: `${this.extensionName}:battle_v2:${active.packet.actionId}`, role: 'system', position: 'in_chat', depth: 0, should_scan: false, content: JSON.stringify(active.packet), filter: () => { try { this.validateScope(active.scope); return this.readMessageSync(active.scope.messageId)?.swipes_info?.[active.scope.swipeId]?.battle_v2?.version === active.version; } catch { return false; } } }], { once: true });
+      if (typeof result?.uninject !== 'function') throw new Error('injectPrompts did not return its documented uninject handle');
+      active.uninject = result.uninject;
+      active.transport = 'extension-prompt';
+      this.lastInjection = { injected: true, transport: 'extension-prompt', fallback: true, actionId: active.packet.actionId, scope: active.scope, reason: 'Rendered user message did not retain exact XY_BATTLE_PACKET' };
+    } catch (error) {
+      this.lastInjection = { injected: false, transport: 'input-box', verified: false, reason: error.message };
+    }
+  }
   clearScenePacket() {
-    const active = this.activePacket; this.activePacket = null; this.packet = null; this.injected = false;
+    const active = this.activePacket, pending = this.packet; this.activePacket = null; this.packet = null; this.injected = false;
     if (active?.uninject) active.uninject();
+    if (active?.transport === 'input-box' || pending?.transportCandidate === 'input-box') this.inputBridge?.clear?.();
   }
   start() {
     if (this.disposed) return this.capability();
@@ -231,6 +344,9 @@ export class BattleHostAdapter {
     const on = (name, handler) => { if (!emitter?.on) return; emitter.on(name, handler); this.disposers.push(() => (emitter.off || emitter.removeListener)?.call(emitter, name, handler)); };
     if (emitter?.on) {
       this.boundEmitter = emitter;
+      on(events.GENERATION_STARTED || 'GENERATION_STARTED', (...args) => {
+        if (!args.some((arg) => arg === true || arg?.dryRun === true || arg?.dry_run === true)) this.generationBusy = true;
+      });
       on(events.GENERATION_AFTER_COMMANDS || 'GENERATION_AFTER_COMMANDS', (...args) => this.beforeGeneration(...args));
       on(events.GENERATION_ENDED || 'GENERATION_ENDED', () => this.finishGeneration('complete'));
       on(events.GENERATION_STOPPED || 'GENERATION_STOPPED', () => this.finishGeneration('stopped'));
@@ -241,11 +357,15 @@ export class BattleHostAdapter {
         this.clearScenePacket();
         if (name === 'MESSAGE_SWIPED' && integer(messageId) != null && this.anchor) this.anchor = { ...this.anchor, messageId: integer(messageId), raw: null };
         this.scope();
+        if (name === 'MESSAGE_DELETED') return Promise.all([...this.transcriptListeners].map((listener) => listener()));
       });
+      on(events.USER_MESSAGE_RENDERED || 'USER_MESSAGE_RENDERED', (messageId) => { this.displayFolding?.apply?.(); this.verifyRenderedUserMessage(messageId); });
+      for (const name of ['CHARACTER_MESSAGE_RENDERED', 'MESSAGE_RENDERED']) on(events[name] || name, () => { this.displayFolding?.apply?.(); this.scope(); });
     }
+    this.displayFolding?.observe?.();
     if (this.windowRef?.addEventListener) { const handler = () => this.clearScenePacket(); this.windowRef.addEventListener('pagehide', handler); this.disposers.push(() => this.windowRef.removeEventListener?.('pagehide', handler)); }
     return this.capability();
   }
-  dispose() { this.clearScenePacket(); for (const dispose of this.disposers.splice(0)) dispose(); this.boundEmitter = null; this.scopeListeners.clear(); this.narrativeListeners.clear(); this.disposed = true; }
+  dispose() { this.clearScenePacket(); this.inputBridge?.dispose?.(); this.displayFolding?.dispose?.(); for (const dispose of this.disposers.splice(0)) dispose(); this.boundEmitter = null; this.scopeListeners.clear(); this.narrativeListeners.clear(); this.transcriptListeners.clear(); this.sentListeners.clear(); this.disposed = true; }
 }
 export function createHostAdapter(contextProvider) { return new BattleHostAdapter(typeof contextProvider === 'function' ? { contextProvider } : contextProvider); }

@@ -1,0 +1,124 @@
+{
+  "id": "gongfa.liuguang-tachaobu",
+  "name": "流光踏潮步",
+  "rank": "天阶",
+  "element": "水属身法",
+  "corePrinciple": "水行无定，去处不由来路决定；一步落下，天地便多出一个可抵达的位置。",
+  "mechanics": [
+    "借水意、镜界节点和潮痕完成跨距换位",
+    "步落留痕，可瞬间折返或两道潮痕互换",
+    "水光留影分化数道真假莫测的残身",
+    "配合听澜在敌方出招前占领最佳反击先手"
+  ],
+  "techniques": [
+    {
+      "id": "tachao-jiejie",
+      "name": "踏潮借界",
+      "originalDefinition": "水面、水雾、水镜和自身留下的潮痕都可以成为落点。许妍一步踏出，身影可以直接出现在另一处落点，跨过山海、墙垣和混乱灵力。",
+      "mechanics": [
+        "跨距借界抵达",
+        "无视阻隔空间越位"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "周围存在水意、潮痕或镜界节点"
+        ]
+      },
+      "triggeredState": [
+        "踏潮越位",
+        "身法落点确立"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "tachaobu.jiejie"
+      ]
+    },
+    {
+      "id": "chaohen-huishen",
+      "name": "潮痕回身",
+      "originalDefinition": "每次踏步都会留下潮痕。许妍可以回到潮痕，也可以让两道潮痕交换位置。敌人看到的残影可能是她离开的地方，也可能是她真正出现的地方。",
+      "mechanics": [
+        "折返既往潮痕",
+        "多潮痕互换混淆真身"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "战场已留下至少一道活跃潮痕"
+        ]
+      },
+      "triggeredState": [
+        "潮痕折返",
+        "真身位移置换"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "tachaobu.huishen"
+      ]
+    },
+    {
+      "id": "shuiguang-liuying",
+      "name": "水光留影",
+      "originalDefinition": "许妍一步分出数道水光身影，每一道都能承接下一步真身。她可以在影与影之间主动移换，或让某道影子替她完成一次出手。",
+      "mechanics": [
+        "幻化多道实体残影",
+        "虚实互摄自由接驳出手"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": []
+      },
+      "triggeredState": [
+        "多重水影分化"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "tachaobu.liuying"
+      ]
+    },
+    {
+      "id": "yibu-xiansheng",
+      "name": "一步先声",
+      "originalDefinition": "听澜捕捉到敌人意图后，许妍可以在敌人法诀完成前抵达最佳位置。对同境界修士，这是先手；对高一小境界普通修士，这是持续制造反击窗口的手段。",
+      "mechanics": [
+        "截断施法前摇",
+        "抢占战术反击身位"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "已获取敌方脉相先兆"
+        ]
+      },
+      "triggeredState": [
+        "先手身位确立",
+        "反击窗口打开"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "tachaobu.xiansheng"
+      ]
+    }
+  ],
+  "synergies": [
+    "听澜决定步法落点",
+    "水镜提供增幅节点",
+    "移动中为叠浪积蓄潮势",
+    "配合共鸣使敌方拦截术落空"
+  ],
+  "narrativeGuidance": [
+    "不是单纯肉身加速奔跑，而是空间位置的暂时相接",
+    "破坏所有水痕会压缩移动选择",
+    "无法凭空进入完全未知或被高阶法则彻底封闭的死地"
+  ],
+  "version": "1.0.0",
+  "visibility": "player",
+  "ruleRefs": [
+    "tachaobu.core",
+    "tachaobu.jiejie",
+    "tachaobu.huishen",
+    "tachaobu.liuying",
+    "tachaobu.xiansheng"
+  ]
+}

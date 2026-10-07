@@ -1,0 +1,50 @@
+{
+  "sha256": "b7dbf8dea833e0edf1ff127f28da3d1e30cf059a6fdbf2fd92d935cb12467bf8",
+  "messages": 2,
+  "metadata": {
+    "xy_p0_empty": {
+      "eventId": "p0-empty-1",
+      "status": "captured",
+      "beforeMessage": true
+    }
+  },
+  "receipts": [
+    {
+      "index": 0,
+      "is_user": true,
+      "receipt": {
+        "eventId": "p0-empty-1",
+        "inputMessageUid": "p0-user-1",
+        "status": "committed_pending_story"
+      },
+      "swipes": [
+        {
+          "eventId": "p0-empty-1",
+          "inputMessageUid": "p0-user-1",
+          "status": "committed_pending_story"
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "is_user": false,
+      "receipt": {
+        "eventId": "p0-empty-1",
+        "assistantMessageUid": "p0-assistant-1",
+        "swipeUid": "p0-A"
+      },
+      "swipes": [
+        {
+          "eventId": "p0-empty-1",
+          "assistantMessageUid": "p0-assistant-1",
+          "swipeUid": "p0-A"
+        },
+        {
+          "eventId": "p0-empty-1",
+          "assistantMessageUid": "p0-assistant-1",
+          "swipeUid": "p0-B"
+        }
+      ]
+    }
+  ]
+}

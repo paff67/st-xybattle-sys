@@ -1,0 +1,153 @@
+{
+  "id": "gongfa.wuxiang-shuijingfa",
+  "name": "无相水镜法",
+  "rank": "天阶",
+  "element": "水属镜界",
+  "corePrinciple": "镜中所见不是幻象，而是世界暂时承认的另一种位置关系。",
+  "mechanics": [
+    "水雾、水面、雨滴皆可化为镜界节点",
+    "镜界主场改写局部远近与方向",
+    "镜身承接攻击替劫，分化真身与虚影",
+    "导引反照将攻击折返或引向空处"
+  ],
+  "techniques": [
+    {
+      "id": "shuijing-chaotianyu",
+      "name": "水镜·潮天域",
+      "originalDefinition": "在战场中铺开镜界，生成多个镜界节点。进入其中的敌人会发现原本熟悉的距离和方向不再可靠。",
+      "mechanics": [
+        "铺展局部镜界节点",
+        "干扰敌方距离感知与定位"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "具有水气媒介或消耗自身水元"
+        ]
+      },
+      "triggeredState": [
+        "镜海潮域展开",
+        "镜界节点成型"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "shuijing.chaotianyu"
+      ]
+    },
+    {
+      "id": "zhichi-qianxun",
+      "name": "镜界·咫尺千寻",
+      "originalDefinition": "把看似很近的攻击拉到很远，让飞剑、拳罡和火焰在抵达之前经过多重镜界。它不是减慢一切，而是延长特定攻击到达目标的路。",
+      "mechanics": [
+        "折叠空间延长来袭路径",
+        "制造多层缓冲距离"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "镜界节点已建立",
+          "面临定向远程或突进攻击"
+        ]
+      },
+      "triggeredState": [
+        "路径拉长",
+        "冲击延缓"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "shuijing.zhichi-qianxun"
+      ]
+    },
+    {
+      "id": "yihua-yinsha",
+      "name": "镜界·移花引煞",
+      "originalDefinition": "把攻击从一个节点引到另一个节点。敌人的力量可以被导向空处、地面，或被引到其防御薄弱的一侧。",
+      "mechanics": [
+        "引导攻击落点转移",
+        "将煞气引向空处或敌方空当"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "镜界节点已建立且覆盖来袭轨迹"
+        ]
+      },
+      "triggeredState": [
+        "攻势导离",
+        "落点转移"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "shuijing.yihua-yinsha"
+      ]
+    },
+    {
+      "id": "shuiyue-zhenshen",
+      "name": "镜界·水月真身",
+      "originalDefinition": "以镜界节点留下水月法身。敌人的绝杀可能击中水月，而真身已经从另一处节点出现。",
+      "mechanics": [
+        "镜身替劫",
+        "真身节点转置"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "镜界节点已建立",
+          "面临致命杀招"
+        ]
+      },
+      "triggeredState": [
+        "水月替劫",
+        "真身节点脱身"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "shuijing.shuiyue-zhenshen"
+      ]
+    },
+    {
+      "id": "fanzhao-guitu",
+      "name": "镜界·反照归途",
+      "originalDefinition": "让敌人的攻击回到它最初进入镜界的位置，形成反向压力。此术不是无条件反弹，攻击越强，越需要更多节点共同承接。",
+      "mechanics": [
+        "攻击逆向反照",
+        "多节点联合承接"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "镜界多节点稳定维持"
+        ]
+      },
+      "triggeredState": [
+        "反照折返",
+        "反向压力施加"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "shuijing.fanzhao-guitu"
+      ]
+    }
+  ],
+  "synergies": [
+    "为流光踏潮步提供空间落点",
+    "为叠浪玄潮诀保存潮势",
+    "为弦海共鸣篇限制敌方力量范围",
+    "将听澜找出的破绽固定在镜界之中"
+  ],
+  "narrativeGuidance": [
+    "水镜展现的是被世界暂时承认的位置关系，不是单纯幻术",
+    "大范围无差别攻击和绝灵手段可摧毁节点",
+    "镜身负责承受替劫，踏潮负责主动移动"
+  ],
+  "version": "1.0.0",
+  "visibility": "player",
+  "ruleRefs": [
+    "shuijing.core",
+    "shuijing.chaotianyu",
+    "shuijing.zhichi-qianxun",
+    "shuijing.yihua-yinsha",
+    "shuijing.shuiyue-zhenshen",
+    "shuijing.fanzhao-guitu"
+  ]
+}

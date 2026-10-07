@@ -1,0 +1,579 @@
+{
+  "schema": "xybattle-content-v1",
+  "protocolVersion": 1,
+  "id": "gongfa.dielang-xuanchaojue",
+  "contentType": "technique",
+  "name": "叠浪玄潮诀",
+  "version": "2026.10.06-source.1",
+  "createdAt": "2026-10-06T00:00:00+08:00",
+  "updatedAt": "2026-10-06T00:00:00+08:00",
+  "entry": {
+    "id": "gongfa.dielang-xuanchaojue",
+    "name": "叠浪玄潮诀",
+    "rank": "天",
+    "element": "水属",
+    "version": "2026.10.06-source.1",
+    "visibility": "player",
+    "corePrinciple": "弓起为浪，弦落为潮；一音一势，百势归海。",
+    "mechanics": [
+      "《叠浪玄潮诀》是一部将水元灵力、弓弦演奏与连续攻伐结合起来的顶级水属攻击功法。",
+      "它不追求单次释放出最大的破坏力，而是通过弓弦动作、旋律节奏和灵力回流，让每一次攻击都成为下一次攻击的基础。",
+      "修炼者的攻击并非一发一发彼此独立，而是会在战场中留下能够继续生长、回流和叠加的“潮势”。",
+      "只要演奏没有被彻底打断，攻击就会逐渐形成越来越密集的弦音潮流。",
+      "在同境界正面战斗中，《叠浪玄潮诀》具备极强的持续压制能力。",
+      "面对高出一个小境界的普通修士时，修炼者也可以通过维持节奏、扩大潮势和集中爆发制造胜机。",
+      "越级战斗可以艰难、受伤并消耗巨大，但必须具备正面周旋、反击和击败对手的能力。"
+    ],
+    "techniques": [
+      {
+        "id": "gongfa.dielang-xuanchaojue.qixian-chuchao",
+        "name": "起弦·初潮",
+        "school": "叠浪玄潮诀",
+        "category": "攻伐",
+        "originalDefinition": "以短促弓音或单次拨弦完成起手攻击。\n\n威力并非最强，主要用于试探敌人的防御方式，并在目标周围留下第一道弦势。",
+        "mechanics": [
+          "以短促弓音或单次拨弦完成起手攻击。",
+          "威力并非最强，主要用于试探敌人的防御方式，并在目标周围留下第一道弦势。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.dielang-xuanchaojue.qixian-chuchao.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "起弦·初潮",
+          "group": "叠浪玄潮诀",
+          "summary": "以短促弓音或单次拨弦完成起手攻击。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.dielang-xuanchaojue.qixian-chuchao.definition",
+            "gongfa.dielang-xuanchaojue.source.section-8",
+            "gongfa.dielang-xuanchaojue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.dielang-xuanchaojue.qixian-chuchao.definition",
+            "gongfa.dielang-xuanchaojue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.dielang-xuanchaojue.liangong-dielang",
+        "name": "连弓·叠浪",
+        "school": "叠浪玄潮诀",
+        "category": "攻伐",
+        "originalDefinition": "通过连续长弓让水元灵力形成一层接一层的弦音潮流。\n\n每一次攻击都可以改变下一次攻击的角度和速度。\n\n敌人若持续格挡，防御压力会逐渐积累；若频繁移动，则会在移动路径上留下更多潮势节点。",
+        "mechanics": [
+          "通过连续长弓让水元灵力形成一层接一层的弦音潮流。",
+          "每一次攻击都可以改变下一次攻击的角度和速度。",
+          "敌人若持续格挡，防御压力会逐渐积累；若频繁移动，则会在移动路径上留下更多潮势节点。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.dielang-xuanchaojue.liangong-dielang.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "连弓·叠浪",
+          "group": "叠浪玄潮诀",
+          "summary": "通过连续长弓让水元灵力形成一层接一层的弦音潮流。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.dielang-xuanchaojue.liangong-dielang.definition",
+            "gongfa.dielang-xuanchaojue.source.section-8",
+            "gongfa.dielang-xuanchaojue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.dielang-xuanchaojue.liangong-dielang.definition",
+            "gongfa.dielang-xuanchaojue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.dielang-xuanchaojue.tiaogong-suichao",
+        "name": "跳弓·碎潮",
+        "school": "叠浪玄潮诀",
+        "category": "攻伐",
+        "originalDefinition": "通过跳弓制造多次短促爆发。\n\n每一次攻击的方向和落点都不完全相同，适合打乱敌人的防御节奏。\n\n它的特点不是单次破坏，而是让敌人无法判断下一道攻击会从哪个角度出现。",
+        "mechanics": [
+          "通过跳弓制造多次短促爆发。",
+          "每一次攻击的方向和落点都不完全相同，适合打乱敌人的防御节奏。",
+          "它的特点不是单次破坏，而是让敌人无法判断下一道攻击会从哪个角度出现。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.dielang-xuanchaojue.tiaogong-suichao.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "跳弓·碎潮",
+          "group": "叠浪玄潮诀",
+          "summary": "通过跳弓制造多次短促爆发。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.dielang-xuanchaojue.tiaogong-suichao.definition",
+            "gongfa.dielang-xuanchaojue.source.section-8",
+            "gongfa.dielang-xuanchaojue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.dielang-xuanchaojue.tiaogong-suichao.definition",
+            "gongfa.dielang-xuanchaojue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.dielang-xuanchaojue.changong-huichao",
+        "name": "颤弓·回潮",
+        "school": "叠浪玄潮诀",
+        "category": "攻伐",
+        "originalDefinition": "通过快速颤弓让已经存在的弦势重新活化。\n\n可以将此前被闪避或偏转的攻击重新拉回战场，使潮势从多个方向同时回流。",
+        "mechanics": [
+          "通过快速颤弓让已经存在的弦势重新活化。",
+          "可以将此前被闪避或偏转的攻击重新拉回战场，使潮势从多个方向同时回流。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.dielang-xuanchaojue.changong-huichao.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "颤弓·回潮",
+          "group": "叠浪玄潮诀",
+          "summary": "通过快速颤弓让已经存在的弦势重新活化。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.dielang-xuanchaojue.changong-huichao.definition",
+            "gongfa.dielang-xuanchaojue.source.section-8",
+            "gongfa.dielang-xuanchaojue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.dielang-xuanchaojue.changong-huichao.definition",
+            "gongfa.dielang-xuanchaojue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.dielang-xuanchaojue.boxian-nilang",
+        "name": "拨弦·逆浪",
+        "school": "叠浪玄潮诀",
+        "category": "攻伐",
+        "originalDefinition": "以手指直接拨动灵力化成的琴弦。\n\n攻击速度快、前兆少，适合在长弓攻击之后突然改变节奏。\n\n逆浪可以将部分正在向前推进的潮势强行折返，从敌人意料之外的方向形成反击。",
+        "mechanics": [
+          "以手指直接拨动灵力化成的琴弦。",
+          "攻击速度快、前兆少，适合在长弓攻击之后突然改变节奏。",
+          "逆浪可以将部分正在向前推进的潮势强行折返，从敌人意料之外的方向形成反击。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.dielang-xuanchaojue.boxian-nilang.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "拨弦·逆浪",
+          "group": "叠浪玄潮诀",
+          "summary": "以手指直接拨动灵力化成的琴弦。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.dielang-xuanchaojue.boxian-nilang.definition",
+            "gongfa.dielang-xuanchaojue.source.section-8",
+            "gongfa.dielang-xuanchaojue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.dielang-xuanchaojue.boxian-nilang.definition",
+            "gongfa.dielang-xuanchaojue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.dielang-xuanchaojue.fanyin-chaoyan",
+        "name": "泛音·潮眼",
+        "school": "叠浪玄潮诀",
+        "category": "攻伐",
+        "originalDefinition": "通过泛音触发已经形成的潮眼。\n\n泛音越纯，潮眼越稳定，爆发越集中。\n\n该招式适合攻击护盾、法宝、阵法节点和已经被多道弦势覆盖的目标。",
+        "mechanics": [
+          "通过泛音触发已经形成的潮眼。",
+          "泛音越纯，潮眼越稳定，爆发越集中。",
+          "该招式适合攻击护盾、法宝、阵法节点和已经被多道弦势覆盖的目标。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.dielang-xuanchaojue.fanyin-chaoyan.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "泛音·潮眼",
+          "group": "叠浪玄潮诀",
+          "summary": "通过泛音触发已经形成的潮眼。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.dielang-xuanchaojue.fanyin-chaoyan.definition",
+            "gongfa.dielang-xuanchaojue.source.section-8",
+            "gongfa.dielang-xuanchaojue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.dielang-xuanchaojue.fanyin-chaoyan.definition",
+            "gongfa.dielang-xuanchaojue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.dielang-xuanchaojue.jiudie-cangchao",
+        "name": "九叠沧潮",
+        "school": "叠浪玄潮诀",
+        "category": "攻伐",
+        "originalDefinition": "高阶弦音杀招。\n\n将不同时间、不同方向形成的多层潮势在同一瞬间重新排列，并同时引爆。\n\n“九叠”不是固定只能攻击九次，而是代表多层潮势在同一时刻完成共振。\n\n如果潮势结构不完整，强行使用会造成灵力反噬。",
+        "mechanics": [
+          "高阶弦音杀招。",
+          "将不同时间、不同方向形成的多层潮势在同一瞬间重新排列，并同时引爆。",
+          "“九叠”不是固定只能攻击九次，而是代表多层潮势在同一时刻完成共振。",
+          "如果潮势结构不完整，强行使用会造成灵力反噬。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.dielang-xuanchaojue.jiudie-cangchao.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "九叠沧潮",
+          "group": "叠浪玄潮诀",
+          "summary": "高阶弦音杀招。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.dielang-xuanchaojue.jiudie-cangchao.definition",
+            "gongfa.dielang-xuanchaojue.source.section-8",
+            "gongfa.dielang-xuanchaojue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.dielang-xuanchaojue.jiudie-cangchao.definition",
+            "gongfa.dielang-xuanchaojue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      }
+    ],
+    "synergies": [
+      "《太一沧澜经》提高太一水元的纯度、潮势稳定性、持续时间和多线承载能力。",
+      "《无相水镜法》可以限制敌人移动，使目标更容易被弦势覆盖。",
+      "《流光踏潮步》可以让修炼者在移动中完成换位、转弓和变奏。",
+      "《澄心听澜诀》可以帮助修炼者听出敌方防御节奏和灵力薄弱点。",
+      "《弦海共鸣篇》可以在潮势形成后，进一步寻找敌人护盾或术法结构的共振点。",
+      "这些功法能够强化《叠浪玄潮诀》，但《叠浪玄潮诀》自身必须具备独立的同阶领先能力。"
+    ],
+    "narrativeGuidance": [],
+    "ruleRefs": [
+      "gongfa.dielang-xuanchaojue.source.section-1",
+      "gongfa.dielang-xuanchaojue.source.section-2",
+      "gongfa.dielang-xuanchaojue.source.section-3",
+      "gongfa.dielang-xuanchaojue.source.section-4",
+      "gongfa.dielang-xuanchaojue.source.section-5",
+      "gongfa.dielang-xuanchaojue.source.section-6",
+      "gongfa.dielang-xuanchaojue.source.section-7",
+      "gongfa.dielang-xuanchaojue.source.section-8",
+      "gongfa.dielang-xuanchaojue.source.section-9",
+      "gongfa.dielang-xuanchaojue.source.section-10"
+    ],
+    "authority": {
+      "kind": "user-designated-source",
+      "sourceFile": "自定义全能.json",
+      "sourceFileSha256": "81b29ca747e51ebe594aec40d0cdd5a85b4230bb3591996b52622558af491c0d",
+      "entryKey": "9",
+      "uid": 9,
+      "sourceComment": "叠浪玄潮诀",
+      "sourceDisabled": false,
+      "contentSha256": "fd269a7821b29f802343e413ce9ef69dd9e0bf7423490763c4fa93e629415080",
+      "status": "source-backed-template; runtime-v2-integration-pending"
+    },
+    "combatSpec": {
+      "schema": "xybattle-combat-spec-v2-draft",
+      "role": "攻伐与持续潮势",
+      "glossary": [
+        {
+          "term": "弦势",
+          "definition": "每一次弓弦动作都会在目标、地面、水面、护盾或空间灵力中留下短暂的弦势。\n\n弦势是由水元灵力构成的微型潮流结构，会随着后续弓弦动作发生变化。\n\n弦势可以：\n\n- 向目标靠拢；\n- 沿攻击轨迹延伸；\n- 与其他弦势连接；\n- 改变后续攻击的方向；\n- 在合适时机转化为潮势。\n\n弦势越稳定，后续攻击越容易叠加。",
+          "sourceRef": "gongfa.dielang-xuanchaojue.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "叠潮",
+          "definition": "连续的弓弦动作会让多个弦势逐渐重合，形成叠潮。\n\n不同弓法会形成不同性质的叠潮：\n\n- 长弓形成持续压迫；\n- 短弓形成快速切割；\n- 跳弓形成多段爆发；\n- 连弓形成连续水流；\n- 颤弓形成高频震荡；\n- 拨弦形成突然出现的局部攻击。\n\n叠潮并不是单纯扩大攻击数量，而是会改变战场中灵力的流向。\n\n敌人越是重复使用同一防御方式，叠潮就越容易找到其规律。",
+          "sourceRef": "gongfa.dielang-xuanchaojue.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "回弦",
+          "definition": "当攻击被敌人闪避、格挡或偏转时，部分水元灵力不会立刻消散，而是会沿原本的弦势回流。\n\n修炼者可以重新拉动弓弦，让这些落空的灵力再次形成攻击。\n\n回弦并不是自动追踪，也不是无条件的二次攻击。\n\n它需要修炼者重新进行控制，并受到距离、视野、神识和敌方干扰影响。\n\n回弦的意义在于：敌人成功躲过一次攻击后，仍然必须处理残留在战场中的灵力。",
+          "sourceRef": "gongfa.dielang-xuanchaojue.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "潮眼",
+          "definition": "当多道弦势在同一目标附近稳定叠加后，会形成潮眼。\n\n潮眼是《叠浪玄潮诀》的爆发核心。\n\n修炼者可以选择：\n\n- 继续扩大潮眼；\n- 将潮眼转移到其他位置；\n- 让潮眼向四周扩散；\n- 将潮眼压缩成一点；\n- 直接引爆潮眼。\n\n潮眼越稳定，爆发越强。\n\n如果太早引爆，威力有限；如果拖延过久，敌人可能会找到机会破坏潮势结构。",
+          "sourceRef": "gongfa.dielang-xuanchaojue.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "跳弓",
+          "definition": "弦乐器演奏弓法；在本功法中形成多段短促爆发，不是跳跃步法或射箭动作。",
+          "sourceRefs": [
+            "gongfa.dielang-xuanchaojue.source.section-3",
+            "gongfa.dielang-xuanchaojue.source.section-4",
+            "gongfa.dielang-xuanchaojue.tiaogong-suichao.definition"
+          ],
+          "authority": "source-grounded-disambiguation",
+          "uiKind": "performance-technique"
+        },
+        {
+          "term": "九叠",
+          "definition": "多层潮势在同一时刻共振，不是固定只能攻击九次；原文没有三层叠潮上限。",
+          "sourceRefs": [
+            "gongfa.dielang-xuanchaojue.jiudie-cangchao.definition"
+          ],
+          "authority": "source-grounded-disambiguation",
+          "uiKind": "concept"
+        },
+        {
+          "term": "潮眼",
+          "definition": "稳定叠加形成的爆发核心，可扩大、转移、扩散、压缩或引爆；不是仅用于观察的窗口。",
+          "sourceRefs": [
+            "gongfa.dielang-xuanchaojue.source.section-4"
+          ],
+          "authority": "source-grounded-disambiguation",
+          "uiKind": "state"
+        }
+      ],
+      "rules": [
+        {
+          "id": "gongfa.dielang-xuanchaojue.source.section-1",
+          "heading": "功法档案",
+          "text": "名称：叠浪玄潮诀\n类型：攻伐\n属性：水属\n品阶：天\n定位：弦音攻伐、潮势叠加、连续压制、节奏爆发\n核心理念：弓起为浪，弦落为潮；一音一势，百势归海。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.source.section-2",
+          "heading": "总体定位",
+          "text": "《叠浪玄潮诀》是一部将水元灵力、弓弦演奏与连续攻伐结合起来的顶级水属攻击功法。\n\n它不追求单次释放出最大的破坏力，而是通过弓弦动作、旋律节奏和灵力回流，让每一次攻击都成为下一次攻击的基础。\n\n修炼者的攻击并非一发一发彼此独立，而是会在战场中留下能够继续生长、回流和叠加的“潮势”。\n\n只要演奏没有被彻底打断，攻击就会逐渐形成越来越密集的弦音潮流。\n\n在同境界正面战斗中，《叠浪玄潮诀》具备极强的持续压制能力。\n\n面对高出一个小境界的普通修士时，修炼者也可以通过维持节奏、扩大潮势和集中爆发制造胜机。\n\n越级战斗可以艰难、受伤并消耗巨大，但必须具备正面周旋、反击和击败对手的能力。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.source.section-3",
+          "heading": "乐器化施术原理",
+          "text": "《叠浪玄潮诀》的正式施术形式以弦乐器为核心。\n\n修炼者以自身水元灵力化作琴弦与弓毛，以弓弦摩擦、拨弦、按弦、泛音和换把等动作改变灵力结构。\n\n乐器本体并不是力量来源，而是将修炼者的灵力、动作和节奏统一起来的高精度施术接口。\n\n使用真实法宝时，灵力传导更加稳定，潮势范围更大，弓弦动作也更容易形成复杂变化。\n\n即使没有法宝，修炼者仍然可以用水元灵力在空中临时构成弦与弓，完成低配版施术。\n\n但没有固定乐器时：\n\n- 音准更难稳定；\n- 灵力损耗更高；\n- 弦音范围较小；\n- 复杂节奏更难维持；\n- 高阶招式的成功率明显下降。\n\n因此，乐器不是绝对必要条件，却是《叠浪玄潮诀》发挥完整威力的最佳媒介。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.source.section-4",
+          "heading": "核心战斗结构",
+          "text": "### 一、弦势\n\n每一次弓弦动作都会在目标、地面、水面、护盾或空间灵力中留下短暂的弦势。\n\n弦势是由水元灵力构成的微型潮流结构，会随着后续弓弦动作发生变化。\n\n弦势可以：\n\n- 向目标靠拢；\n- 沿攻击轨迹延伸；\n- 与其他弦势连接；\n- 改变后续攻击的方向；\n- 在合适时机转化为潮势。\n\n弦势越稳定，后续攻击越容易叠加。\n\n### 二、叠潮\n\n连续的弓弦动作会让多个弦势逐渐重合，形成叠潮。\n\n不同弓法会形成不同性质的叠潮：\n\n- 长弓形成持续压迫；\n- 短弓形成快速切割；\n- 跳弓形成多段爆发；\n- 连弓形成连续水流；\n- 颤弓形成高频震荡；\n- 拨弦形成突然出现的局部攻击。\n\n叠潮并不是单纯扩大攻击数量，而是会改变战场中灵力的流向。\n\n敌人越是重复使用同一防御方式，叠潮就越容易找到其规律。\n\n### 三、回弦\n\n当攻击被敌人闪避、格挡或偏转时，部分水元灵力不会立刻消散，而是会沿原本的弦势回流。\n\n修炼者可以重新拉动弓弦，让这些落空的灵力再次形成攻击。\n\n回弦并不是自动追踪，也不是无条件的二次攻击。\n\n它需要修炼者重新进行控制，并受到距离、视野、神识和敌方干扰影响。\n\n回弦的意义在于：敌人成功躲过一次攻击后，仍然必须处理残留在战场中的灵力。\n\n### 四、潮眼\n\n当多道弦势在同一目标附近稳定叠加后，会形成潮眼。\n\n潮眼是《叠浪玄潮诀》的爆发核心。\n\n修炼者可以选择：\n\n- 继续扩大潮眼；\n- 将潮眼转移到其他位置；\n- 让潮眼向四周扩散；\n- 将潮眼压缩成一点；\n- 直接引爆潮眼。\n\n潮眼越稳定，爆发越强。\n\n如果太早引爆，威力有限；如果拖延过久，敌人可能会找到机会破坏潮势结构。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.source.section-5",
+          "heading": "主要攻击形式",
+          "text": "### 《起弦·初潮》\n\n以短促弓音或单次拨弦完成起手攻击。\n\n威力并非最强，主要用于试探敌人的防御方式，并在目标周围留下第一道弦势。\n\n### 《连弓·叠浪》\n\n通过连续长弓让水元灵力形成一层接一层的弦音潮流。\n\n每一次攻击都可以改变下一次攻击的角度和速度。\n\n敌人若持续格挡，防御压力会逐渐积累；若频繁移动，则会在移动路径上留下更多潮势节点。\n\n### 《跳弓·碎潮》\n\n通过跳弓制造多次短促爆发。\n\n每一次攻击的方向和落点都不完全相同，适合打乱敌人的防御节奏。\n\n它的特点不是单次破坏，而是让敌人无法判断下一道攻击会从哪个角度出现。\n\n### 《颤弓·回潮》\n\n通过快速颤弓让已经存在的弦势重新活化。\n\n可以将此前被闪避或偏转的攻击重新拉回战场，使潮势从多个方向同时回流。\n\n### 《拨弦·逆浪》\n\n以手指直接拨动灵力化成的琴弦。\n\n攻击速度快、前兆少，适合在长弓攻击之后突然改变节奏。\n\n逆浪可以将部分正在向前推进的潮势强行折返，从敌人意料之外的方向形成反击。\n\n### 《泛音·潮眼》\n\n通过泛音触发已经形成的潮眼。\n\n泛音越纯，潮眼越稳定，爆发越集中。\n\n该招式适合攻击护盾、法宝、阵法节点和已经被多道弦势覆盖的目标。\n\n### 《九叠沧潮》\n\n高阶弦音杀招。\n\n将不同时间、不同方向形成的多层潮势在同一瞬间重新排列，并同时引爆。\n\n“九叠”不是固定只能攻击九次，而是代表多层潮势在同一时刻完成共振。\n\n如果潮势结构不完整，强行使用会造成灵力反噬。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.source.section-6",
+          "heading": "同境界优势",
+          "text": "《叠浪玄潮诀》在同境界战斗中的领先优势主要体现为：\n\n- 连续攻击不会轻易失去效果；\n- 防御一次攻击并不代表结束危险；\n- 敵人的移动会反过来帮助潮势扩散；\n- 重复使用相同防御方式会越来越危险；\n- 弦音攻击的速度、方向和间隔可以持续变化；\n- 敌人的战斗节奏越固定，越容易被功法捕捉。\n\n它尤其克制：\n\n- 依赖固定防御姿态的修士；\n- 需要长时间蓄力的术法；\n- 攻击方式单一的敌人；\n- 习惯重复使用同一招式的敌人；\n- 灵力恢复能力较弱的敌人。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.source.section-7",
+          "heading": "越级挑战能力",
+          "text": "《叠浪玄潮诀》可以让修炼者跨越一个小境界挑战普通修士。\n\n它并不是依靠单次攻击强行抹平境界差距，而是通过：\n\n- 持续积累潮势；\n- 让敌人反复消耗灵力；\n- 逼迫敌人改变原本的战斗节奏；\n- 让敌人的移动和防御变成潮势的一部分；\n- 在敌人露出短暂破绽时集中引爆潮眼。\n\n面对高出一个小境界的普通修士，修炼者可以通过弦音压制、回潮追击和潮眼爆发维持正面战斗能力。\n\n如果敌人拥有更高品阶功法、极强爆发、范围清场能力或能够彻底净化弦势，越级战斗的难度会显著增加。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.source.section-8",
+          "heading": "境界表现",
+          "text": "### 炼气期\n\n可以使用单弦攻击、短促弓音和简单叠潮。\n\n攻击范围有限，但同阶压制力已经明显高于普通水属攻伐术法。\n\n### 筑基期\n\n可以稳定维持多道弦势，并使用回弦追击。\n\n修炼者开始能够通过不同弓法改变攻击节奏，使敌人难以形成稳定防御。\n\n### 金丹期\n\n可以形成稳定潮眼，并将不同方向的叠潮连接起来。\n\n此阶段开始，修炼者具备较稳定的越级挑战能力。\n\n### 元婴期\n\n弦势可以附着在护盾、法宝、阵法和敌方术法结构上。\n\n修炼者可以让潮势从单纯的攻击力量，发展为影响整个战场的灵力网络。\n\n### 出窍期及以上\n\n弦音可以脱离乐器本体，直接在更大范围内形成潮势。\n\n修炼者可以同时维持多个潮眼，并让不同区域的弦音潮流彼此传递。\n\n达到化神期后，弦音可以逐渐引动天地水行之力，使叠浪从灵力攻伐发展为范围性潮域。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.source.section-9",
+          "heading": "功法弱点",
+          "text": "1. 起手阶段的瞬间爆发不一定是同阶最强。\n2. 潮势需要连续控制，若弓弦节奏被彻底打断，攻击强度会明显下降。\n3. 敌人若能大范围净化灵力残势，可以削弱叠潮效果。\n4. 施术者神识受损时，复杂弓法容易失准。\n5. 潮势积累越多，强行引爆时的反噬风险越高。\n6. 在极端狭窄、完全无水行灵气或持续遭受强制沉默的环境中，功法发挥会受到限制。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.source.section-10",
+          "heading": "与其他功法的关系",
+          "text": "《太一沧澜经》提高太一水元的纯度、潮势稳定性、持续时间和多线承载能力。\n\n《无相水镜法》可以限制敌人移动，使目标更容易被弦势覆盖。\n\n《流光踏潮步》可以让修炼者在移动中完成换位、转弓和变奏。\n\n《澄心听澜诀》可以帮助修炼者听出敌方防御节奏和灵力薄弱点。\n\n《弦海共鸣篇》可以在潮势形成后，进一步寻找敌人护盾或术法结构的共振点。\n\n这些功法能够强化《叠浪玄潮诀》，但《叠浪玄潮诀》自身必须具备独立的同阶领先能力。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.qixian-chuchao.definition",
+          "heading": "《起弦·初潮》",
+          "text": "以短促弓音或单次拨弦完成起手攻击。\n\n威力并非最强，主要用于试探敌人的防御方式，并在目标周围留下第一道弦势。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.liangong-dielang.definition",
+          "heading": "《连弓·叠浪》",
+          "text": "通过连续长弓让水元灵力形成一层接一层的弦音潮流。\n\n每一次攻击都可以改变下一次攻击的角度和速度。\n\n敌人若持续格挡，防御压力会逐渐积累；若频繁移动，则会在移动路径上留下更多潮势节点。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.tiaogong-suichao.definition",
+          "heading": "《跳弓·碎潮》",
+          "text": "通过跳弓制造多次短促爆发。\n\n每一次攻击的方向和落点都不完全相同，适合打乱敌人的防御节奏。\n\n它的特点不是单次破坏，而是让敌人无法判断下一道攻击会从哪个角度出现。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.changong-huichao.definition",
+          "heading": "《颤弓·回潮》",
+          "text": "通过快速颤弓让已经存在的弦势重新活化。\n\n可以将此前被闪避或偏转的攻击重新拉回战场，使潮势从多个方向同时回流。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.boxian-nilang.definition",
+          "heading": "《拨弦·逆浪》",
+          "text": "以手指直接拨动灵力化成的琴弦。\n\n攻击速度快、前兆少，适合在长弓攻击之后突然改变节奏。\n\n逆浪可以将部分正在向前推进的潮势强行折返，从敌人意料之外的方向形成反击。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.fanyin-chaoyan.definition",
+          "heading": "《泛音·潮眼》",
+          "text": "通过泛音触发已经形成的潮眼。\n\n泛音越纯，潮眼越稳定，爆发越集中。\n\n该招式适合攻击护盾、法宝、阵法节点和已经被多道弦势覆盖的目标。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.dielang-xuanchaojue.jiudie-cangchao.definition",
+          "heading": "《九叠沧潮》",
+          "text": "高阶弦音杀招。\n\n将不同时间、不同方向形成的多层潮势在同一瞬间重新排列，并同时引爆。\n\n“九叠”不是固定只能攻击九次，而是代表多层潮势在同一时刻完成共振。\n\n如果潮势结构不完整，强行使用会造成灵力反噬。",
+          "authority": "source-verbatim"
+        }
+      ],
+      "realmProgression": {
+        "text": "### 炼气期\n\n可以使用单弦攻击、短促弓音和简单叠潮。\n\n攻击范围有限，但同阶压制力已经明显高于普通水属攻伐术法。\n\n### 筑基期\n\n可以稳定维持多道弦势，并使用回弦追击。\n\n修炼者开始能够通过不同弓法改变攻击节奏，使敌人难以形成稳定防御。\n\n### 金丹期\n\n可以形成稳定潮眼，并将不同方向的叠潮连接起来。\n\n此阶段开始，修炼者具备较稳定的越级挑战能力。\n\n### 元婴期\n\n弦势可以附着在护盾、法宝、阵法和敌方术法结构上。\n\n修炼者可以让潮势从单纯的攻击力量，发展为影响整个战场的灵力网络。\n\n### 出窍期及以上\n\n弦音可以脱离乐器本体，直接在更大范围内形成潮势。\n\n修炼者可以同时维持多个潮眼，并让不同区域的弦音潮流彼此传递。\n\n达到化神期后，弦音可以逐渐引动天地水行之力，使叠浪从灵力攻伐发展为范围性潮域。",
+        "sourceRef": "gongfa.dielang-xuanchaojue.source.section-8"
+      },
+      "limitations": {
+        "text": "1. 起手阶段的瞬间爆发不一定是同阶最强。\n2. 潮势需要连续控制，若弓弦节奏被彻底打断，攻击强度会明显下降。\n3. 敌人若能大范围净化灵力残势，可以削弱叠潮效果。\n4. 施术者神识受损时，复杂弓法容易失准。\n5. 潮势积累越多，强行引爆时的反噬风险越高。\n6. 在极端狭窄、完全无水行灵气或持续遭受强制沉默的环境中，功法发挥会受到限制。",
+        "sourceRef": "gongfa.dielang-xuanchaojue.source.section-9"
+      },
+      "integrationPorts": {
+        "authority": "engineering-classification",
+        "accepts": [
+          "water.intent",
+          "perception.opening",
+          "mirror.node",
+          "movement.position"
+        ],
+        "provides": [
+          "chord.structure",
+          "tide.structure",
+          "tide.eye",
+          "water.dispersed-own"
+        ],
+        "semantics": "可交互对象类型，不是每招的强制前提，也不表示每次施法同时生成全部效果。"
+      },
+      "ownership": "由人物实例引用，不由此模板决定",
+      "numericPolicy": "未规定的成本、倍率、槽位、回合、层数与成功率不做数值补全"
+    }
+  }
+}

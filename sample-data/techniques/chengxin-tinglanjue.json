@@ -1,0 +1,170 @@
+{
+  "id": "gongfa.chengxin-tinglanjue",
+  "name": "澄心听澜诀",
+  "rank": "天阶",
+  "element": "水属神识",
+  "corePrinciple": "水面虽静，万物经过都会留下涟漪。",
+  "mechanics": [
+    "听澜感知灵力、杀意、阵法与神魂涟漪",
+    "辨真识破伪装、幻影、替身与假痕迹",
+    "听隙标记护盾、法宝与阵法运转的交替缝隙",
+    "溯息追澜沿残留气机线索追索路线"
+  ],
+  "techniques": [
+    {
+      "id": "xinyuan-chengting",
+      "name": "心渊·澄听",
+      "originalDefinition": "收敛自身神念，同时听见周围灵力和生灵留下的变化。适合防止伏击和神识窥探。",
+      "mechanics": [
+        "收敛神念隐匿自身",
+        "全局被动感知涟漪"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": []
+      },
+      "triggeredState": [
+        "澄听展开",
+        "周围涟漪感知中"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "tinglan.chengting"
+      ]
+    },
+    {
+      "id": "maixiang-xianwen",
+      "name": "脉相·先闻",
+      "originalDefinition": "在敌人出招前听见气血、真元和法宝的变化，为踏潮和水镜提供先手判断。",
+      "mechanics": [
+        "提前捕捉施法前摇",
+        "为身法与水镜提供先手窗口"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "目标存在气机或灵力运转"
+        ]
+      },
+      "triggeredState": [
+        "敌方先兆捕捉",
+        "先手优势建立"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "tinglan.xianwen"
+      ]
+    },
+    {
+      "id": "mingzhen-zhaoying",
+      "name": "明真·照影",
+      "originalDefinition": "识破幻术、分身和匿迹。它不一定立刻找到真身，但能排除错误目标。",
+      "mechanics": [
+        "排除虚假幻象",
+        "破除匿迹伪装"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "存在幻象、匿迹或多重视线干扰"
+        ]
+      },
+      "triggeredState": [
+        "假象破除",
+        "疑点标记"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "tinglan.zhaoying"
+      ]
+    },
+    {
+      "id": "tianlai-tingxi",
+      "name": "天籁·听隙",
+      "originalDefinition": "标记护盾、法宝或阵法的关键交替处，使叠浪和共鸣有明确的攻击对象。",
+      "mechanics": [
+        "定位防御周转缝隙",
+        "标记破绽交替点"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "持续观察目标运转"
+        ]
+      },
+      "triggeredState": [
+        "破绽缝隙标记"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "tinglan.tingxi"
+      ]
+    },
+    {
+      "id": "suxi-zhuilan",
+      "name": "溯息·追澜",
+      "originalDefinition": "沿目标留下的气机、水意、衣物、法宝残片或战斗痕迹逐段追踪。可以追人，也可以追查一件被带走的物品。",
+      "mechanics": [
+        "定向线索追踪",
+        "跨越地形锁定残痕"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "拥有目标明确气机或战斗残痕"
+        ]
+      },
+      "triggeredState": [
+        "气机线索锁定"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "tinglan.zhuilan"
+      ]
+    },
+    {
+      "id": "chengxin-huisheng",
+      "name": "澄心·回声",
+      "originalDefinition": "把已经听过的气机短暂留在心中。即使目标改变外貌，许妍仍能通过气机和神魂习惯辨认对方。",
+      "mechanics": [
+        "记录神魂气机印记",
+        "无视外貌易容识别真身"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "曾接触或听取过目标气机"
+        ]
+      },
+      "triggeredState": [
+        "气机印记留存"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "tinglan.huisheng"
+      ]
+    }
+  ],
+  "synergies": [
+    "为水镜寻找落点",
+    "为踏潮判断下一步位置",
+    "为叠浪寻找防御节奏",
+    "为共鸣确定需要切断或改接的联系"
+  ],
+  "narrativeGuidance": [
+    "同境界敌人难以突然藏起杀意，听澜总能先捕捉变化",
+    "对完全没有灵力、静止的死物判断较慢",
+    "绝灵、断痕和完全空间隔绝可中断追踪"
+  ],
+  "version": "1.0.0",
+  "visibility": "player",
+  "ruleRefs": [
+    "tinglan.core",
+    "tinglan.chengting",
+    "tinglan.xianwen",
+    "tinglan.zhaoying",
+    "tinglan.tingxi",
+    "tinglan.zhuilan",
+    "tinglan.huisheng"
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "id": "fabao.cangxian-chaoyin",
+  "name": "沧弦潮音",
+  "rank": "天阶",
+  "element": "水·弦",
+  "corePrinciple": "以天阶道器承载无上水律，音律所至，潮势不散，万弦同调。",
+  "mechanics": [
+    "大幅提高叠浪玄潮诀弓法音准、范围与潮势稳定性",
+    "承载高阶复杂乐章，防止多层潮势反噬",
+    "拓宽弦海共鸣篇触碰与借引联系的灵敏度"
+  ],
+  "techniques": [
+    {
+      "id": "cangxian-wenbo",
+      "name": "同调稳波",
+      "originalDefinition": "法宝弓弦共鸣稳定自身水元波动，使多层叠潮在高速变奏下不出现散逸失衡。",
+      "mechanics": [
+        "降低失准反噬概率",
+        "稳定多层叠浪"
+      ],
+      "availability": {
+        "default": "available",
+        "conditions": [
+          "装备沧弦潮音"
+        ]
+      },
+      "triggeredState": [
+        "潮音稳定",
+        "音律精准"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "fabao.chaoyin.wenbo"
+      ]
+    },
+    {
+      "id": "longyin-zhendang",
+      "name": "沧海龙吟",
+      "originalDefinition": "引弦长鸣，震荡全场，将弦音潮势扩散至更广范围，甚至附着在敌方护盾法宝之上。",
+      "mechanics": [
+        "扩大潮势影响范围",
+        "穿透附着于护体法罩"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "装备沧弦潮音",
+          "持续演奏潮势"
+        ]
+      },
+      "triggeredState": [
+        "龙吟泛响",
+        "全场弦势共振"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "fabao.chaoyin.longyin"
+      ]
+    },
+    {
+      "id": "yishang-keyu",
+      "name": "引商刻羽",
+      "originalDefinition": "以高阶小提琴双音与换把技巧编织完整水元乐章，一次性激发生死决胜级别的终章潮爆。",
+      "mechanics": [
+        "承载多层极境潮势引爆",
+        "大幅提升终结伤害与压制力"
+      ],
+      "availability": {
+        "default": "conditional",
+        "conditions": [
+          "装备沧弦潮音",
+          "潮势达至极峰"
+        ]
+      },
+      "triggeredState": [
+        "乐章终奏激活"
+      ],
+      "visibility": "player",
+      "ruleRefs": [
+        "fabao.chaoyin.keyu"
+      ]
+    }
+  ],
+  "synergies": [
+    "配合叠浪玄潮诀施展高难弓法",
+    "配合弦海共鸣篇捕捉微弱共振",
+    "太一水元为琴身提供源源不绝的回流净化"
+  ],
+  "narrativeGuidance": [
+    "强化功法表现与上限，本体功法在无法宝时依然具备独立战斗价值",
+    "不直接释放单纯物理声波，而是通过琴弦接口精确操纵纯水灵力"
+  ],
+  "version": "1.0.0",
+  "visibility": "player",
+  "ruleRefs": [
+    "fabao.chaoyin.core",
+    "fabao.chaoyin.wenbo",
+    "fabao.chaoyin.longyin",
+    "fabao.chaoyin.keyu"
+  ]
+}

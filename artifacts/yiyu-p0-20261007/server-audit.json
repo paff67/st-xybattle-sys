@@ -1,0 +1,215 @@
+{
+  "instance": "sillytavern_yiyu",
+  "chats": {
+    "codex-event-p0-20261007": {
+      "sha256": "21514a3a43d8fccfa43a357d7773cfbe23e463a62571dba2612416857feae991",
+      "messages": 8,
+      "metadata": {
+        "xy_p0": {
+          "id": "p0-1791357801775",
+          "status": "captured"
+        }
+      },
+      "receipts": [
+        {
+          "index": 0,
+          "is_user": false,
+          "receipt": null,
+          "swipes": [
+            null
+          ]
+        },
+        {
+          "index": 1,
+          "is_user": true,
+          "receipt": null,
+          "swipes": []
+        },
+        {
+          "index": 2,
+          "is_user": false,
+          "receipt": null,
+          "swipes": [
+            null
+          ]
+        },
+        {
+          "index": 3,
+          "is_user": true,
+          "receipt": null,
+          "swipes": []
+        },
+        {
+          "index": 4,
+          "is_user": true,
+          "receipt": null,
+          "swipes": []
+        },
+        {
+          "index": 5,
+          "is_user": false,
+          "receipt": null,
+          "swipes": [
+            null
+          ]
+        },
+        {
+          "index": 6,
+          "is_user": true,
+          "receipt": null,
+          "swipes": []
+        },
+        {
+          "index": 7,
+          "is_user": false,
+          "receipt": null,
+          "swipes": [
+            null
+          ]
+        }
+      ]
+    },
+    "codex-event-p0-empty-20261007": {
+      "sha256": "b7dbf8dea833e0edf1ff127f28da3d1e30cf059a6fdbf2fd92d935cb12467bf8",
+      "messages": 2,
+      "metadata": {
+        "xy_p0_empty": {
+          "eventId": "p0-empty-1",
+          "status": "captured",
+          "beforeMessage": true
+        }
+      },
+      "receipts": [
+        {
+          "index": 0,
+          "is_user": true,
+          "receipt": {
+            "eventId": "p0-empty-1",
+            "inputMessageUid": "p0-user-1",
+            "status": "committed_pending_story"
+          },
+          "swipes": [
+            {
+              "eventId": "p0-empty-1",
+              "inputMessageUid": "p0-user-1",
+              "status": "committed_pending_story"
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "is_user": false,
+          "receipt": {
+            "eventId": "p0-empty-1",
+            "assistantMessageUid": "p0-assistant-1",
+            "swipeUid": "p0-A"
+          },
+          "swipes": [
+            {
+              "eventId": "p0-empty-1",
+              "assistantMessageUid": "p0-assistant-1",
+              "swipeUid": "p0-A"
+            },
+            {
+              "eventId": "p0-empty-1",
+              "assistantMessageUid": "p0-assistant-1",
+              "swipeUid": "p0-B"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "extensions": [
+    {
+      "directory": "Extension-Mermaid",
+      "version": "1.0.0",
+      "loading_order": 1000,
+      "generate_interceptor": null
+    },
+    {
+      "directory": "Extension-MessageLimit",
+      "version": "1.0.0",
+      "loading_order": 1000,
+      "generate_interceptor": "MessageLimit_interceptGeneration"
+    },
+    {
+      "directory": "HTYQ-LITE",
+      "version": "3.1.0",
+      "loading_order": null,
+      "generate_interceptor": null
+    },
+    {
+      "directory": "JS-Slash-Runner",
+      "version": "4.11.0",
+      "loading_order": 100,
+      "generate_interceptor": null
+    },
+    {
+      "directory": "Olivia-s-Toolkit",
+      "version": "1.0.1",
+      "loading_order": 9,
+      "generate_interceptor": null
+    },
+    {
+      "directory": "QR",
+      "version": "5.9.6",
+      "loading_order": 101,
+      "generate_interceptor": null
+    },
+    {
+      "directory": "ST-Prompt-Template",
+      "version": "1.17.9",
+      "loading_order": 1,
+      "generate_interceptor": null
+    },
+    {
+      "directory": "SillyTavern-CustomModels",
+      "version": "1.3.0",
+      "loading_order": 100,
+      "generate_interceptor": null
+    },
+    {
+      "directory": "SillyTavernExtension-JsRunner",
+      "version": "1.0.0",
+      "loading_order": 9,
+      "generate_interceptor": null
+    },
+    {
+      "directory": "Weather-Calendar-Assistant",
+      "version": "1.10.0",
+      "loading_order": 100,
+      "generate_interceptor": null
+    },
+    {
+      "directory": "codex-battle-qa",
+      "version": "0.1.0",
+      "loading_order": 9999,
+      "generate_interceptor": null
+    },
+    {
+      "directory": "mobile",
+      "version": "3.0",
+      "loading_order": 100,
+      "generate_interceptor": null
+    }
+  ],
+  "connectionFieldsEqualBaseline": {
+    "chat_completion_source": true,
+    "custom_url": false,
+    "custom_model": false,
+    "stream_openai": false
+  },
+  "containers": {
+    "sillytavern_yiyu": {
+      "image": "sha256:5520831198cdb30ede4ae6c481a5a36257d4e9e3177512d6e28d0c7bb1c9e76f",
+      "startedAt": "2026-10-03T03:56:31.25434963Z",
+      "running": true
+    },
+    "sillytavern_me": {
+      "image": "sha256:5520831198cdb30ede4ae6c481a5a36257d4e9e3177512d6e28d0c7bb1c9e76f",
+      "startedAt": "2026-09-25T11:14:11.824481867Z",
+      "running": true
+    }
+  }
+}

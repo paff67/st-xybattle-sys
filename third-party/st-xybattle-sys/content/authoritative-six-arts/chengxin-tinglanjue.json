@@ -1,0 +1,533 @@
+{
+  "schema": "xybattle-content-v1",
+  "protocolVersion": 1,
+  "id": "gongfa.chengxin-tinglanjue",
+  "contentType": "technique",
+  "name": "澄心听澜诀",
+  "version": "2026.10.06-source.1",
+  "createdAt": "2026-10-06T00:00:00+08:00",
+  "updatedAt": "2026-10-06T00:00:00+08:00",
+  "entry": {
+    "id": "gongfa.chengxin-tinglanjue",
+    "name": "澄心听澜诀",
+    "rank": "天",
+    "element": "水属神识法",
+    "version": "2026.10.06-source.1",
+    "visibility": "player",
+    "corePrinciple": "水面可以暂时平静，但任何经过之物都会留下涟漪。",
+    "mechanics": [
+      "《澄心听澜诀》是一部把神识从“看见”提升到“理解变化”的天阶功法。",
+      "普通感知只能知道敌人在哪里，听澜诀还会判断敌人为什么移动、法力从哪里来、下一次变化需要经过什么步骤。它不让修炼者无条件知道一切，而是把战场中的灵力、气血、杀意、阵法和法宝变化整理成可以辨认的层次。",
+      "这部功法既是战斗输入，也是追踪和破妄体系。它可以用于寻找失踪者、辨认伪装、回收失物和判断一处地方是否发生过战斗。"
+    ],
+    "techniques": [
+      {
+        "id": "gongfa.chengxin-tinglanjue.xinyuan-chengting",
+        "name": "心渊·澄听",
+        "school": "澄心听澜诀",
+        "category": "感知、辨识、破妄、追踪",
+        "originalDefinition": "收敛自身神念，让神识不以明显波动向外扩散，同时把周围变化映入心中。\n\n它适合防止神识窥探、发现伏击和维持战场警戒。收敛不是完全不使用神识，而是把神识藏在水意中，减少被敌人反向锁定的机会。",
+        "mechanics": [
+          "收敛自身神念，让神识不以明显波动向外扩散，同时把周围变化映入心中。",
+          "它适合防止神识窥探、发现伏击和维持战场警戒。收敛不是完全不使用神识，而是把神识藏在水意中，减少被敌人反向锁定的机会。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.chengxin-tinglanjue.xinyuan-chengting.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "心渊·澄听",
+          "group": "澄心听澜诀",
+          "summary": "收敛自身神念，让神识不以明显波动向外扩散，同时把周围变化映入心中。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.chengxin-tinglanjue.xinyuan-chengting.definition",
+            "gongfa.chengxin-tinglanjue.source.section-8",
+            "gongfa.chengxin-tinglanjue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.chengxin-tinglanjue.xinyuan-chengting.definition",
+            "gongfa.chengxin-tinglanjue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.chengxin-tinglanjue.maixiang-xianwen",
+        "name": "脉相·先闻",
+        "school": "澄心听澜诀",
+        "category": "感知、辨识、破妄、追踪",
+        "originalDefinition": "听见敌人气血、真元、骨骼发力和法宝启动的前兆。\n\n它不能预言敌人一定会使用哪一招，但能在招式成形前判断攻击的大致方向、性质和目标。敌人临时改变招式时，先闻得到的只是原计划的变化，再需要重新辨识。",
+        "mechanics": [
+          "听见敌人气血、真元、骨骼发力和法宝启动的前兆。",
+          "它不能预言敌人一定会使用哪一招，但能在招式成形前判断攻击的大致方向、性质和目标。敌人临时改变招式时，先闻得到的只是原计划的变化，再需要重新辨识。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.chengxin-tinglanjue.maixiang-xianwen.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "脉相·先闻",
+          "group": "澄心听澜诀",
+          "summary": "听见敌人气血、真元、骨骼发力和法宝启动的前兆。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.chengxin-tinglanjue.maixiang-xianwen.definition",
+            "gongfa.chengxin-tinglanjue.source.section-8",
+            "gongfa.chengxin-tinglanjue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.chengxin-tinglanjue.maixiang-xianwen.definition",
+            "gongfa.chengxin-tinglanjue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.chengxin-tinglanjue.mingzhen-zhaoying",
+        "name": "明真·照影",
+        "school": "澄心听澜诀",
+        "category": "感知、辨识、破妄、追踪",
+        "originalDefinition": "辨识幻术、分身、隐身、替身和伪造气机。\n\n面对多个目标时，明真会比较每个目标的气机连续性、神魂回响和灵力来源。真正的分身若拥有独立灵性，可能需要接触和交手后才能区分。",
+        "mechanics": [
+          "辨识幻术、分身、隐身、替身和伪造气机。",
+          "面对多个目标时，明真会比较每个目标的气机连续性、神魂回响和灵力来源。真正的分身若拥有独立灵性，可能需要接触和交手后才能区分。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.chengxin-tinglanjue.mingzhen-zhaoying.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "明真·照影",
+          "group": "澄心听澜诀",
+          "summary": "辨识幻术、分身、隐身、替身和伪造气机。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.chengxin-tinglanjue.mingzhen-zhaoying.definition",
+            "gongfa.chengxin-tinglanjue.source.section-8",
+            "gongfa.chengxin-tinglanjue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.chengxin-tinglanjue.mingzhen-zhaoying.definition",
+            "gongfa.chengxin-tinglanjue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.chengxin-tinglanjue.tianlai-tingxi",
+        "name": "天籁·听隙",
+        "school": "澄心听澜诀",
+        "category": "感知、辨识、破妄、追踪",
+        "originalDefinition": "将护盾、法宝、阵法或肉身中的关键交替标记出来。\n\n标记本身不会自动摧毁防御，但会让后续攻击不再盲目消耗。叠浪可以沿标记留下弦势，共鸣可以直接触碰标记对应的联系。",
+        "mechanics": [
+          "将护盾、法宝、阵法或肉身中的关键交替标记出来。",
+          "标记本身不会自动摧毁防御，但会让后续攻击不再盲目消耗。叠浪可以沿标记留下弦势，共鸣可以直接触碰标记对应的联系。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.chengxin-tinglanjue.tianlai-tingxi.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "天籁·听隙",
+          "group": "澄心听澜诀",
+          "summary": "将护盾、法宝、阵法或肉身中的关键交替标记出来。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.chengxin-tinglanjue.tianlai-tingxi.definition",
+            "gongfa.chengxin-tinglanjue.source.section-8",
+            "gongfa.chengxin-tinglanjue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.chengxin-tinglanjue.tianlai-tingxi.definition",
+            "gongfa.chengxin-tinglanjue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.chengxin-tinglanjue.suxi-zhuilan",
+        "name": "溯息·追澜",
+        "school": "澄心听澜诀",
+        "category": "感知、辨识、破妄、追踪",
+        "originalDefinition": "在目标气机、战斗残痕、法宝碎片、血迹、衣物或被触碰过的水面上留下追踪依据。\n\n它可以追踪人，也可以追踪被带走的物品、逃跑的妖兽和曾经发生过战斗的地点。目标若主动制造大量假痕迹，听澜需要逐一排除，追踪速度会下降。",
+        "mechanics": [
+          "在目标气机、战斗残痕、法宝碎片、血迹、衣物或被触碰过的水面上留下追踪依据。",
+          "它可以追踪人，也可以追踪被带走的物品、逃跑的妖兽和曾经发生过战斗的地点。目标若主动制造大量假痕迹，听澜需要逐一排除，追踪速度会下降。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.chengxin-tinglanjue.suxi-zhuilan.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "溯息·追澜",
+          "group": "澄心听澜诀",
+          "summary": "在目标气机、战斗残痕、法宝碎片、血迹、衣物或被触碰过的水面上留下追踪依据。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.chengxin-tinglanjue.suxi-zhuilan.definition",
+            "gongfa.chengxin-tinglanjue.source.section-8",
+            "gongfa.chengxin-tinglanjue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.chengxin-tinglanjue.suxi-zhuilan.definition",
+            "gongfa.chengxin-tinglanjue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.chengxin-tinglanjue.chengxin-huisheng",
+        "name": "澄心·回声",
+        "school": "澄心听澜诀",
+        "category": "感知、辨识、破妄、追踪",
+        "originalDefinition": "把已经听过的气机和神魂习惯留在识海中。目标改变外貌、使用易容或短时间压制灵力后，回声仍能通过细微差异判断其是否为同一目标。\n\n回声不是读取记忆，也不能跨越彻底更换本源的变化。",
+        "mechanics": [
+          "把已经听过的气机和神魂习惯留在识海中。目标改变外貌、使用易容或短时间压制灵力后，回声仍能通过细微差异判断其是否为同一目标。",
+          "回声不是读取记忆，也不能跨越彻底更换本源的变化。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.chengxin-tinglanjue.chengxin-huisheng.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "澄心·回声",
+          "group": "澄心听澜诀",
+          "summary": "把已经听过的气机和神魂习惯留在识海中。目标改变外貌、使用易容或短时间压制灵力后，回声仍能通过细微差异判断其是否为同一目标。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.chengxin-tinglanjue.chengxin-huisheng.definition",
+            "gongfa.chengxin-tinglanjue.source.section-8",
+            "gongfa.chengxin-tinglanjue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.chengxin-tinglanjue.chengxin-huisheng.definition",
+            "gongfa.chengxin-tinglanjue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.chengxin-tinglanjue.tinglan-wanxiang-huisheng",
+        "name": "听澜·万象回声",
+        "school": "澄心听澜诀",
+        "category": "感知、辨识、破妄、追踪",
+        "originalDefinition": "在复杂战场中同时收集多个方向的变化，将其分成敌我、主次和先后。\n\n它适合应对围攻、大型阵法和多段攻击。神魂越强，能够同时处理的变化越多；如果超过承载，听澜会出现延迟和错误判断。",
+        "mechanics": [
+          "在复杂战场中同时收集多个方向的变化，将其分成敌我、主次和先后。",
+          "它适合应对围攻、大型阵法和多段攻击。神魂越强，能够同时处理的变化越多；如果超过承载，听澜会出现延迟和错误判断。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.chengxin-tinglanjue.tinglan-wanxiang-huisheng.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "听澜·万象回声",
+          "group": "澄心听澜诀",
+          "summary": "在复杂战场中同时收集多个方向的变化，将其分成敌我、主次和先后。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.chengxin-tinglanjue.tinglan-wanxiang-huisheng.definition",
+            "gongfa.chengxin-tinglanjue.source.section-8",
+            "gongfa.chengxin-tinglanjue.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.chengxin-tinglanjue.tinglan-wanxiang-huisheng.definition",
+            "gongfa.chengxin-tinglanjue.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      }
+    ],
+    "synergies": [
+      "听澜为水镜寻找节点，为踏潮判断落点，为叠浪寻找防御节奏，为共鸣确定需要切断、借调或倒转的联系。"
+    ],
+    "narrativeGuidance": [],
+    "ruleRefs": [
+      "gongfa.chengxin-tinglanjue.source.section-1",
+      "gongfa.chengxin-tinglanjue.source.section-2",
+      "gongfa.chengxin-tinglanjue.source.section-3",
+      "gongfa.chengxin-tinglanjue.source.section-4",
+      "gongfa.chengxin-tinglanjue.source.section-5",
+      "gongfa.chengxin-tinglanjue.source.section-6",
+      "gongfa.chengxin-tinglanjue.source.section-7",
+      "gongfa.chengxin-tinglanjue.source.section-8",
+      "gongfa.chengxin-tinglanjue.source.section-9",
+      "gongfa.chengxin-tinglanjue.source.section-10"
+    ],
+    "authority": {
+      "kind": "user-designated-source",
+      "sourceFile": "自定义全能.json",
+      "sourceFileSha256": "81b29ca747e51ebe594aec40d0cdd5a85b4230bb3591996b52622558af491c0d",
+      "entryKey": "15",
+      "uid": 15,
+      "sourceComment": "澄心听澜诀 new",
+      "sourceDisabled": true,
+      "contentSha256": "1421a0d226b224a027f77e1d9b355375c9d390a0af005afaff68875b2ed3ccb2",
+      "status": "source-backed-template; runtime-v2-integration-pending"
+    },
+    "combatSpec": {
+      "schema": "xybattle-combat-spec-v2-draft",
+      "role": "感知、辨识与线索",
+      "glossary": [
+        {
+          "term": "听澜发现",
+          "definition": "任何法力调动都会改变周围的灵力状态。敌人起念、法宝启动、阵法开合、身形移动和杀意集中，都可能在水意中留下变化。\n\n发现阶段只能确认异常和大致方向，不能立刻知道敌人完整招式。它的价值是避免在完全没有预警的情况下被击中。",
+          "sourceRef": "gongfa.chengxin-tinglanjue.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "澄心辨识",
+          "definition": "辨识阶段将异常分成真身、幻影、替身、法宝投影、伪装气机和环境变化。\n\n幻术越高明，越需要持续观察。听澜诀不是一句口诀就能让所有幻象消失，而是让修炼者知道哪个目标的气机不连续、哪个方向的变化缺少真正来源。",
+          "sourceRef": "gongfa.chengxin-tinglanjue.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "听隙寻瑕",
+          "definition": "护盾、阵法、法宝和肉身都需要循环、转换和衔接。听隙会寻找这些运转之间的短暂交替。\n\n这种破绽不一定是“弱点”，有时只是敌人必须经过的步骤。只要听澜能够提前标记，叠浪和共鸣就能在正确的时机攻击。",
+          "sourceRef": "gongfa.chengxin-tinglanjue.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "溯息追澜",
+          "definition": "对曾经交手、接触、细致观察或留下确切气机媒介的目标建立线索。\n\n追踪分为定向追踪、逐段追索和断痕回溯。定向追踪确认目标方向和距离；逐段追索沿水意和残留气机寻找目标经过的路线；断痕回溯则判断目标在哪里主动抹除痕迹。\n\n追踪不等于无条件锁定。绝灵结界、彻底换气、破界远遁和没有任何残痕的区域都会造成中断。断痕过长时，听澜只能知道线索消失的位置，不能凭空推导目标之后的位置。",
+          "sourceRef": "gongfa.chengxin-tinglanjue.source.section-4",
+          "uiKind": "concept-or-state"
+        }
+      ],
+      "rules": [
+        {
+          "id": "gongfa.chengxin-tinglanjue.source.section-1",
+          "heading": "功法档案",
+          "text": "名称：澄心听澜诀\n类型：感知、辨识、破妄、追踪\n属性：水属神识法\n品阶：天\n定位：听见变化、识别真实、锁定气机、寻找破绽\n核心理念：水面可以暂时平静，但任何经过之物都会留下涟漪。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.source.section-2",
+          "heading": "总体定位",
+          "text": "《澄心听澜诀》是一部把神识从“看见”提升到“理解变化”的天阶功法。\n\n普通感知只能知道敌人在哪里，听澜诀还会判断敌人为什么移动、法力从哪里来、下一次变化需要经过什么步骤。它不让修炼者无条件知道一切，而是把战场中的灵力、气血、杀意、阵法和法宝变化整理成可以辨认的层次。\n\n这部功法既是战斗输入，也是追踪和破妄体系。它可以用于寻找失踪者、辨认伪装、回收失物和判断一处地方是否发生过战斗。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.source.section-3",
+          "heading": "修炼方式与弦乐适配",
+          "text": "修炼者通过静心、听雨、观水、辨认不同水流和感知细微灵力差异来修炼。弦乐中的音色、力度、停顿和换弦，可以帮助修炼者区分同时存在的多个气机。\n\n听澜诀听取的不是普通声音，而是灵力和神魂留下的变化。无声的术法、无形的杀意和隔着墙壁运行的阵法，同样可以留下“澜”。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.source.section-4",
+          "heading": "核心战斗结构",
+          "text": "### 一、听澜发现\n\n任何法力调动都会改变周围的灵力状态。敌人起念、法宝启动、阵法开合、身形移动和杀意集中，都可能在水意中留下变化。\n\n发现阶段只能确认异常和大致方向，不能立刻知道敌人完整招式。它的价值是避免在完全没有预警的情况下被击中。\n\n### 二、澄心辨识\n\n辨识阶段将异常分成真身、幻影、替身、法宝投影、伪装气机和环境变化。\n\n幻术越高明，越需要持续观察。听澜诀不是一句口诀就能让所有幻象消失，而是让修炼者知道哪个目标的气机不连续、哪个方向的变化缺少真正来源。\n\n### 三、听隙寻瑕\n\n护盾、阵法、法宝和肉身都需要循环、转换和衔接。听隙会寻找这些运转之间的短暂交替。\n\n这种破绽不一定是“弱点”，有时只是敌人必须经过的步骤。只要听澜能够提前标记，叠浪和共鸣就能在正确的时机攻击。\n\n### 四、溯息追澜\n\n对曾经交手、接触、细致观察或留下确切气机媒介的目标建立线索。\n\n追踪分为定向追踪、逐段追索和断痕回溯。定向追踪确认目标方向和距离；逐段追索沿水意和残留气机寻找目标经过的路线；断痕回溯则判断目标在哪里主动抹除痕迹。\n\n追踪不等于无条件锁定。绝灵结界、彻底换气、破界远遁和没有任何残痕的区域都会造成中断。断痕过长时，听澜只能知道线索消失的位置，不能凭空推导目标之后的位置。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.source.section-5",
+          "heading": "主要术式",
+          "text": "### 《心渊·澄听》\n\n收敛自身神念，让神识不以明显波动向外扩散，同时把周围变化映入心中。\n\n它适合防止神识窥探、发现伏击和维持战场警戒。收敛不是完全不使用神识，而是把神识藏在水意中，减少被敌人反向锁定的机会。\n\n### 《脉相·先闻》\n\n听见敌人气血、真元、骨骼发力和法宝启动的前兆。\n\n它不能预言敌人一定会使用哪一招，但能在招式成形前判断攻击的大致方向、性质和目标。敌人临时改变招式时，先闻得到的只是原计划的变化，再需要重新辨识。\n\n### 《明真·照影》\n\n辨识幻术、分身、隐身、替身和伪造气机。\n\n面对多个目标时，明真会比较每个目标的气机连续性、神魂回响和灵力来源。真正的分身若拥有独立灵性，可能需要接触和交手后才能区分。\n\n### 《天籁·听隙》\n\n将护盾、法宝、阵法或肉身中的关键交替标记出来。\n\n标记本身不会自动摧毁防御，但会让后续攻击不再盲目消耗。叠浪可以沿标记留下弦势，共鸣可以直接触碰标记对应的联系。\n\n### 《溯息·追澜》\n\n在目标气机、战斗残痕、法宝碎片、血迹、衣物或被触碰过的水面上留下追踪依据。\n\n它可以追踪人，也可以追踪被带走的物品、逃跑的妖兽和曾经发生过战斗的地点。目标若主动制造大量假痕迹，听澜需要逐一排除，追踪速度会下降。\n\n### 《澄心·回声》\n\n把已经听过的气机和神魂习惯留在识海中。目标改变外貌、使用易容或短时间压制灵力后，回声仍能通过细微差异判断其是否为同一目标。\n\n回声不是读取记忆，也不能跨越彻底更换本源的变化。\n\n### 《听澜·万象回声》\n\n在复杂战场中同时收集多个方向的变化，将其分成敌我、主次和先后。\n\n它适合应对围攻、大型阵法和多段攻击。神魂越强，能够同时处理的变化越多；如果超过承载，听澜会出现延迟和错误判断。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.source.section-6",
+          "heading": "同境界优势",
+          "text": "同境界敌人很难完全隐藏起手、杀意和法力变化。听澜诀不保证每次都能闪避，但会让修炼者很少在毫无准备的情况下承受攻击。\n\n它尤其克制依赖埋伏、分身、假动作和固定蓄力顺序的敌人。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.source.section-7",
+          "heading": "越级挑战能力",
+          "text": "面对高一个小境界的普通修士，听澜诀可以提前找出高阶术式必须经过的运转环节。修炼者不需要击破对方全部法力，只要在关键环节用水镜、踏潮、叠浪或共鸣插入，就能制造正面反击机会。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.source.section-8",
+          "heading": "境界表现",
+          "text": "炼气期能发现近身灵力变化；筑基期可以辨识完整招式并建立短时追踪；金丹期能沿残留气机跨区域追索；元婴期可以同时分析阵法、法宝和多名修士；出窍期后能将远距神魂和追踪线索结合；化神期以上可以观察大范围战场中的水行变化。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.source.section-9",
+          "heading": "功法弱点",
+          "text": "1. 没有灵力和气机的死物难以通过听澜判断。\n2. 绝灵、断痕和真正空间隔绝会中断追踪。\n3. 同时处理过多目标会增加神魂负担。\n4. 伪装越接近本源，识破所需时间越长。\n5. 听澜提供判断，不直接替代攻击和防御。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.source.section-10",
+          "heading": "与其他功法的关系",
+          "text": "听澜为水镜寻找节点，为踏潮判断落点，为叠浪寻找防御节奏，为共鸣确定需要切断、借调或倒转的联系。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.xinyuan-chengting.definition",
+          "heading": "《心渊·澄听》",
+          "text": "收敛自身神念，让神识不以明显波动向外扩散，同时把周围变化映入心中。\n\n它适合防止神识窥探、发现伏击和维持战场警戒。收敛不是完全不使用神识，而是把神识藏在水意中，减少被敌人反向锁定的机会。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.maixiang-xianwen.definition",
+          "heading": "《脉相·先闻》",
+          "text": "听见敌人气血、真元、骨骼发力和法宝启动的前兆。\n\n它不能预言敌人一定会使用哪一招，但能在招式成形前判断攻击的大致方向、性质和目标。敌人临时改变招式时，先闻得到的只是原计划的变化，再需要重新辨识。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.mingzhen-zhaoying.definition",
+          "heading": "《明真·照影》",
+          "text": "辨识幻术、分身、隐身、替身和伪造气机。\n\n面对多个目标时，明真会比较每个目标的气机连续性、神魂回响和灵力来源。真正的分身若拥有独立灵性，可能需要接触和交手后才能区分。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.tianlai-tingxi.definition",
+          "heading": "《天籁·听隙》",
+          "text": "将护盾、法宝、阵法或肉身中的关键交替标记出来。\n\n标记本身不会自动摧毁防御，但会让后续攻击不再盲目消耗。叠浪可以沿标记留下弦势，共鸣可以直接触碰标记对应的联系。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.suxi-zhuilan.definition",
+          "heading": "《溯息·追澜》",
+          "text": "在目标气机、战斗残痕、法宝碎片、血迹、衣物或被触碰过的水面上留下追踪依据。\n\n它可以追踪人，也可以追踪被带走的物品、逃跑的妖兽和曾经发生过战斗的地点。目标若主动制造大量假痕迹，听澜需要逐一排除，追踪速度会下降。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.chengxin-huisheng.definition",
+          "heading": "《澄心·回声》",
+          "text": "把已经听过的气机和神魂习惯留在识海中。目标改变外貌、使用易容或短时间压制灵力后，回声仍能通过细微差异判断其是否为同一目标。\n\n回声不是读取记忆，也不能跨越彻底更换本源的变化。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.chengxin-tinglanjue.tinglan-wanxiang-huisheng.definition",
+          "heading": "《听澜·万象回声》",
+          "text": "在复杂战场中同时收集多个方向的变化，将其分成敌我、主次和先后。\n\n它适合应对围攻、大型阵法和多段攻击。神魂越强，能够同时处理的变化越多；如果超过承载，听澜会出现延迟和错误判断。",
+          "authority": "source-verbatim"
+        }
+      ],
+      "realmProgression": {
+        "text": "炼气期能发现近身灵力变化；筑基期可以辨识完整招式并建立短时追踪；金丹期能沿残留气机跨区域追索；元婴期可以同时分析阵法、法宝和多名修士；出窍期后能将远距神魂和追踪线索结合；化神期以上可以观察大范围战场中的水行变化。",
+        "sourceRef": "gongfa.chengxin-tinglanjue.source.section-8"
+      },
+      "limitations": {
+        "text": "1. 没有灵力和气机的死物难以通过听澜判断。\n2. 绝灵、断痕和真正空间隔绝会中断追踪。\n3. 同时处理过多目标会增加神魂负担。\n4. 伪装越接近本源，识破所需时间越长。\n5. 听澜提供判断，不直接替代攻击和防御。",
+        "sourceRef": "gongfa.chengxin-tinglanjue.source.section-9"
+      },
+      "integrationPorts": {
+        "authority": "engineering-classification",
+        "accepts": [
+          "observable.change",
+          "trace.known"
+        ],
+        "provides": [
+          "perception.warning",
+          "perception.opening",
+          "relation.observed",
+          "trace.known"
+        ],
+        "semantics": "可交互对象类型，不是每招的强制前提，也不表示每次施法同时生成全部效果。"
+      },
+      "ownership": "由人物实例引用，不由此模板决定",
+      "numericPolicy": "未规定的成本、倍率、槽位、回合、层数与成功率不做数值补全"
+    }
+  }
+}

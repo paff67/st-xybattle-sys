@@ -7,5 +7,6 @@
   "css": "style.css",
   "requires": [],
   "description": "Independent battle workstation with scoped state, structured adjudication and optional BATTLE_SCENE_PACKET bridge.",
-  "loading_order": 10000
+  "loading_order": 10000,
+  "generate_interceptor": "xyEventGenerationInterceptor"
 }

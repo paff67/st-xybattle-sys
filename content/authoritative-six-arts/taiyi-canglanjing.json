@@ -1,0 +1,427 @@
+{
+  "schema": "xybattle-content-v1",
+  "protocolVersion": 1,
+  "id": "gongfa.taiyi-canglanjing",
+  "contentType": "technique",
+  "name": "太一沧澜经",
+  "version": "2026.10.06-source.1",
+  "createdAt": "2026-10-06T00:00:00+08:00",
+  "updatedAt": "2026-10-06T00:00:00+08:00",
+  "entry": {
+    "id": "gongfa.taiyi-canglanjing",
+    "name": "太一沧澜经",
+    "rank": "天",
+    "element": "水属",
+    "version": "2026.10.06-source.1",
+    "visibility": "player",
+    "corePrinciple": "水能承载万物，能分流万势，也能在散尽之后回到源头。",
+    "mechanics": [
+      "《太一沧澜经》是六法体系的根本道法，负责解决纯水灵力从何而来、如何储存、如何分流、如何回收以及如何承受多部天阶功法同时运转的问题。",
+      "它不是一部依靠巨大爆炸取胜的攻伐术，也不是无属性的能量熔炉。它把水道本身的承载、润化、分流、映照、聚合和回流发挥到极致，使修炼者拥有远超普通水修的持续作战能力。",
+      "它的强大不表现为单一招式，而表现为其他功法很难被一次打断：水镜破碎后可以重新聚拢，潮势散开后可以回流，神念受冲击后可以迅速恢复，外力进入水障后可以被分层化解。"
+    ],
+    "techniques": [
+      {
+        "id": "gongfa.taiyi-canglanjing.chengyuan-qihai-huiliu",
+        "name": "澄渊·气海回流",
+        "school": "太一沧澜经",
+        "category": "根本道法、纯水心法",
+        "originalDefinition": "将战场中散开的自身水元召回气海。回流时，水元会沿着镜界节点、潮痕、弦势和自身留下的水意逐段归拢。\n\n它适合长时间战斗，也适合在大范围术式结束后收回残留力量。若敌人封锁水意、净化战场或把水元彻底湮灭，回流就会失去对象。",
+        "mechanics": [
+          "将战场中散开的自身水元召回气海。回流时，水元会沿着镜界节点、潮痕、弦势和自身留下的水意逐段归拢。",
+          "它适合长时间战斗，也适合在大范围术式结束后收回残留力量。若敌人封锁水意、净化战场或把水元彻底湮灭，回流就会失去对象。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.taiyi-canglanjing.chengyuan-qihai-huiliu.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "澄渊·气海回流",
+          "group": "太一沧澜经",
+          "summary": "将战场中散开的自身水元召回气海。回流时，水元会沿着镜界节点、潮痕、弦势和自身留下的水意逐段归拢。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.taiyi-canglanjing.chengyuan-qihai-huiliu.definition",
+            "gongfa.taiyi-canglanjing.source.section-8",
+            "gongfa.taiyi-canglanjing.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.taiyi-canglanjing.chengyuan-qihai-huiliu.definition",
+            "gongfa.taiyi-canglanjing.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.taiyi-canglanjing.wuxiang-fenshen",
+        "name": "五相分神",
+        "school": "太一沧澜经",
+        "category": "根本道法、纯水心法",
+        "originalDefinition": "将神念分成数路稳定水相。每一相可以负责一个方向，也可以共同承担一部大型术式。\n\n五相并不代表永远只有五路，也不规定哪一相必须对应哪一部功法。它是一种训练神魂的方法，实际分配随修炼者境界、环境和战斗需要变化。",
+        "mechanics": [
+          "将神念分成数路稳定水相。每一相可以负责一个方向，也可以共同承担一部大型术式。",
+          "五相并不代表永远只有五路，也不规定哪一相必须对应哪一部功法。它是一种训练神魂的方法，实际分配随修炼者境界、环境和战斗需要变化。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.taiyi-canglanjing.wuxiang-fenshen.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "五相分神",
+          "group": "太一沧澜经",
+          "summary": "将神念分成数路稳定水相。每一相可以负责一个方向，也可以共同承担一部大型术式。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.taiyi-canglanjing.wuxiang-fenshen.definition",
+            "gongfa.taiyi-canglanjing.source.section-8",
+            "gongfa.taiyi-canglanjing.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.taiyi-canglanjing.wuxiang-fenshen.definition",
+            "gongfa.taiyi-canglanjing.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.taiyi-canglanjing.canghai-yangshen",
+        "name": "沧海养神",
+        "school": "太一沧澜经",
+        "category": "根本道法、纯水心法",
+        "originalDefinition": "以温和水元缓慢修复神魂的疲劳和震荡。它不能立刻治愈神魂重创，却能让连续分念、远程追踪和复杂施法不至于迅速崩溃。",
+        "mechanics": [
+          "以温和水元缓慢修复神魂的疲劳和震荡。它不能立刻治愈神魂重创，却能让连续分念、远程追踪和复杂施法不至于迅速崩溃。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.taiyi-canglanjing.canghai-yangshen.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "沧海养神",
+          "group": "太一沧澜经",
+          "summary": "以温和水元缓慢修复神魂的疲劳和震荡。它不能立刻治愈神魂重创，却能让连续分念、远程追踪和复杂施法不至于迅速崩溃。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.taiyi-canglanjing.canghai-yangshen.definition",
+            "gongfa.taiyi-canglanjing.source.section-8",
+            "gongfa.taiyi-canglanjing.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.taiyi-canglanjing.canghai-yangshen.definition",
+            "gongfa.taiyi-canglanjing.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.taiyi-canglanjing.zhirou-huae",
+        "name": "至柔·化厄",
+        "school": "太一沧澜经",
+        "category": "根本道法、纯水心法",
+        "originalDefinition": "把外力引入柔水循环，在水势中分流和消磨。适合承接直线、集中和持续型攻击。\n\n对于一击即散的诅咒、神魂冲击和因果术法，它只能减轻影响，不能用“化解外力”的方式直接处理。",
+        "mechanics": [
+          "把外力引入柔水循环，在水势中分流和消磨。适合承接直线、集中和持续型攻击。",
+          "对于一击即散的诅咒、神魂冲击和因果术法，它只能减轻影响，不能用“化解外力”的方式直接处理。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.taiyi-canglanjing.zhirou-huae.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "至柔·化厄",
+          "group": "太一沧澜经",
+          "summary": "把外力引入柔水循环，在水势中分流和消磨。适合承接直线、集中和持续型攻击。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.taiyi-canglanjing.zhirou-huae.definition",
+            "gongfa.taiyi-canglanjing.source.section-8",
+            "gongfa.taiyi-canglanjing.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.taiyi-canglanjing.zhirou-huae.definition",
+            "gongfa.taiyi-canglanjing.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      },
+      {
+        "id": "gongfa.taiyi-canglanjing.taiyi-huilan",
+        "name": "太一·回澜",
+        "school": "太一沧澜经",
+        "category": "根本道法、纯水心法",
+        "originalDefinition": "把已经散开的水势重新聚合。它既可以收回自身法力，也可以重新接管失控的水流、水镜和潮势。\n\n回澜的意义不是增加新的力量，而是让已经离开掌控范围的力量重新回到体系中。",
+        "mechanics": [
+          "把已经散开的水势重新聚合。它既可以收回自身法力，也可以重新接管失控的水流、水镜和潮势。",
+          "回澜的意义不是增加新的力量，而是让已经离开掌控范围的力量重新回到体系中。"
+        ],
+        "availability": {
+          "default": "conditional",
+          "conditions": [
+            "依据原文适用条件、已确认修为、已修成招式和本轮战场对象判断；模板导入不代表已掌握。"
+          ],
+          "requires": []
+        },
+        "triggeredState": [],
+        "visibility": "player",
+        "ruleRefs": [
+          "gongfa.taiyi-canglanjing.taiyi-huilan.definition"
+        ],
+        "ui": {
+          "kind": "action",
+          "label": "太一·回澜",
+          "group": "太一沧澜经",
+          "summary": "把已经散开的水势重新聚合。它既可以收回自身法力，也可以重新接管失控的水流、水镜和潮势。"
+        },
+        "resolution": {
+          "conditionSourceRefs": [
+            "gongfa.taiyi-canglanjing.taiyi-huilan.definition",
+            "gongfa.taiyi-canglanjing.source.section-8",
+            "gongfa.taiyi-canglanjing.source.section-9"
+          ],
+          "effectSourceRefs": [
+            "gongfa.taiyi-canglanjing.taiyi-huilan.definition",
+            "gongfa.taiyi-canglanjing.source.section-4"
+          ],
+          "numericCost": null,
+          "cooldownTurns": null,
+          "durationTurns": null,
+          "maxStacks": null,
+          "unspecifiedPolicy": "原文未定量的数值保持未指定；不能填入0、固定上限、固定回合或自动成功。",
+          "outcomePolicy": "能力定义描述可实现效果；本次是否实现、幅度与代价由交锋条件裁定。"
+        }
+      }
+    ],
+    "synergies": [
+      "太一沧澜经为听澜提供神魂承载，为水镜提供节点水元，为踏潮提供落点联系，为叠浪提供连续潮势，为共鸣提供稳定的干涉媒介。"
+    ],
+    "narrativeGuidance": [],
+    "ruleRefs": [
+      "gongfa.taiyi-canglanjing.source.section-1",
+      "gongfa.taiyi-canglanjing.source.section-2",
+      "gongfa.taiyi-canglanjing.source.section-3",
+      "gongfa.taiyi-canglanjing.source.section-4",
+      "gongfa.taiyi-canglanjing.source.section-5",
+      "gongfa.taiyi-canglanjing.source.section-6",
+      "gongfa.taiyi-canglanjing.source.section-7",
+      "gongfa.taiyi-canglanjing.source.section-8",
+      "gongfa.taiyi-canglanjing.source.section-9",
+      "gongfa.taiyi-canglanjing.source.section-10"
+    ],
+    "authority": {
+      "kind": "user-designated-source",
+      "sourceFile": "自定义全能.json",
+      "sourceFileSha256": "81b29ca747e51ebe594aec40d0cdd5a85b4230bb3591996b52622558af491c0d",
+      "entryKey": "14",
+      "uid": 14,
+      "sourceComment": "太一沧澜经 new",
+      "sourceDisabled": false,
+      "contentSha256": "74c21c7cd0c5b1191f7573cde6b5e0bbb8b514413b74909200c966fbe92dcdfa",
+      "status": "source-backed-template; runtime-v2-integration-pending"
+    },
+    "combatSpec": {
+      "schema": "xybattle-combat-spec-v2-draft",
+      "role": "水元供给、回收与神魂承载",
+      "glossary": [
+        {
+          "term": "太一水元",
+          "definition": "太一水元是纯水灵力的高阶形态。它可以化为水流、水雾、水膜、潮汐、镜光、弦丝或雨幕，但无论形态如何变化，本质都仍然是水属灵力。\n\n太一水元具有承载、分流、润化、回流、聚合和映照六种基础性质。承载让它可以同时支撑多种术式；分流让它可以把冲击拆开；润化让它能够缓和不同灵力之间的冲突；聚合让微弱水息重新形成潮势；映照则保留外界变化和术式运行的痕迹。",
+          "sourceRef": "gongfa.taiyi-canglanjing.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "气海回流",
+          "definition": "自身释放到外部的水元，在攻击落空、术式结束、水镜节点解除或潮势散开之后，可以沿着残留水意回到气海。\n\n回流有明确对象。正在维持领域的水元、仍被控制的弦势、已经形成潮眼的水势、用于换位的潮痕和已经被彻底湮灭的水元，都不能提前回流。\n\n回流不是凭空制造法力，也不能把天地间普通水分直接变成等量太一水元。环境中的水只是承接和引导，真正回到气海的必须是修炼者自身曾经释放的水元。",
+          "sourceRef": "gongfa.taiyi-canglanjing.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "多相并行心法",
+          "definition": "多相并行心法以太一水元温养识海，使神魂能够分成多路，同时处理感知、移动、主场、攻伐和干涉。\n\n它首先强化神魂本身，而不是简单增加术式数量。神魂更不容易被威压震散，分念之间不容易互相干扰，某一路术式被打断后，其他术式仍能继续运行。\n\n多相并行没有固定五个槽位。修炼者可以把神念全部用于感知，也可以把神念分配给水镜和叠浪；战斗越复杂，越需要在不同任务之间重新分配。",
+          "sourceRef": "gongfa.taiyi-canglanjing.source.section-4",
+          "uiKind": "concept-or-state"
+        },
+        {
+          "term": "至柔化厄法",
+          "definition": "至柔化厄法在本体、法宝或领域外形成多层柔水。外来的力量进入之后，不会直接撞上一个硬盾，而是被拆成方向、速度、属性和持续时间不同的几部分。\n\n火焰会被水势带走热意，雷霆会被分流，剑煞会被层层磨损，重击会被引向不同方向。被化解为无属性游离灵气的部分，可以继续炼成太一水元。\n\n这不是无条件吞噬。搜魂、夺舍、诅咒、污秽血煞和直接作用于因果的力量不能被当作普通能量吸收；如果攻击强度远超水障承受范围，至柔化厄只能减轻伤害。",
+          "sourceRef": "gongfa.taiyi-canglanjing.source.section-4",
+          "uiKind": "concept-or-state"
+        }
+      ],
+      "rules": [
+        {
+          "id": "gongfa.taiyi-canglanjing.source.section-1",
+          "heading": "功法档案",
+          "text": "名称：太一沧澜经\n类型：根本道法、纯水心法\n属性：水属\n品阶：天\n定位：太一水元、气海回流、神魂承载、外力化厄\n核心理念：水能承载万物，能分流万势，也能在散尽之后回到源头。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.source.section-2",
+          "heading": "总体定位",
+          "text": "《太一沧澜经》是六法体系的根本道法，负责解决纯水灵力从何而来、如何储存、如何分流、如何回收以及如何承受多部天阶功法同时运转的问题。\n\n它不是一部依靠巨大爆炸取胜的攻伐术，也不是无属性的能量熔炉。它把水道本身的承载、润化、分流、映照、聚合和回流发挥到极致，使修炼者拥有远超普通水修的持续作战能力。\n\n它的强大不表现为单一招式，而表现为其他功法很难被一次打断：水镜破碎后可以重新聚拢，潮势散开后可以回流，神念受冲击后可以迅速恢复，外力进入水障后可以被分层化解。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.source.section-3",
+          "heading": "修炼方式与弦乐适配",
+          "text": "本经可以通过观潮、听雨、静水观心、引水入脉和水行吐纳修炼。修炼者需要感受水在不同容器、不同地势和不同压力下的变化，从而理解“形变而性不变”。\n\n弦乐器可以作为整理水元的媒介。长音适合稳定气海，连弓适合维持回流，换弦适合练习分流，泛音适合辨别水元中极细的差异。乐器不是力量来源，也不会改变本经的纯水属性。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.source.section-4",
+          "heading": "核心战斗结构",
+          "text": "### 一、太一水元\n\n太一水元是纯水灵力的高阶形态。它可以化为水流、水雾、水膜、潮汐、镜光、弦丝或雨幕，但无论形态如何变化，本质都仍然是水属灵力。\n\n太一水元具有承载、分流、润化、回流、聚合和映照六种基础性质。承载让它可以同时支撑多种术式；分流让它可以把冲击拆开；润化让它能够缓和不同灵力之间的冲突；聚合让微弱水息重新形成潮势；映照则保留外界变化和术式运行的痕迹。\n\n### 二、气海回流\n\n自身释放到外部的水元，在攻击落空、术式结束、水镜节点解除或潮势散开之后，可以沿着残留水意回到气海。\n\n回流有明确对象。正在维持领域的水元、仍被控制的弦势、已经形成潮眼的水势、用于换位的潮痕和已经被彻底湮灭的水元，都不能提前回流。\n\n回流不是凭空制造法力，也不能把天地间普通水分直接变成等量太一水元。环境中的水只是承接和引导，真正回到气海的必须是修炼者自身曾经释放的水元。\n\n### 三、多相并行心法\n\n多相并行心法以太一水元温养识海，使神魂能够分成多路，同时处理感知、移动、主场、攻伐和干涉。\n\n它首先强化神魂本身，而不是简单增加术式数量。神魂更不容易被威压震散，分念之间不容易互相干扰，某一路术式被打断后，其他术式仍能继续运行。\n\n多相并行没有固定五个槽位。修炼者可以把神念全部用于感知，也可以把神念分配给水镜和叠浪；战斗越复杂，越需要在不同任务之间重新分配。\n\n### 四、至柔化厄法\n\n至柔化厄法在本体、法宝或领域外形成多层柔水。外来的力量进入之后，不会直接撞上一个硬盾，而是被拆成方向、速度、属性和持续时间不同的几部分。\n\n火焰会被水势带走热意，雷霆会被分流，剑煞会被层层磨损，重击会被引向不同方向。被化解为无属性游离灵气的部分，可以继续炼成太一水元。\n\n这不是无条件吞噬。搜魂、夺舍、诅咒、污秽血煞和直接作用于因果的力量不能被当作普通能量吸收；如果攻击强度远超水障承受范围，至柔化厄只能减轻伤害。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.source.section-5",
+          "heading": "主要术式",
+          "text": "### 《澄渊·气海回流》\n\n将战场中散开的自身水元召回气海。回流时，水元会沿着镜界节点、潮痕、弦势和自身留下的水意逐段归拢。\n\n它适合长时间战斗，也适合在大范围术式结束后收回残留力量。若敌人封锁水意、净化战场或把水元彻底湮灭，回流就会失去对象。\n\n### 《五相分神》\n\n将神念分成数路稳定水相。每一相可以负责一个方向，也可以共同承担一部大型术式。\n\n五相并不代表永远只有五路，也不规定哪一相必须对应哪一部功法。它是一种训练神魂的方法，实际分配随修炼者境界、环境和战斗需要变化。\n\n### 《沧海养神》\n\n以温和水元缓慢修复神魂的疲劳和震荡。它不能立刻治愈神魂重创，却能让连续分念、远程追踪和复杂施法不至于迅速崩溃。\n\n### 《至柔·化厄》\n\n把外力引入柔水循环，在水势中分流和消磨。适合承接直线、集中和持续型攻击。\n\n对于一击即散的诅咒、神魂冲击和因果术法，它只能减轻影响，不能用“化解外力”的方式直接处理。\n\n### 《太一·回澜》\n\n把已经散开的水势重新聚合。它既可以收回自身法力，也可以重新接管失控的水流、水镜和潮势。\n\n回澜的意义不是增加新的力量，而是让已经离开掌控范围的力量重新回到体系中。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.source.section-6",
+          "heading": "同境界优势",
+          "text": "同境界修士往往依赖法力消耗来换取攻防优势，而太一沧澜经可以持续回收散逸水元，并把外来冲击的一部分化为补益自身的水元。\n\n它不会让修炼者完全不受伤，但会让普通的“逼退、耗尽、连续打断”战术很难一次奏效。只要没有被彻底击穿，水元就有重新组织的机会。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.source.section-7",
+          "heading": "越级挑战能力",
+          "text": "面对高一个小境界的普通修士，太一沧澜经提供的是承受和续战基础。修炼者可以承受部分高阶冲击，再由水镜、踏潮、叠浪和共鸣完成反击。\n\n它不单独保证击败高阶对手，但如果对方依赖持续轰击、单一属性或刚猛直攻，至柔化厄和气海回流会显著扩大正面周旋空间。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.source.section-8",
+          "heading": "境界表现",
+          "text": "炼气期形成稳定太一水元；筑基期建立清晰回流和多相分神；金丹期可以同时维持多部水法；元婴期水元回流不再局限于近身；出窍期后神魂和水元可以分开运转；化神期以上能够借天地水行之势维持大范围循环。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.source.section-9",
+          "heading": "功法弱点",
+          "text": "1. 水元被彻底湮灭后无法回流。\n2. 至柔化厄不是对神魂、诅咒和污秽力量的绝对免疫。\n3. 多相并行过载会造成神念错位和术式失控。\n4. 本经本身不是专门的追踪、镜界或空间跨距功法。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.source.section-10",
+          "heading": "与其他功法的关系",
+          "text": "太一沧澜经为听澜提供神魂承载，为水镜提供节点水元，为踏潮提供落点联系，为叠浪提供连续潮势，为共鸣提供稳定的干涉媒介。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.chengyuan-qihai-huiliu.definition",
+          "heading": "《澄渊·气海回流》",
+          "text": "将战场中散开的自身水元召回气海。回流时，水元会沿着镜界节点、潮痕、弦势和自身留下的水意逐段归拢。\n\n它适合长时间战斗，也适合在大范围术式结束后收回残留力量。若敌人封锁水意、净化战场或把水元彻底湮灭，回流就会失去对象。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.wuxiang-fenshen.definition",
+          "heading": "《五相分神》",
+          "text": "将神念分成数路稳定水相。每一相可以负责一个方向，也可以共同承担一部大型术式。\n\n五相并不代表永远只有五路，也不规定哪一相必须对应哪一部功法。它是一种训练神魂的方法，实际分配随修炼者境界、环境和战斗需要变化。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.canghai-yangshen.definition",
+          "heading": "《沧海养神》",
+          "text": "以温和水元缓慢修复神魂的疲劳和震荡。它不能立刻治愈神魂重创，却能让连续分念、远程追踪和复杂施法不至于迅速崩溃。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.zhirou-huae.definition",
+          "heading": "《至柔·化厄》",
+          "text": "把外力引入柔水循环，在水势中分流和消磨。适合承接直线、集中和持续型攻击。\n\n对于一击即散的诅咒、神魂冲击和因果术法，它只能减轻影响，不能用“化解外力”的方式直接处理。",
+          "authority": "source-verbatim"
+        },
+        {
+          "id": "gongfa.taiyi-canglanjing.taiyi-huilan.definition",
+          "heading": "《太一·回澜》",
+          "text": "把已经散开的水势重新聚合。它既可以收回自身法力，也可以重新接管失控的水流、水镜和潮势。\n\n回澜的意义不是增加新的力量，而是让已经离开掌控范围的力量重新回到体系中。",
+          "authority": "source-verbatim"
+        }
+      ],
+      "realmProgression": {
+        "text": "炼气期形成稳定太一水元；筑基期建立清晰回流和多相分神；金丹期可以同时维持多部水法；元婴期水元回流不再局限于近身；出窍期后神魂和水元可以分开运转；化神期以上能够借天地水行之势维持大范围循环。",
+        "sourceRef": "gongfa.taiyi-canglanjing.source.section-8"
+      },
+      "limitations": {
+        "text": "1. 水元被彻底湮灭后无法回流。\n2. 至柔化厄不是对神魂、诅咒和污秽力量的绝对免疫。\n3. 多相并行过载会造成神念错位和术式失控。\n4. 本经本身不是专门的追踪、镜界或空间跨距功法。",
+        "sourceRef": "gongfa.taiyi-canglanjing.source.section-9"
+      },
+      "integrationPorts": {
+        "authority": "engineering-classification",
+        "accepts": [
+          "water.dispersed-own",
+          "external.force"
+        ],
+        "provides": [
+          "water.taiyi",
+          "mind.capacity",
+          "force.mitigated"
+        ],
+        "semantics": "可交互对象类型，不是每招的强制前提，也不表示每次施法同时生成全部效果。"
+      },
+      "ownership": "由人物实例引用，不由此模板决定",
+      "numericPolicy": "未规定的成本、倍率、槽位、回合、层数与成功率不做数值补全"
+    }
+  }
+}
