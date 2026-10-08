@@ -16,23 +16,23 @@ const inference = {
   completeCandidate: async ({ side }) => ({ ...fullCombatProfile(side === 'player' ? '许新毅' : '厉沧海'), ...(side === 'player' ? { hidden: {}, visibleInfo: { position: '河畔', stance: '攻势' } } : {}) })
 };
 async function preparation() {
-  return prepareEnemyCandidates({ scope, playerId: 'player' }, { inference, requireProfiles: true, includePlayer: true });
+  return prepareEnemyCandidates({ scope, playerId: 'player', playerCandidate: fullCombatProfile('许新毅') }, { inference, requireProfiles: true, includePlayer: true });
 }
 
 test('complete profiles atomically replace demo actors and register actual moves and resource rules', async (t) => {
   const hostAdapter = { scope: () => scope, context: () => ({ name1: '许新毅', chat: [{ mes: '许新毅与厉沧海交手', is_user: false }] }) };
   const controller = new BattleController({ ...scope, hostAdapter, initialPlayer: { id: 'player', name: '演示主角', techniques: [] }, initialEnemies: [{ id: 'demo', name: '演示敌人' }] });
   t.after(() => controller.dispose());
-  const panel = await controller.prepareCharacters({ inference });
+  const panel = await controller.prepareCharacters({ inference, context: { playerCandidate: { ...fullCombatProfile('许新毅'), visibleInfo: { position: '河畔', stance: '攻势' } } } });
   assert.deepEqual(panel.candidates.map((item) => item.role), ['player', 'enemy']);
   assert.equal(controller.state.actors.player.name, '演示主角');
   assert.throws(() => controller.confirmCharacters({}, { removeIds: ['player'] }), /不能移除主角/);
-  controller.confirmCharacters();
+  controller.confirmCharacters({ player: { martialArts: fullCombatProfile().martialArts, techniques: fullCombatProfile().techniques } });
   assert.equal(controller.state.actors.player.name, '许新毅');
   assert.deepEqual(controller.state.actors.enemies.map((item) => item.name), ['厉沧海']);
   const moveId = controller.state.actors.player.techniques[0].techniqueIds[0];
   assert.equal(controller.registry.findTechnique(moveId).technique.name, '平川断澜');
-  assert.equal(controller.state.resourceRules.find((rule) => rule.actorId === 'enemy-1').max, 100);
+  assert.equal(controller.state.resourceRules.find((rule) => rule.actorId === 'enemy-1').qualitative, true);
   assert.equal(controller.state.semanticState.positions.player, '河畔');
   controller.start();
   const request = buildAdjudicationRequest(controller.state, { label: '横斩', techniqueId: moveId });
@@ -45,15 +45,16 @@ test('complete profiles atomically replace demo actors and register actual moves
 });
 
 test('profile resource settlement uses registered references and persists current resources without redefining moves', async () => {
-  let state = startBattle(applyConfirmedEnemies(createInitialState(scope), confirmEnemyCandidates(await preparation())));
+  let state = startBattle(applyConfirmedEnemies(createInitialState(scope), confirmEnemyCandidates(await preparation(), { player: { martialArts: fullCombatProfile().martialArts, techniques: fullCombatProfile().techniques } })));
   const initialMoves = structuredClone(state.actors.enemies[0].techniques);
   const enemyRule = state.resourceRules.find((rule) => rule.actorId === 'enemy-1');
   const result = await judgeAndCommit(state, { label: '试探', actionId: 'profile-action' }, {
-    adjudicator: { judge: async (request) => ({ summary: '双方交锋', before: request.context.semanticState, after: { ...request.context.semanticState, positions: { player: '台边', 'enemy-1': '后撤两步' } }, reason: '依据固定剑招消耗', ruleRefs: enemyRule.ruleRefs, publicEvents: ['敌手退后'], exchange: { playerResult: '位于台边', opponents: [{ actorId: 'enemy-1', response: '横斩截流', techniques: [{ techniqueId: initialMoves[0].id, manifestation: '剑气横斩', interaction: '截断正面来袭气流' }], result: '后撤两步' }], environmentResult: '未改变地形', boundaries: [] }, resourceChanges: [{ actorId: 'enemy-1', resource: 'qi', before: 80, after: 70, reason: '施展平川断澜', ruleRefs: enemyRule.ruleRefs }] }) },
+    adjudicator: { judge: async (request) => ({ summary: '双方交锋', before: request.context.semanticState, actorChanges: [{ actorId: 'enemy-1', position: { value: '后撤两步', reason: '交锋退后', ruleRefs: enemyRule.ruleRefs }, resources: [{ resourceId: enemyRule.resource, condition: '连续施术后余裕下降', burden: '维持剑势', limitations: [], reason: '施展平川断澜', ruleRefs: enemyRule.ruleRefs }] }], combatChanges: { baseRevision: request.context.combatLedger.revision, operations: [] }, reason: '依据固定剑招消耗', ruleRefs: enemyRule.ruleRefs, publicEvents: ['敌手退后'], exchange: { playerResult: '位于台边', opponents: [{ actorId: 'enemy-1', response: '横斩截流', techniques: [{ techniqueId: initialMoves[0].id, manifestation: '剑气横斩', interaction: '截断正面来袭气流' }], result: '后撤两步' }], environmentResult: '未改变地形', boundaries: [] } }) },
     settings: { autoNarrative: false }, save: async (next) => { state = next; }
   });
-  assert.equal(result.state.actors.enemies[0].resources.qi, 70);
-  assert.equal(result.state.actors.enemies[0].resourceDefinitions[0].current, 70);
+  assert.deepEqual(result.state.actors.enemies[0].resources, {});
+  assert.equal(result.state.actors.enemies[0].state.resources[0].condition, '连续施术后余裕下降');
+  assert.equal(result.state.actors.enemies[0].numericEvidence[0].current, 80);
   assert.deepEqual(result.state.actors.enemies[0].techniques, initialMoves);
   assert.equal(getPlayerView(result.state).enemies[0].visibleInfo.position, '后撤两步');
 });
@@ -87,7 +88,7 @@ test('public cards deduplicate aliases, omit raw structures and never expose int
 
 test('HTTP completion repairs partial profiles and uses fixed battle profile instructions despite custom prompt', async () => {
   const calls = [];
-  const ai = createHttpCharacterInference({ endpoint: 'https://example.invalid/v1', model: 'test', characterCompletionPrompt: '自定义文风', fetchImpl: async (_url, options) => {
+  const ai = createHttpCharacterInference({ endpoint: 'https://example.invalid/v1', model: 'test', maxRetries: 1, characterCompletionPrompt: '自定义文风', fetchImpl: async (_url, options) => {
     calls.push(JSON.parse(options.body));
     return new Response(JSON.stringify({ candidate: calls.length === 1 ? { name: '厉沧海' } : fullCombatProfile() }), { status: 200 });
   } });
@@ -97,8 +98,9 @@ test('HTTP completion repairs partial profiles and uses fixed battle profile ins
   assert.match(calls[0].messages[0].content, /固定招式/);
   assert.match(calls[1].messages[1].content, /repair/);
   assert.deepEqual(combatProfileIssues(profile), []);
-  const alwaysPartial = createHttpCharacterInference({ endpoint: 'https://example.invalid/v1', fetchImpl: async () => new Response(JSON.stringify({ candidate: { name: '许新毅', identity: '琴修' } }), { status: 200 }) });
-  await assert.rejects(alwaysPartial.completeCandidate({ candidate: { id: 'player' }, side: 'player' }), (error) => error.partialProfile?.identity === '琴修' && /不完整/.test(error.message));
+  const playerOnly = createHttpCharacterInference({ endpoint: 'https://example.invalid/v1', fetchImpl: async () => { throw new Error('主角禁止调用人物生成 API'); } });
+  const localPlayer = await playerOnly.completeCandidate({ candidate: { id: 'player', name: '许新毅' }, knownFields: { identity: '琴修' }, side: 'player' });
+  assert.equal(localPlayer.identity, '琴修');
 });
 
 test('old default completion prompt migrates; custom prompt persists; generation budget is separate', () => {
@@ -107,7 +109,7 @@ test('old default completion prompt migrates; custom prompt persists; generation
   assert.equal(settings.characterCompletionPrompt, '我的自定义补全约束');
   assert.equal(settings.characterMaxOutput, 8000);
   assert.match(DEFAULT_CHARACTER_COMPLETION_PROMPT, /martialArts/);
-  assert.match(DEFAULT_CHARACTER_COMPLETION_PROMPT, /主角/);
+  assert.match(DEFAULT_CHARACTER_COMPLETION_PROMPT, /用户主角为许妍/);
   assert.throws(() => normalizeSettings({ characterMaxOutput: Infinity }), /输出上限/);
 });
 

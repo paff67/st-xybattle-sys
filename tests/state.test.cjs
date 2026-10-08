@@ -164,7 +164,8 @@ test('host adapter receives final committed receipt and a main-story packet', as
   controller.state.characterPreparation = { status: 'confirmed', profileSchema: 'battle_combat_profile_v2' };
   controller.start();
   const result = await controller.submit({ actionId: 'host-action', label: '桥接行动' });
-  assert.equal(result.state.phase, 'awaiting_next');
+  assert.equal(result.state.phase, 'narrating');
+  assert.equal(controller.state.phase, 'committed', 'missing native send keeps a retryable committed turn');
   assert.equal(calls.find((item) => item[0]==='receipt')[1].actionId,'host-action');
   assert.ok(calls.find((item) => item[0]==='inject'));
   assert.throws(() => controller.continueNext(), /等待主剧情/);

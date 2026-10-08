@@ -17,7 +17,8 @@ function fixture() {
   const action = { label: '以剑试探', techniqueId: player.entry.techniques[0].id };
   const result = {
     summary: '试探后取得先手，双方无伤', before: state.semanticState,
-    after: { ...state.semanticState, control: '主角先手', statuses: ['弦势已建立'] },
+    actorChanges: [{ actorId: 'player', statuses: [{ type: 'add', operationId: 'stance', label: '弦势已建立', description: '取得先手', visibility: 'public', reason: '起势完成', ruleRefs: player.entry.ruleRefs }] }],
+    combatChanges: { baseRevision: state.combatLedger.revision, operations: [] },
     reason: '私密因果推理', ruleRefs: enemy.entry.ruleRefs,
     publicEvents: ['弦势已建立', '厉沧海双足稳立'],
     exchange: {

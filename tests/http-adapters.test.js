@@ -59,12 +59,12 @@ test('character field fill uses a shorter optional timeout than candidate extrac
 test('enemy completion constructs a full contextual opponent without user data or protagonist rule library', async () => {
   const { fullCombatProfile } = await import('./fixtures/combat-profile.js');
   let calls = 0;
-  const ai = createHttpCharacterInference({ endpoint: 'https://example.invalid/v1', model: 'real-config-fixture', fetchImpl: async (_url, options) => {
+  const ai = createHttpCharacterInference({ endpoint: 'https://example.invalid/v1', model: 'real-config-fixture', maxOutput: 12000, fetchImpl: async (_url, options) => {
     calls++;
     const body = JSON.parse(options.body), input = JSON.parse(body.messages[1].content.slice('上下文：'.length));
     assert.equal(input.side, 'enemy'); assert.equal(input.context.registry, undefined);
     assert.equal(input.context.persona, undefined);
-    assert.ok(body.max_tokens <= 4000);
+    assert.equal(body.max_tokens, 12000);
     assert.match(body.messages[0].content, /首份档案优先设计3个招式/);
     assert.match(body.messages[0].content, /由你主动设计/);
     assert.match(body.messages[0].content, /不能因为缺乏功法原文/);
@@ -76,12 +76,12 @@ test('enemy completion constructs a full contextual opponent without user data o
   assert.equal(profile.name, '顾澜'); assert.ok(profile.techniques.length); assert.ok(profile.resourceDefinitions.length); assert.equal(calls, 1);
 });
 
-test('timed-out enemy generation automatically retries once without treating transport timeout as user cancellation', async () => {
+test('timed-out enemy generation reports error without an automatic retry', async () => {
   const { fullCombatProfile } = await import('./fixtures/combat-profile.js'); let calls = 0;
   const ai = createHttpCharacterInference({ endpoint: 'https://example.invalid/v1', model: 'fixture', timeoutMs: 15, fetchImpl: async (_url, options) => {
     if (++calls === 1) return new Promise((_resolve, reject) => options.signal.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))));
     return new Response(JSON.stringify({ candidate: fullCombatProfile('顾澜') }), { status: 200 });
   } });
-  assert.equal((await ai.completeCandidate({ candidate: { name: '顾澜' }, context: {}, side: 'enemy' })).name, '顾澜');
-  assert.equal(calls, 2);
+  await assert.rejects(ai.completeCandidate({ candidate: { name: '顾澜' }, context: {}, side: 'enemy' }), { code: 'CHARACTER_TIMEOUT' });
+  assert.equal(calls, 1);
 });

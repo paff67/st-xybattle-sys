@@ -4,27 +4,27 @@
     <div class="xy-action-topbar">
       <!-- 控制器阶段流转动作按钮 -->
       <div class="xy-action-controls">
-        <button 
-          class="xy-ctrl-btn btn-start" 
-          :disabled="isBusy || !['idle', 'ended'].includes(phase)" 
+        <button
+          class="xy-ctrl-btn btn-start"
+          :disabled="isBusy || !['idle', 'ended'].includes(phase)"
           @click="$emit('start')"
         >
           <Icons name="play" />
           <span>启战 / 继续</span>
         </button>
 
-        <button 
-          class="xy-ctrl-btn btn-next" 
-          :disabled="isBusy || !['awaiting_next', 'committed'].includes(phase)" 
+        <button
+          class="xy-ctrl-btn btn-next"
+          :disabled="isBusy || hasBridgeQueued || !['awaiting_next', 'committed'].includes(phase)"
           @click="$emit('next')"
         >
           <Icons name="next" />
           <span>进发下轮</span>
         </button>
 
-        <button 
-          class="xy-ctrl-btn btn-stop" 
-          :disabled="['idle', 'ended'].includes(phase)" 
+        <button
+          class="xy-ctrl-btn btn-stop"
+          :disabled="['idle', 'ended'].includes(phase)"
           @click="$emit('stop')"
         >
           <Icons name="stop" />
@@ -32,7 +32,7 @@
         </button>
 
         <!-- 扩展操作 (重写正文、注入主剧情、跳过正文) -->
-        <button 
+        <button
           v-if="latestCommitted"
           class="xy-ctrl-btn btn-rewrite"
           :disabled="isBusy"
@@ -43,7 +43,7 @@
           <span>重写正文</span>
         </button>
 
-        <button 
+        <button
           v-if="latestCommitted"
           class="xy-ctrl-btn btn-inject"
           :disabled="isBusy"
@@ -54,7 +54,7 @@
           <span>发送主剧情</span>
         </button>
 
-        <button 
+        <button
           v-if="hasBridgeQueued"
           class="xy-ctrl-btn btn-skip"
           @click="$emit('skip-narrative')"
@@ -62,7 +62,7 @@
           <span>跳过本轮正文</span>
         </button>
 
-        <button 
+        <button
           v-if="hostSyncPending"
           class="xy-ctrl-btn btn-retry-host"
           @click="$emit('retry-host')"
@@ -70,7 +70,7 @@
           <span>重试宿主同步</span>
         </button>
 
-        <button 
+        <button
           class="xy-ctrl-btn btn-history"
           @click="$emit('toggle-history')"
           title="演武战史与批注"
@@ -87,16 +87,16 @@
       <div class="xy-technique-selector">
         <label class="xy-tech-picker-label">
           <span class="xy-picker-kicker">选用心法</span>
-          <select 
+          <select
             class="xy-tech-select"
             :value="selectedTechniqueId"
             :disabled="isBusy"
             @change="$emit('update:techniqueId', $event.target.value)"
           >
             <option value="">自由身法 (自由行动)</option>
-            <option 
-              v-for="opt in techniqueOptions" 
-              :key="opt.id" 
+            <option
+              v-for="opt in techniqueOptions"
+              :key="opt.id"
               :value="opt.id"
               :disabled="!opt.available"
             >
@@ -105,8 +105,8 @@
           </select>
         </label>
 
-        <button 
-          v-if="selectedTechniqueId" 
+        <button
+          v-if="selectedTechniqueId"
           class="xy-clear-tech-btn"
           @click="$emit('update:techniqueId', '')"
           title="切为自由行动"
@@ -131,7 +131,7 @@
       </div>
 
       <!-- 大尺寸灵光提交按钮 -->
-      <button 
+      <button
         class="xy-submit-btn"
         :class="{ 'is-loading': isBusy }"
         :disabled="isBusy || phase !== 'awaiting_player'"

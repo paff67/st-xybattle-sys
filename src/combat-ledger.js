@@ -83,8 +83,8 @@ export function applyCombatProposal(state, proposal, actionId) {
       if (!source || !operation.ruleRefs.some((ref) => source.ruleRefs.includes(ref))) fail('修改必须引用对象来源招式依据');
       if (operation.type === 'reclaim') {
         if (object.kind !== 'resource' || object.status !== 'dispersed' || [...map.values()].some((child) => live(child) && child.dependsOn.includes(object.id))) fail('只有已散逸且无活动占用的资源批次可回收');
-        const recoveryEntry = state.registrySnapshot.find((entry) => entry.id === 'gongfa.taiyi-canglanjing');
-        const recovery = recoveryEntry?.techniques.find((move) => move.id === operation.techniqueId && ['澄渊·气海回流', '太一·回澜'].includes(move.name));
+        const recoveryEntry = state.registrySnapshot.find((entry) => entry.techniques.some(move => move.id === operation.techniqueId));
+        const recovery = recoveryEntry?.techniques.find((move) => move.id === operation.techniqueId && (nonempty(move.recovery?.effect) || recoveryEntry.id === 'gongfa.taiyi-canglanjing' && ['澄渊·气海回流', '太一·回澜'].includes(move.name)));
         const owner = actors.find((actor) => actor.id === object.ownerId);
         const ownsRecovery = owner?.id === state.actors.player.id ? owner.techniques.some((group) => group.registryId === recoveryEntry?.id && group.techniqueIds.includes(operation.techniqueId)) : owner?.techniques?.some((move) => move.id === operation.techniqueId);
         if (!recovery || !ownsRecovery || !operation.ruleRefs.some((ref) => recovery.ruleRefs.includes(ref))) fail('水元回收必须引用所属人物已掌握的回流招式及依据');
@@ -121,6 +121,34 @@ export function applyCombatProposal(state, proposal, actionId) {
 export function publicCombatObjects(ledger) {
   return (ledger?.objects || []).filter((object) => object.visibility !== 'internal' && ['active', 'dispersed', 'interrupted'].includes(object.status))
     .map(({ label, description, status, kind, positionOrTarget }) => ({ label, description, status, kind, positionOrTarget }));
+}
+
+/** Confirmed scene facts only. The program links names to owned move IDs. */
+export function initializeCombatObjects(state) {
+  let ledger = restoreCombatLedger(state.combatLedger);
+  for (const actor of [state.actors.player, ...state.actors.enemies]) {
+    const objects = actor.initialCombatObjects || [];
+    if (!objects.length) continue;
+    const actionId = `${state.sessionId}.initial.${actor.id}`;
+    // A second confirmation must not recreate a dispersed/destroyed initial object.
+    if (ledger.receipts.some(receipt => receipt.actionId === actionId)) continue;
+    const ids = new Map(objects.map(item => [item.key, `${actionId}.${encodeURIComponent(item.key)}`]));
+    if (ids.size !== objects.length || objects.some(item => !nonempty(item.key) || !nonempty(item.basis))) fail('初始对象需要唯一 key 和当前场景依据 basis');
+    const operations = objects.map((item, index) => {
+      const moves = state.registrySnapshot.flatMap(entry => entry.techniques).filter(move => move.name === item.technique && (actor.id === state.actors.player.id
+        ? actor.techniques.some(group => group.techniqueIds?.includes(move.id)) : actor.techniques.some(owned => owned.id === move.id)));
+      if (moves.length !== 1) fail('初始对象来源招式不存在或有歧义');
+      return { type: 'create', operationId: `initial-${index}`, reason: item.basis, ruleRefs: clone(moves[0].ruleRefs), object: {
+        id: ids.get(item.key), kind: item.kind, label: item.label, description: item.description,
+        ownerId: actor.id, sourceTechniqueId: moves[0].id, visibility: item.visibility || 'internal',
+        positionOrTarget: item.positionOrTarget || '', dependsOn: (item.dependsOn || []).map(key => ids.get(key) || key),
+        ...(item.kind === 'resource' ? { resourceKey: `${actor.id}.${item.key}` } : {}),
+        ...(item.kind === 'intel' ? { knownTo: item.knownTo } : {})
+      } };
+    });
+    ledger = applyCombatProposal({ ...state, combatLedger: ledger }, { baseRevision: ledger.revision, operations }, actionId);
+  }
+  return ledger;
 }
 
 export const COMBAT_LEDGER_CONTRACT = `【战场对象变更契约】

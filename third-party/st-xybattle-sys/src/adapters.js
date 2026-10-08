@@ -3,20 +3,28 @@ import { clone, abortIfNeeded, normalizeChatCompletionsEndpoint } from './common
 import { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, formatScenePacketForStoryAI } from './battle-adjudicator-prompt.js';
 import { normalizeCharacterCompletionPrompt, normalizePrompt } from './character-prompts.js';
 export function normalizeSettings(input = {}) {
+  const characterMaxRetries = Number(input.characterMaxRetries ?? 0);
+  if (!Number.isInteger(characterMaxRetries) || characterMaxRetries < 0 || characterMaxRetries > 3) throw new Error('人物生成重试次数必须为 0~3');
   const characterMaxOutput = Number(input.characterMaxOutput ?? 8000);
   if (!Number.isInteger(characterMaxOutput) || characterMaxOutput < 1024) throw new Error('人物档案输出上限必须是至少 1024 的整数');
+  const characterMessageCount = Number(input.characterMessageCount ?? 20);
+  if (!Number.isInteger(characterMessageCount) || characterMessageCount < 1 || characterMessageCount > 100) throw new Error('人物生成上下文消息条数必须为 1~100');
   const defaultConfig = { mode: 'unconfigured', endpoint: '', model: '', maxOutput: 1600, temperature: 0.2, repairAttempts: 2, timeoutMs: 60000 };
   const adjudicator = { ...defaultConfig, ...(input.adjudicator || {}) };
   if (!input.adjudicator) for (const key of Object.keys(defaultConfig).concat('apiKey')) if (input[key] !== undefined) adjudicator[key] = input[key];
   const narrator = { ...defaultConfig, mode: 'main_story', temperature: 0.7, ...input.narrator };
+  const characterGenerator = { ...defaultConfig, mode: 'http', ...input.characterGenerator, inherit: input.characterGenerator?.inherit !== false };
   if (!input.narrator && input.mode === 'mock') narrator.mode = 'mock';
   if (!input.narrator && input.mode === 'http') Object.assign(narrator, { ...adjudicator, repairAttempts: 0 });
-  for (const config of [adjudicator, narrator]) {
+  for (const config of [adjudicator, narrator, characterGenerator]) {
     if (!['unconfigured','http','mock','main_story','packet'].includes(config.mode)) throw new Error('未知模型模式');
     config.temperature = Number(config.temperature); config.maxOutput = Number(config.maxOutput); config.repairAttempts = Number(config.repairAttempts); config.timeoutMs = Number(config.timeoutMs);
     if (!Number.isFinite(config.temperature) || config.temperature < 0 || config.temperature > 2 || !Number.isInteger(config.maxOutput) || config.maxOutput < 1 || !Number.isInteger(config.repairAttempts) || config.repairAttempts < 0 || config.repairAttempts > 3 || !Number.isFinite(config.timeoutMs) || config.timeoutMs < 100) throw new Error('模型参数无效（温度0~2；修复0~3）');
   }
-  return { adjudicator, narrator, autoNarrative: input.autoNarrative !== false, eventAutoEnabled: input.eventAutoEnabled === true, originalPrompt: input.originalPrompt || '', characterMaxOutput, characterCompletionPrompt: normalizeCharacterCompletionPrompt(input.characterCompletionPrompt), adjudicationPrompt: input.adjudicationPrompt?.trim() === LEGACY_ADJUDICATOR_SYSTEM_PROMPT.trim() ? HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT : normalizePrompt(input.adjudicationPrompt, HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT), developerLogs: input.developerLogs !== false };
+  return { adjudicator, narrator, characterGenerator, autoNarrative: input.autoNarrative !== false, eventAutoEnabled: input.eventAutoEnabled === true, originalPrompt: input.originalPrompt || '', characterMaxOutput, characterMaxRetries, characterMessageCount, characterCompletionPrompt: normalizeCharacterCompletionPrompt(input.characterCompletionPrompt), adjudicationPrompt: input.adjudicationPrompt?.trim() === LEGACY_ADJUDICATOR_SYSTEM_PROMPT.trim() ? HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT : normalizePrompt(input.adjudicationPrompt, HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT), developerLogs: input.developerLogs !== false };
+}
+export function characterApiSettings(settings) {
+  return { ...(settings.characterGenerator?.inherit !== false ? settings.adjudicator : settings.characterGenerator), maxOutput: settings.characterMaxOutput, maxRetries: settings.characterMaxRetries, messageCount: settings.characterMessageCount };
 }
 export function extractJson(content) {
   if (content && typeof content === 'object') return clone(content);
@@ -26,7 +34,7 @@ export function extractJson(content) {
 export class UnconfiguredAdjudicator { async judge() { throw new Error('未配置裁定 AI；请在独立设置中选择 HTTP，或明确选择离线 Mock 演示'); } }
 export class UnconfiguredNarrator { async generate() { throw new Error('未配置正文 AI；默认可选择主剧情一次性注入'); } async rewrite() { return this.generate(); } }
 export class MainStoryNarrator { constructor() { this.mode = 'main_story'; } async generate() { return { pending: true, text: '', metadata: { mode: 'main_story', status: 'waiting_for_normal_generation' } }; } async rewrite() { return this.generate(); } }
-export class PacketNarrator extends MainStoryNarrator { constructor() { super(); this.mode = 'packet'; } }
+export class PacketNarrator extends MainStoryNarrator { constructor() { super(); this.mode = 'packet'; } async generate() { return { pending: true, text: '', metadata: { mode: 'packet' } }; } }
 export class MockAdjudicator {
   constructor() { this.calls = []; this.isMock = true; }
   async judge(request, { signal } = {}) {
@@ -91,12 +99,12 @@ export class HttpJsonAdjudicator {
   async judge(request, options = {}) {
     const config = { ...this.config, temperature: this.config.temperature ?? request.settings.temperature, maxOutput: this.config.maxOutput ?? request.settings.maxOutput };
     const systemPrompt = request.systemPrompt || HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT;
-    const messages = [{ role: 'system', content: systemPrompt }, { role: 'user', content: request.prompt }];
+    const messages = [{ role: 'system', content: systemPrompt }, ...(request.coreRulesSystemPrompt ? [{ role: 'system', content: request.coreRulesSystemPrompt }] : []), { role: 'user', content: request.prompt }];
     const response = await chatCompletion(config, messages, { ...options, jsonMode: true });
     try { return extractJson(response.content); } catch (error) { error.rawContent = response.content; throw error; }
   }
   async repair(request, raw, error, options = {}) {
-    const messages = [{ role: 'system', content: '这是结构修复；保持原行动裁定事实与对敌对环境影响，禁止重新裁定。只修复 JSON 和被程序指出的字段。' }, { role: 'user', content: `${request.prompt}\n原返回：${JSON.stringify(raw)}\n程序拒绝原因：${error.message}` }];
+    const messages = [...(request.coreRulesSystemPrompt ? [{ role: 'system', content: request.coreRulesSystemPrompt }] : []), { role: 'system', content: '这是结构修复；保持原行动裁定事实与对敌对环境影响，禁止重新裁定。只修复 JSON 和被程序指出的字段。' }, { role: 'user', content: `${request.prompt}\n原返回：${JSON.stringify(raw)}\n程序拒绝原因：${error.message}` }];
     const response = await chatCompletion(this.config, messages, { ...options, jsonMode: true }); return extractJson(response.content);
   }
 }

@@ -19,15 +19,8 @@ export function mountBattleSystem({
   root.id = 'xybattle-v2-root-wrapper';
   documentRef.body.appendChild(root);
 
-  try {
-    const cssHref = new URL(['..', '..', 'style.css'].join('/'), import.meta.url).href;
-    if (!documentRef.querySelector(`link[href*="style.css"]`)) {
-      const link = documentRef.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = cssHref;
-      documentRef.head.appendChild(link);
-    }
-  } catch {}
+  // Vite injects styles in development. Production bundles install their own
+  // matching CSS; an unrelated host style.css must never suppress this step.
 
   const host = hostAdapter || (globalThis.SillyTavern?.getContext ? new BattleHostAdapter({ contextProvider: () => globalThis.SillyTavern.getContext() }) : null);
   // Keep the battle bootstrap opt-in: the default registry is the existing

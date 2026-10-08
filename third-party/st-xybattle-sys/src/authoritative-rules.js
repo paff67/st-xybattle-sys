@@ -2,10 +2,13 @@ import pack from '../content/authoritative-six-arts/six-arts.content.json' with 
 import interactions from '../content/authoritative-six-arts/system-interactions.json' with { type: 'json' };
 import cases from '../content/authoritative-six-arts/negative-cases.json' with { type: 'json' };
 import { clone, stableStringify } from './common.js';
+import { worldbookEntries, isWorldbookAbility, assertWorldbookAbility, abilityIndex } from './worldbook-abilities.js';
+import { assertCoreRules } from './core-rules.js';
 
 export const authoritativeEntries = () => clone(pack.items.map((item) => item.entry));
-export const isAuthority = (entry) => entry?.authority?.kind === 'user-designated-source' && !!entry.combatSpec?.rules;
+export const isAuthority = (entry) => entry?.authority?.kind === 'user-designated-source' && (!!entry.combatSpec?.rules || isWorldbookAbility(entry));
 export function assertAuthorityDefinition(entry) {
+  if (isWorldbookAbility(entry)) return assertWorldbookAbility(entry);
   const source = pack.items.find((item) => item.id === entry.id)?.entry;
   if (!source) return;
   for (const key of ['version', 'corePrinciple', 'mechanics', 'techniques', 'synergies', 'combatSpec', 'authority']) {
@@ -14,7 +17,7 @@ export function assertAuthorityDefinition(entry) {
 }
 // Explicit new preparation only. Never upgrade an already running battle.
 export function preparationRegistry(entries = []) {
-  const installed = authoritativeEntries();
+  const installed = worldbookEntries();
   return [...clone(entries).filter((entry) => !installed.some((item) => item.id === entry.id)), ...installed];
 }
 
@@ -34,34 +37,36 @@ export function bindLearnedRules(profile, registry = []) {
   }
   const canonicalMoves = [], methods = [], seen = new Set();
   for (const ref of refs) {
-    const entry = entries.find((item) => item.id === ref.registryId);
+    const entry = registry.find((item) => item.id === ref.registryId);
     if (!entry || seen.has(ref.registryId)) throw new Error('已修功法引用不存在或重复');
     seen.add(ref.registryId);
-    if (ref.version && ref.version !== entry.version || ref.contentSha256 && ref.contentSha256 !== entry.authority.contentSha256) throw new Error('功法绑定版本不匹配，请重新核对');
+    if (ref.version && ref.version !== entry.version || ref.contentSha256 && ref.contentSha256 !== entry.authority?.contentSha256) throw new Error('功法绑定版本不匹配，请重新核对');
     if (!Array.isArray(ref.techniqueIds) || !ref.techniqueIds.length || new Set(ref.techniqueIds).size !== ref.techniqueIds.length) throw new Error('已修招式引用不能为空或重复');
-    ref.version = entry.version; ref.contentSha256 = entry.authority.contentSha256;
+    ref.version = entry.version; ref.contentSha256 = entry.authority?.contentSha256 || '';
     ref.name = entry.name;
     for (const id of ref.techniqueIds) {
       const move = entry.techniques.find((item) => item.id === id);
       if (!move) throw new Error('已修招式不属于指定权威功法');
-      canonicalMoves.push({ ...clone(move), authoritativeRef: id,
-        cost: '按原文与本轮控制负担裁定；未规定固定数值', range: '按原文、修为和本轮对象联系裁定',
-        cooldown: '原文未规定固定回合冷却', counterplay: entry.combatSpec.limitations.text,
-        availability: { ...clone(move.availability), description: '可提交施展意图，成立条件仍由裁定检查', default: 'available' } });
+      canonicalMoves.push({ ...clone(move), school: entry.name, authoritativeRef: id,
+        cost: move.cost || '按原文与本轮控制负担裁定；未规定固定数值', range: move.range || '按原文、修为和本轮对象联系裁定',
+        cooldown: move.cooldown || '原文未规定固定回合冷却', counterplay: move.counterplay || entry.combatSpec?.limitations?.text || '按功法原文限制与实际交锋裁定',
+        availability: isAuthority(entry) ? { ...clone(move.availability), description: '可提交施展意图，成立条件仍由裁定检查', default: 'available' } : { ...clone(move.availability), description: move.availability?.description || move.availability?.conditions?.join('；') || '按功法原文条件裁定' } });
     }
-    methods.push({ name: entry.name, rank: entry.rank, description: entry.mechanics.join('\n'), principle: entry.corePrinciple });
+    methods.push({ name: entry.name, rank: entry.rank, description: entry.abilitySource?.content || entry.mechanics.join('\n'), principle: entry.corePrinciple });
   }
   return { ...profile, learnedTechniqueRefs: refs,
     martialArts: [...(profile.martialArts || []).filter((method) => !methods.some((item) => item.name === method.name)), ...methods],
-    techniques: [...(profile.techniques || []).filter((move) => !entries.some((entry) => entry.name === move.school)), ...canonicalMoves] };
+    techniques: [...(profile.techniques || []).filter((move) => !entries.some((entry) => entry.name === move.school) && !methods.some((method) => method.name === move.school)), ...canonicalMoves] };
 }
 
 export function assertBindings(state) {
+  assertCoreRules(state.coreRules);
+  state.registrySnapshot.filter(isWorldbookAbility).forEach(assertWorldbookAbility);
   const player = state.actors.player;
   for (const ref of player.learnedTechniqueRefs || []) {
     const entry = state.registrySnapshot.find((item) => item.id === ref.registryId);
-    if (!isAuthority(entry) || entry.version !== ref.version || entry.authority.contentSha256 !== ref.contentSha256) throw new Error('主角权威功法绑定失效，需重新确认人物');
-    assertAuthorityDefinition(entry);
+    if (!entry || entry.version !== ref.version || (entry.authority?.contentSha256 || '') !== ref.contentSha256) throw new Error('主角权威功法绑定失效，需重新确认人物');
+    if (isAuthority(entry)) assertAuthorityDefinition(entry);
     const owned = player.techniques.find((group) => group.registryId === entry.id);
     if (!owned || owned.techniqueIds.length !== ref.techniqueIds.length || ref.techniqueIds.some((id) => !owned.techniqueIds.includes(id) || !entry.techniques.some((move) => move.id === id))) throw new Error('主角招式所有权与权威绑定不一致');
   }
@@ -78,12 +83,13 @@ export function createRuleMemory(registry) {
 
 export function knownRules(state) {
   return new Set([...state.registrySnapshot.flatMap((entry) => [...entry.ruleRefs, ...entry.techniques.flatMap((move) => move.ruleRefs), ...(entry.combatSpec?.rules || []).map((rule) => rule.id)]),
-    ...(state.ruleMemory?.interactions || []).map((edge) => edge.id), ...(state.resourceRules || []).flatMap((rule) => rule.ruleRefs || [])]);
+    ...(state.coreRules || []).map(rule => rule.id), ...(state.ruleMemory?.interactions || []).map((edge) => edge.id), ...(state.resourceRules || []).flatMap((rule) => rule.ruleRefs || [])]);
 }
 
 /** Send every source mechanism once, keeping rule IDs addressable. */
 export function projectRuleContext(registry = []) {
   return registry.map((entry) => {
+    if (isWorldbookAbility(entry)) return abilityIndex(entry);
     if (!isAuthority(entry)) return clone(entry);
     const rules = entry.combatSpec.rules.map((rule) => ['主要攻击形式', '主要术式'].includes(rule.heading)
       ? { id: rule.id, heading: rule.heading, children: entry.techniques.flatMap((move) => move.ruleRefs) } : rule);

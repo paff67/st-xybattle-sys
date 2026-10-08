@@ -20,7 +20,7 @@ test('browser credential storage keeps model keys separate from battle storage',
   writeCredentialSettings({ adjudicator: { apiKey: 'judge-secret' }, narrator: { apiKey: 'narrator-secret' } }, credentials);
   assert.deepEqual(readCredentialSettings(credentials), {
     adjudicator: { apiKey: 'judge-secret' },
-    narrator: { apiKey: 'narrator-secret' }
+    narrator: { apiKey: 'narrator-secret' }, characterGenerator: { apiKey: '' }
   });
   assert.deepEqual(credentials.values().length, 1);
   assert.equal(credentials.items.has(CREDENTIAL_STORAGE_KEY), true);
@@ -47,7 +47,7 @@ test('controller restores browser credentials and clearing settings removes them
   assert.equal(second.exportData().includes('persisted-secret'), false);
 
   second.setSettings({ adjudicator: { apiKey: '' } });
-  assert.deepEqual(readCredentialSettings(credentials), { adjudicator: { apiKey: '' }, narrator: { apiKey: '' } });
+  assert.deepEqual(readCredentialSettings(credentials), { adjudicator: { apiKey: '' }, narrator: { apiKey: '' }, characterGenerator: { apiKey: '' } });
   assert.equal(credentials.items.has(CREDENTIAL_STORAGE_KEY), false);
   clearCredentialSettings(credentials);
 });

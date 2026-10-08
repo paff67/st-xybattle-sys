@@ -49,7 +49,7 @@ test('candidate flow strips reasoning, discards cached actor hints and applies c
   const controller = new BattleController({ hostAdapter });
   await controller.ready;
   controller.state.actors.player.name = '旧人物';
-  const panel = await controller.prepareCharacters({ inference: {
+  const panel = await controller.prepareCharacters({ mvu: { getMvuData: async () => ({ stat_data: { 主角: { ...fullCombatProfile('许妍'), cultivationRealm: '金丹初期' } } }) }, inference: {
     inferParticipants: async context => {
       assert.equal(context.playerCandidate, undefined);
       assert.match(context.recentMessages[0].text, /许妍和顾澜/); assert.doesNotMatch(context.recentMessages[0].text, /旧演示/);
@@ -60,7 +60,7 @@ test('candidate flow strips reasoning, discards cached actor hints and applies c
   assert.deepEqual(panel.candidates.map(c => c.name), ['许妍', '顾澜']);
   assert.equal(controller.state.actors.player.name, '旧人物');
   assert.throws(() => controller.start(), /确认/);
-  controller.confirmCharacters(); controller.start();
+  controller.confirmCharacters({ player: { martialArts: fullCombatProfile().martialArts, techniques: fullCombatProfile().techniques } }); controller.start();
   assert.equal(controller.state.scene.location, '太平洋战界');
   assert.equal(controller.state.actors.enemies[0].name, '顾澜');
   assert.equal(controller.state.phase, 'awaiting_player');

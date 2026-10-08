@@ -1,6 +1,7 @@
 import { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT } from './battle-adjudicator-prompt.js';
 
-export const ENEMY_GENERATION_POLICY = `本次 side=enemy：你的职责是根据上下文生成敌人的完整战斗设定，而不是审核用户是否提供了完整资料。
+export const ENEMY_GENERATION_POLICY = `用户主角为许妍。本次只为 candidate 指定的敌人补全完整战斗资料，不生成许妍的档案，也不将许妍列入敌人。
+你的职责是根据上下文生成敌人的完整战斗设定，而不是审核用户是否提供了完整资料。
 档案简洁完整，只写战斗执行所需定义，不重复正文或长篇人物传记。首份档案优先设计3个招式，每个招式的完整定义不超过120个汉字；上下文明确出现更多招式时必须保留，不为了凑数量丢弃已知能力。
 敌人姓名、境界、阵营、已展示能力和现场位置等明确事实必须保持。正文未写出的功法原理、固定招式、灵力资源及数值边界、行为战术、弱点等由你主动设计，必须与境界、身份、已展示能力和当前场景自洽。
 MVU/资料库没有该敌人的记录是正常输入，不是失败原因。不能因为缺乏功法原文、资源数值或招式名称而返回空数组、未知、待补充或要求用户填写。不要把主角“不得创造已拥有功法”的限制套用到敌人。
@@ -26,11 +27,10 @@ resourceDefinitions：数组，每项包含 key、name（中文资源名）、cu
 behavior:{preference:战斗偏好,opening:起手选择,tactics:[具体战术],retreat:撤退条件}；weaknesses:[具体弱点与限制]；hidden:{}（仅裁定可知的隐秘）。
 严禁把结构包在 observed、generated、battleResourceModel 里，严禁把“待裁定”“未知”“可能具备”当作已完成的定义。不要生成内部 id、规则引用、来源追踪和确认元数据，程序会生成这些字段。
 敌人：根据境界与证据构造自洽的功法和固定招式（通常3~6招），缺乏证据的细节允许构造，但不是已公开事实；未暴露招式 visibility=internal。已观察到的招式可以 public，并补齐它确定的完整规则。
-主角（side=player）：必须依据聊天、用户人设、导入档案和已拥有功法还原，不能凭空添加功法或提升境界。上下文 registry 的定义可供精确匹配引用，不能因为库中有某功法就视为主角拥有。关键资料缺失则留空，交由用户补充，绝不能代入演示主角。
-权威绑定优先契约：主角已掌握的 registry 中 authority.kind=user-designated-source 功法只输出 learnedTechniqueRefs:[{registryId,techniqueIds:[确实已修成的招式ID],proficiency:修炼程度,evidence:掌握依据}]；不要重写这些功法的 martialArts/techniques，程序会从权威模板展开展示和绑定。这个契约是上文不输出引用字段的明确例外。仅功法名称不能推出已学会全部招式；证据不足留待用户确认。原文未规定资源数值时不得伪造主角资源上限；权威绑定主角可以 resourceDefinitions=[]，以定性资源占用裁定。
 来源冲突在本次构造中形成一个一致草稿，供用户审核。不要丢掉已知的限制、弱点或完整功法定义。`;
 
-export const DEFAULT_CHARACTER_COMPLETION_PROMPT = `你是独立战斗系统的人物档案构造器。请先读取上下文证据，再生成一份可由用户核对、确认并用于实际战斗裁定的完整档案。
+export const DEFAULT_CHARACTER_COMPLETION_PROMPT = `你是修仙战斗的敌人档案设计者。用户主角为许妍，你只需要补全当前敌人的资料，许妍不属于本次生成对象。
+先提取上下文已经确定的姓名、境界、身份、已展示能力、当前状态与环境；以这些事实为基础设计符合境界和经历的功法体系。每一招都要有明确的作用机制、消耗、使用条件、效果边界和应对方式，招式之间应形成有特点且自洽的战斗策略。保留已知弱点，合理构造尚未公开的能力；区分公开观察与内部设定，不把构造内容写成已经发生的剧情。
 
 ${COMBAT_PROFILE_CONTRACT}
 
@@ -38,7 +38,9 @@ ${COMBAT_PROFILE_CONTRACT}
 
 export function normalizeCharacterCompletionPrompt(value) {
   const prompt = typeof value === 'string' ? value.trim() : '';
-  return !prompt || prompt === LEGACY_CHARACTER_COMPLETION_PROMPT.trim() ? DEFAULT_CHARACTER_COMPLETION_PROMPT : prompt;
+  const isOldBuiltIn = prompt.startsWith('你是独立战斗系统的人物档案构造器。') && prompt.includes('主角（side=player）') && prompt.includes('权威绑定优先契约');
+  const isPreviousEnemyDefault = prompt.startsWith('你是独立战斗系统的敌人档案构造器。') && prompt.includes('禁止生成主角资料。');
+  return !prompt || prompt === LEGACY_CHARACTER_COMPLETION_PROMPT.trim() || isOldBuiltIn || isPreviousEnemyDefault ? DEFAULT_CHARACTER_COMPLETION_PROMPT : prompt;
 }
 
 export const DEFAULT_ADJUDICATION_PROMPT = HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT;

@@ -3,6 +3,7 @@ import { projectScenePacket } from './scene-packet.js';
 import { HostInputBridge } from './host-input-bridge.js';
 import { HostDisplayFolding } from './host-display-folding.js';
 import { battlePacketKey, parseBattlePacketMarkers } from './battle-packet-markers.js';
+import { normalizeCoreSelection } from './core-rules.js';
 const clone = (value) => value == null ? value : JSON.parse(JSON.stringify(value));
 const integer = (value) => value != null && value !== '' && Number.isInteger(Number(value)) && Number(value) >= 0 ? Number(value) : null;
 const assistant = (message) => !!message && (message.role === 'assistant' || (message.role == null && message.is_user === false && message.extra?.type !== 'narrator'));
@@ -43,6 +44,34 @@ export class BattleHostAdapter {
     this.writeQueue = Promise.resolve(); this.uncertainScopes = new Set(); this.disposed = false; this.start();
   }
   context() { return this.contextProvider() || {}; }
+  coreRuleConfig() {
+    const context = this.context(), card = context.characters?.[context.characterId];
+    const characterKey = !context.groupId && typeof card?.avatar === 'string' ? card.avatar : '';
+    const selection = characterKey ? context.extensionSettings?.xybattleCoreRules?.[characterKey]?.selection || [] : [];
+    return { characterKey, characterName: card?.name || '', selection: normalizeCoreSelection(selection) };
+  }
+  saveCoreRuleConfig(selection, expectedCharacterKey) {
+    const context = this.context(), current = this.coreRuleConfig();
+    if (!current.characterKey || current.characterKey !== expectedCharacterKey) throw new Error('角色卡已切换或不可用，请重新打开配置');
+    if (!context.extensionSettings || typeof context.saveSettingsDebounced !== 'function') throw new Error('宿主不支持保存角色卡底则配置');
+    const map = { ...(context.extensionSettings.xybattleCoreRules || {}) };
+    Object.defineProperty(map, current.characterKey, { value: { selection: normalizeCoreSelection(selection) }, enumerable: true, configurable: true, writable: true });
+    context.extensionSettings.xybattleCoreRules = map;
+    context.saveSettingsDebounced();
+    return this.coreRuleConfig();
+  }
+  async coreWorldbookRequest(path, body) {
+    const context = this.context();
+    if (typeof context.getRequestHeaders !== 'function') throw new Error('宿主世界书读取接口不可用');
+    const response = await fetch(path, { method: 'POST', headers: context.getRequestHeaders(), body: JSON.stringify(body), signal: AbortSignal.timeout(15000), cache: 'no-cache' });
+    if (!response.ok) throw new Error(`世界书读取失败（HTTP ${response.status}）`);
+    return response.json();
+  }
+  async listCoreWorldbooks() {
+    const data = await this.coreWorldbookRequest('/api/settings/get', {});
+    return (data.world_names || []).filter(name => typeof name === 'string');
+  }
+  async readCoreWorldbook(name) { return this.coreWorldbookRequest('/api/worldinfo/get', { name }); }
   helper() { return this.helperDependency === undefined ? globalThis.TavernHelper : this.helperDependency; }
   chatId(context) { return String(context.chatId ?? context.getCurrentChatId?.() ?? context.chat?.id ?? ''); }
   explicitMessageId(context) { return integer(context.messageId ?? context.message_id ?? context.message?.message_id); }
@@ -217,7 +246,7 @@ export class BattleHostAdapter {
       return { persisted: true, confirmed: true, scope, capability, version: next.version };
     } catch (error) { return { persisted: false, confirmed: false, scope: expectedScope, capability, reason: error.message, stale: /scope|swipe|Older|Historical|anchor/.test(error.message) }; }
   }
-  async injectScenePacket(packet, expectedScope = packet?.scope || this.scope()) {
+  async injectScenePacket(packet, expectedScope = packet?.scope || this.scope(), { userAction = '' } = {}) {
     this.start();
     try {
       const scope = this.validateScope(expectedScope, { writable: true });
@@ -233,7 +262,7 @@ export class BattleHostAdapter {
       if (this.packet?.key === key || this.activePacket?.key === key) return { queued: true, injected: !!this.activePacket, deduplicated: true, scope, capability: this.capability() };
       this.clearScenePacket();
       packet = projectScenePacket(packet);
-      const inputResult = this.inputBridge?.append?.(packet, { ...scope, version: store.version });
+      const inputResult = this.inputBridge?.append?.(packet, { ...scope, version: store.version }, { userAction });
       if (inputResult?.conflict) throw new Error(inputResult.reason || 'Input contains a conflicting XY_BATTLE_PACKET');
       this.packet = { ...clone(packet), packet: clone(packet), scope, version: store.version, key, transportCandidate: inputResult?.queued ? 'input-box' : null, inputResult };
       return { queued: true, injected: false, scope, transport: inputResult?.queued ? 'input-box' : 'extension-prompt', pendingVerification: !!inputResult?.queued, capability: this.capability() };

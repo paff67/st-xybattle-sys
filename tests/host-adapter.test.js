@@ -74,17 +74,54 @@ test('committed controller action automatically sends the native composer once a
     await started;
     assert.equal(clicks, 1);
     assert.match(host.context().chat.at(-1).mes, /^玩家原始文字/);
+    assert.match(host.context().chat.at(-1).mes, /玩家原始文字\n\n试探\n\n\[\[XY_BATTLE_PACKET/);
     assert.equal(parseBattlePackets(host.context().chat.at(-1).mes).length, 1);
     assert.equal(host.calls.inject.length, 0, 'input and extension prompt must not both inject');
     assert.equal(host.adapter.sendQueuedScenePacket(host.adapter.scope()).deduplicated, true);
     assert.equal(clicks, 1);
     assert.equal(controller.bridgeQueuedAction, 'auto-send');
+    assert.equal(controller.state.phase, 'narrating');
+    assert.equal(controller.state.history.at(-1).status, 'committed');
+    assert.throws(() => controller.continueNext(), /正文|主剧情/);
+    await controller.recordHostNarrative({ actionId: 'unrelated', scope: controller.state.scope, status: 'complete', text: '无关生成' });
+    assert.equal(controller.state.phase, 'narrating');
+    assert.equal(controller.bridgeQueuedAction, 'auto-send');
     host.context().chat.push(rawAssistant('<think>正文思考</think>主剧情正文'));
     await host.events.emit('GENERATION_ENDED');
     assert.equal(controller.bridgeQueuedAction, null);
     assert.equal(controller.state.history.at(-1).status, 'complete');
+    assert.equal(controller.state.phase, 'awaiting_next');
     assert.equal(controller.adjudicator.calls.length, 1);
     assert.doesNotMatch(JSON.stringify(controller.playerView().timeline), /正文思考|主剧情正文/);
+  } finally { controller.dispose(); dom.window.close(); }
+});
+
+test('empty composer sends the battle action plus one packet and a stopped story stays pending', async () => {
+  const dom = new JSDOM('<textarea id="send_textarea"></textarea><button id="send_but">发送</button>');
+  const host = fixture({ documentRef: dom.window.document });
+  const controller = await attachedController(host);
+  const input = dom.window.document.querySelector('textarea');
+  let started;
+  dom.window.document.querySelector('button').addEventListener('click', () => {
+    started = (async () => {
+      await host.events.emit('GENERATION_STARTED', 'normal');
+      await host.events.emit('GENERATION_AFTER_COMMANDS', 'normal');
+      host.context().chat.push({ is_user: true, mes: input.value }); input.value = '';
+      await host.events.emit('USER_MESSAGE_RENDERED', host.context().chat.length - 1);
+    })();
+  });
+  try {
+    controller.start();
+    await controller.submit({ actionId: 'empty-input', label: '许妍使用起弦在敌人周围留下多道弦势' }); await started;
+    assert.match(host.context().chat.at(-1).mes, /^许妍使用起弦在敌人周围留下多道弦势\n\n\[\[XY_BATTLE_PACKET/);
+    assert.equal(controller.state.phase, 'narrating');
+    await host.events.emit('GENERATION_STOPPED');
+    assert.equal(controller.state.phase, 'committed');
+    assert.equal(controller.state.history.at(-1).status, 'committed');
+    assert.throws(() => controller.continueNext(), /正文/);
+    controller.skipPendingNarrative();
+    assert.equal(controller.state.phase, 'awaiting_next');
+    assert.equal(controller.adjudicator.calls.length, 1);
   } finally { controller.dispose(); dom.window.close(); }
 });
 

@@ -11,7 +11,7 @@ function resolveStorage(storage) {
 }
 
 function emptyCredentials() {
-  return { adjudicator: { apiKey: '' }, narrator: { apiKey: '' } };
+  return { adjudicator: { apiKey: '' }, narrator: { apiKey: '' }, characterGenerator: { apiKey: '' } };
 }
 
 export function readCredentialSettings(storage) {
@@ -23,7 +23,8 @@ export function readCredentialSettings(storage) {
     const parsed = JSON.parse(raw);
     return {
       adjudicator: { apiKey: typeof parsed?.adjudicator?.apiKey === 'string' ? parsed.adjudicator.apiKey : '' },
-      narrator: { apiKey: typeof parsed?.narrator?.apiKey === 'string' ? parsed.narrator.apiKey : '' }
+      narrator: { apiKey: typeof parsed?.narrator?.apiKey === 'string' ? parsed.narrator.apiKey : '' },
+      characterGenerator: { apiKey: typeof parsed?.characterGenerator?.apiKey === 'string' ? parsed.characterGenerator.apiKey : '' }
     };
   } catch {
     return emptyCredentials();
@@ -36,10 +37,11 @@ export function writeCredentialSettings(settings, storage) {
   const payload = {
     version: 1,
     adjudicator: { apiKey: String(settings?.adjudicator?.apiKey || '') },
-    narrator: { apiKey: String(settings?.narrator?.apiKey || '') }
+    narrator: { apiKey: String(settings?.narrator?.apiKey || '') },
+    characterGenerator: { apiKey: String(settings?.characterGenerator?.apiKey || '') }
   };
   try {
-    if (!payload.adjudicator.apiKey && !payload.narrator.apiKey) {
+    if (!payload.adjudicator.apiKey && !payload.narrator.apiKey && !payload.characterGenerator.apiKey) {
       target.removeItem?.(STORAGE_KEY);
     } else {
       target.setItem(STORAGE_KEY, JSON.stringify(payload));

@@ -4,7 +4,7 @@
       <div>
         <span class="xy-panel-kicker">TECHNIQUE & TREASURE LIBRARY</span>
         <h2 class="xy-panel-title">功法与法宝 · 内容库</h2>
-        <p class="xy-panel-desc">内置六法可直接查看和导出；用户资料保存在当前浏览器。已开始战斗的规则保持不变。</p>
+        <p class="xy-panel-desc">内置六部功法与两件法宝来自“自定义全能”原文，可直接查看和导出。主角能力需在战前手动激活，已开始战斗的规则保持不变。</p>
       </div>
       <div class="xy-library-actions">
         <button type="button" @click="refresh">刷新</button>
@@ -30,7 +30,7 @@
         </div>
         <button v-for="item in filteredRecords" :key="item.catalogueKey" :data-source="item.builtin ? 'builtin' : 'user'" type="button" class="xy-library-item" :class="{ active: selectedId === item.catalogueKey }" @click="select(item.catalogueKey)">
           <strong>{{ item.name }}</strong>
-          <small>{{ item.builtin ? '内置权威模板 · 只读' : '用户保存' }} · {{ item.contentType === 'treasure' ? '法宝' : '功法' }} · 版本 {{ item.version }}</small>
+          <small>{{ item.builtin ? '世界书原文 · 只读' : '用户保存' }} · {{ item.contentType === 'treasure' ? '法宝' : '功法' }} · 版本 {{ item.version }}</small>
         </button>
         <p v-if="!filteredRecords.length" class="xy-library-empty">内容库暂无匹配条目</p>
       </aside>
@@ -38,6 +38,10 @@
       <div class="xy-library-editor">
         <p v-if="selected?.builtin" class="xy-panel-desc">内置权威模板随扩展更新，不能在此编辑或删除。应用到本场不会自动授予主角招式，仍需人物确认。</p>
         <p v-else-if="selected && builtinRecords.some(item => item.id === selected.id)" class="xy-panel-desc">这是与内置模板同编号的用户记录，不会覆盖内置权威定义。宿主人物准备仍使用内置版本。</p>
+        <details v-if="selected?.entry?.abilitySource" class="xy-source-original">
+          <summary>查看完整权威原文 · {{ selected.entry.abilitySource.book }} · UID {{ selected.entry.abilitySource.uid }}</summary>
+          <pre>{{ selected.entry.abilitySource.content }}</pre>
+        </details>
         <textarea v-model="jsonText" :readonly="!!selected?.builtin" aria-label="模板 JSON" rows="18" spellcheck="false" placeholder="粘贴单条、数组或 xybattle-content-export-v1 JSON"></textarea>
         <div v-if="preview" class="xy-library-preview">
           <strong>导入预览</strong>
@@ -62,7 +66,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { importContent, previewContentImport } from '../../content-importer.js';
 
-import builtinPack from '../../../content/authoritative-six-arts/six-arts.content.json' with { type: 'json' };
+import builtinPack from '../../../content/worldbook-abilities/abilities.content.json' with { type: 'json' };
 import { createContentExport } from '../../content-protocol.js';
 
 const builtinRecords = builtinPack.items.map(item => ({ ...item, builtin: true, catalogueKey: `builtin:${item.id}` }));
@@ -169,6 +173,8 @@ defineExpose({ refresh, previewImport, commitImport, replaceImport });
 </script>
 
 <style scoped>
+.xy-source-original { margin: 12px 0; }
+.xy-source-original pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 55vh; overflow: auto; font: inherit; line-height: 1.8; padding: 12px; }
 .xy-content-library { padding: 24px 28px 40px; color: var(--xy-text-body); }
 .xy-library-header, .xy-library-actions, .xy-library-toolbar, .xy-library-buttons { display: flex; gap: 10px; align-items: center; }
 .xy-library-header { justify-content: space-between; border-bottom: 1px solid var(--xy-border-subtle); padding-bottom: 14px; }

@@ -17,5 +17,5 @@ test('extension manifest and third-party entry are present', async () => {
   const bundle = await readFile(new URL('../third-party/st-xybattle-sys/dist/battle-ui.bundle.js', import.meta.url), 'utf8');
   assert.ok(bundle.length > 1000);
   assert.equal(bundle.includes('data:text/css;base64'), false);
-  assert.match(bundle, /style\.css/);
+  assert.ok(bundle.includes('xybattle-bundled-styles'), 'UI bundle carries its component styles');
 });

@@ -219,7 +219,7 @@ export class HostInputBridge {
   dispatchInput(element) { this.dispatch(element); }
   capability() { const element = this.inputElement(); return { input: element ? 'available' : 'unavailable', mode: 'input-box', source: element ? 'context-or-dom' : 'none' }; }
 
-  append(packet, scope = {}) {
+  append(packet, scope = {}, { userAction = '' } = {}) {
     if (this.disposed) return { queued: false, injected: false, reason: 'HostInputBridge is disposed', capability: this.capability() };
     let key;
     try { key = battlePacketKey(packet, scope); } catch (error) { return { queued: false, injected: false, reason: error.message, capability: this.capability() }; }
@@ -230,7 +230,9 @@ export class HostInputBridge {
     }
     const element = this.inputElement();
     if (!element) return { queued: false, injected: false, reason: 'Input element is unavailable', key, capability: this.capability() };
-    const previousValue = this.read(element);
+    const originalValue = this.read(element);
+    const action = typeof userAction === 'string' ? userAction.trim() : '';
+    const previousValue = action && !originalValue.includes(action) ? `${originalValue}${originalValue.trim() ? '\n\n' : ''}${action}` : originalValue;
     let appended;
     try { appended = appendBattlePacket(previousValue, packet, scope); } catch (error) {
       return { queued: false, injected: false, conflict: /already has a different version|already contains/i.test(error.message), reason: error.message, key, capability: this.capability() };

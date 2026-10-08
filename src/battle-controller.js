@@ -1,21 +1,32 @@
 import { storyText } from './story-context.js';
+import { withCharacterDeadline } from './character-deadline.js';
 import { preparationRegistry, createRuleMemory } from './authoritative-rules.js';
 import { rollbackFromAction } from './battle-rollback.js';
 import { TechniqueRegistry } from './battle-registry.js';
-import { MockAdjudicator, MockNarrator, UnconfiguredAdjudicator, UnconfiguredNarrator, HttpJsonAdjudicator, HttpJsonNarrator, MainStoryNarrator, PacketNarrator, normalizeSettings } from './adapters.js';
+import { MockAdjudicator, MockNarrator, UnconfiguredAdjudicator, UnconfiguredNarrator, HttpJsonAdjudicator, HttpJsonNarrator, MainStoryNarrator, PacketNarrator, normalizeSettings, characterApiSettings } from './adapters.js';
 import { BattleStorage } from './battle-storage.js';
 import { readCredentialSettings, writeCredentialSettings } from './credential-store.js';
 import { clone, stripSecrets, publicLog, abortIfNeeded } from './common.js';
 import { createInitialState, startBattle, stopBattle, nextRound, restoreBattle, judgeAndCommit, rewriteNarrative, getPlayerView } from './battle-state.js';
 import { prepareEnemyCandidates, confirmEnemyCandidates, applyConfirmedEnemies, buildCharacterConfirmationPanel } from './character-preparation.js';
 import { createHttpCharacterInference, createReadOnlyCharacterSourceAdapters } from './character-source-adapters.js';
+import { freezeCoreRules, coreSelectionKey, coreRulesLocked } from './core-rules.js';
 export function adaptersFromSettings(input = {}) {
   const settings = normalizeSettings(input); const a = settings.adjudicator; const n = settings.narrator;
   return { adjudicator: a.mode === 'mock' ? new MockAdjudicator() : a.mode === 'http' ? new HttpJsonAdjudicator(a) : new UnconfiguredAdjudicator(), narrator: n.mode === 'mock' ? new MockNarrator() : n.mode === 'http' ? new HttpJsonNarrator(n) : n.mode === 'main_story' ? new MainStoryNarrator() : n.mode === 'packet' ? new PacketNarrator() : new UnconfiguredNarrator() };
 }
 export class BattleController {
+  coreRuleConfig() { return this.hostAdapter?.coreRuleConfig?.() || { characterKey: '', characterName: '', selection: [] }; }
+  saveCoreRuleConfig(selection, characterKey) {
+    if (coreRulesLocked(this.state) || this.preparationAbort || this.inFlight) throw new Error('战斗或人物准备期间不能修改常驻底则');
+    if (!this.hostAdapter?.saveCoreRuleConfig) throw new Error('请在已选择角色卡的酒馆中配置');
+    const result = this.hostAdapter.saveCoreRuleConfig(selection, characterKey);
+    this.cancelCharacterPreparation();
+    this.state = { ...this.state, coreRules: [], coreRulesSelectionKey: null, version: this.state.version + 1 };
+    this.emit(); return result;
+  }
   constructor({ storage, credentialStorage, chatId = 'default-chat', branchId = 'main', adjudicator, narrator, hostAdapter, registry = new TechniqueRegistry(), onChange = () => {}, initialScene = {}, initialPlayer, initialEnemies = [], semanticState } = {}) {
-    this.storage = storage instanceof BattleStorage ? storage : new BattleStorage(storage,{chatId,branchId}); this.credentialStorage=credentialStorage; this.registry=registry; const persistedSettings=this.storage.readSettings(); const credentials=readCredentialSettings(this.credentialStorage); this.settings=normalizeSettings({...persistedSettings,adjudicator:{...persistedSettings.adjudicator,...credentials.adjudicator},narrator:{...persistedSettings.narrator,...credentials.narrator}}); const configured=adaptersFromSettings(this.settings); this.adjudicator=adjudicator||configured.adjudicator; this.narrator=narrator||configured.narrator; this.customAdapters={adjudicator,narrator}; this.hostAdapter=hostAdapter; this.onChange=onChange; this.epoch=0; this.inFlight=null; this.checkpoints=Promise.resolve(); this.bridgeQueuedAction=null; this.characterPreparation=null; this.characterPreparationRequest=0;
+    this.storage = storage instanceof BattleStorage ? storage : new BattleStorage(storage,{chatId,branchId}); this.credentialStorage=credentialStorage; this.registry=registry; const persistedSettings=this.storage.readSettings(); const credentials=readCredentialSettings(this.credentialStorage); this.settings=normalizeSettings({...persistedSettings,adjudicator:{...persistedSettings.adjudicator,...credentials.adjudicator},narrator:{...persistedSettings.narrator,...credentials.narrator},characterGenerator:{...persistedSettings.characterGenerator,...credentials.characterGenerator}}); const configured=adaptersFromSettings(this.settings); this.adjudicator=adjudicator||configured.adjudicator; this.narrator=narrator||configured.narrator; this.customAdapters={adjudicator,narrator}; this.hostAdapter=hostAdapter; this.onChange=onChange; this.epoch=0; this.inFlight=null; this.checkpoints=Promise.resolve(); this.bridgeQueuedAction=null; this.characterPreparation=null; this.characterPreparationRequest=0;
     this.initialOptions={registrySnapshot:registry.snapshot(),player:initialPlayer||this.defaultPlayer(),enemies:initialEnemies,...initialScene,semanticState}; const restored=hostAdapter?null:this.storage.readSession(); this.state=restored?restoreBattle(restored):createInitialState({...this.initialOptions,chatId,branchId}); if(restored)this.registry=new TechniqueRegistry(this.state.registrySnapshot); this.logs=this.storage.readLogs();
     this.ready=Promise.resolve(); if(hostAdapter){hostAdapter.start?.();this.unsubScope=hostAdapter.subscribeScopeChange?.((scope)=>{this.ready=this.switchScope(scope);});this.unsubNarrative=hostAdapter.subscribeNarrative?.((result)=>this.recordHostNarrative(result));this.unsubTranscript=hostAdapter.subscribeTranscriptChange?.(()=>{this.ready=this.reconcileTranscript();return this.ready;});this.unsubSent=hostAdapter.subscribePacketSent?.((event)=>this.recordPacketSent(event));this.ready=this.initializeHost();}
   }
@@ -78,6 +89,8 @@ export class BattleController {
       else this.log({ kind: 'host_local_ahead', capability: { reason: '本地 checkpoint 比宿主新，将重试持久化' } });
     }
     this.state.scope = { ...this.state.scope, ...scope };
+    const pendingStory = this.state.history.at(-1);
+    if (this.state.phase !== 'ended' && pendingStory?.narrative?.pending && pendingStory.narrative.metadata?.mode === 'main_story') this.bridgeQueuedAction = pendingStory.actionId;
     this.registry = new TechniqueRegistry(this.state.registrySnapshot);
     this.emit(); await this.reconcileTranscript();
   }
@@ -85,9 +98,9 @@ export class BattleController {
     if (this.hostAdapter && (this.state.characterPreparation?.status !== 'confirmed' || this.state.characterPreparation?.profileSchema !== 'battle_combat_profile_v2')) throw new Error('请先通过开始战斗生成并确认本场人物资料');
   }
   emit({persistHost=true}={}){this.storage.writeSession(stripSecrets(this.state,this.secrets()));this.onChange(this.state,getPlayerView(this.state));if(this.hostAdapter&&persistHost){const state=clone(this.state),scope=clone(this.hostAdapter.scope?.()||this.state.scope),epoch=this.epoch;if(scope.available===false)return;this.checkpoints=this.checkpoints.catch(()=>{}).then(async()=>{if(epoch!==this.epoch)return{persisted:false,confirmed:false,stale:true};const result=await this.persistToHost(null,state,scope);if(epoch===this.epoch&&this.state.version===state.version){this.state.hostSync={status:result?.persisted&&result?.confirmed?'confirmed':'pending',reason:result?.reason||null};this.storage.writeSession(stripSecrets(this.state,this.secrets()));this.onChange(this.state,getPlayerView(this.state));}return result;});}}
-  secrets(){return[this.settings.adjudicator.apiKey,this.settings.narrator.apiKey];}
+  secrets(){return[this.settings.adjudicator.apiKey,this.settings.narrator.apiKey,this.settings.characterGenerator.apiKey];}
   log(entry){this.logs=this.storage.appendLog(stripSecrets(entry,this.secrets()));}
-  setSettings(patch){if(this.inFlight)throw new Error('请求中不能更换模型设置');const merged={...this.settings,...patch};if(patch.adjudicator)merged.adjudicator={...this.settings.adjudicator,...patch.adjudicator};if(patch.narrator)merged.narrator={...this.settings.narrator,...patch.narrator};if(patch.mode!==undefined){delete merged.adjudicator;delete merged.narrator;}this.settings=normalizeSettings(merged);this.storage.writeSettings(this.settings);writeCredentialSettings(this.settings,this.credentialStorage);this.setAdapters(adaptersFromSettings(this.settings));this.emit();return this.settings;}
+  setSettings(patch){if(this.inFlight||this.preparationAbort)throw new Error('请求中不能更换模型设置');const merged={...this.settings,...patch};if(patch.adjudicator)merged.adjudicator={...this.settings.adjudicator,...patch.adjudicator};if(patch.narrator)merged.narrator={...this.settings.narrator,...patch.narrator};if(patch.characterGenerator)merged.characterGenerator={...this.settings.characterGenerator,...patch.characterGenerator};if(patch.mode!==undefined){delete merged.adjudicator;delete merged.narrator;}this.settings=normalizeSettings(merged);this.storage.writeSettings(this.settings);writeCredentialSettings(this.settings,this.credentialStorage);this.setAdapters(adaptersFromSettings(this.settings));this.emit();return this.settings;}
   setAdapters({adjudicator,narrator}={}){if(adjudicator)this.adjudicator=adjudicator;if(narrator)this.narrator=narrator;}
   /** Attach the browser catalogue. It is deliberately not auto-applied. */
   async hydrateContentStore(contentStore) {
@@ -113,13 +126,15 @@ export class BattleController {
   characterConfirmationPanel(){return this.characterPreparation ? buildCharacterConfirmationPanel(this.characterPreparation) : null;}
   async prepareCharacters({ context, mvu, database, inference } = {}) {
     await this.ready;
+    if (this.preparationAbort) throw new Error('人物准备正在进行，请等待或取消');
     this.assertIdleRequest();
     if (!['idle','ended'].includes(this.state.phase)) throw new Error('只能在战斗开始前准备敌方人物');
     const scope = clone(this.hostAdapter?.scope?.() || this.state.scope);
     if (scope.available === false) throw new Error('当前聊天没有可用的助手消息锚点；请先生成新的正文消息。');
     if (scope.chatId !== this.state.scope.chatId || scope.branchId !== this.state.scope.branchId) throw new Error('当前聊天分支已改变');
     const hostContext = this.hostAdapter?.context?.() || {};
-    const recentMessages = Array.isArray(hostContext.chat) ? hostContext.chat.slice(-20).map((message) => ({ role: message.role || (message.is_user ? 'user' : 'assistant'), text: storyText(message.mes || message.message) })) : [];
+    const messageCount = this.settings.characterMessageCount || 20;
+    const recentMessages = Array.isArray(hostContext.chat) ? hostContext.chat.slice(-messageCount).map((message) => ({ role: message.role || (message.is_user ? 'user' : 'assistant'), text: storyText(message.mes || message.message) })) : [];
     const card = hostContext.characters?.[hostContext.characterId];
     const sourceContext = { ...clone(context || {}), scope, recentMessages,
       playerId: this.state.actors.player.id,
@@ -128,8 +143,9 @@ export class BattleController {
       characterCard: card ? { name: card.name, description: card.description || card.data?.description, scenario: card.scenario || card.data?.scenario } : undefined,
       registry: this.hostAdapter ? preparationRegistry(this.registry.snapshot()) : this.registry.snapshot(),
       enemies: clone(context?.enemies || (this.hostAdapter ? [] : this.state.actors.enemies)) };
-    const configured = this.settings.adjudicator;
-    const ai = inference || (configured.mode === 'http' && configured.endpoint && configured.model ? createHttpCharacterInference({ endpoint: configured.endpoint, model: configured.model, apiKey: configured.apiKey || '', timeoutMs: configured.timeoutMs, maxOutput: this.settings.characterMaxOutput, temperature: configured.temperature, characterCompletionPrompt: this.settings.characterCompletionPrompt }) : null);
+    const configured = characterApiSettings(this.settings);
+    let markProgress = () => {};
+    const ai = inference || (configured.mode === 'http' && configured.endpoint && configured.model ? createHttpCharacterInference({ endpoint: configured.endpoint, model: configured.model, apiKey: configured.apiKey || '', timeoutMs: configured.timeoutMs, maxRetries: this.settings.characterMaxRetries, maxOutput: this.settings.characterMaxOutput, messageCount, temperature: configured.temperature, characterCompletionPrompt: this.settings.characterCompletionPrompt, onRequestSuccess: () => markProgress() }) : null);
     const adapters = createReadOnlyCharacterSourceAdapters({ mvu, database, inference: ai });
     const epoch = this.epoch;
     const request = ++this.characterPreparationRequest;
@@ -137,8 +153,23 @@ export class BattleController {
     const abort = new AbortController();
     this.preparationAbort = abort;
     try {
-      const preparation = await prepareEnemyCandidates(sourceContext, { ...adapters, signal: abort.signal, requireProfiles: !!this.hostAdapter, includePlayer: !!this.hostAdapter });
+      const coreConfig = this.coreRuleConfig();
+      const coreRules = await freezeCoreRules(coreConfig.selection, name => this.hostAdapter.readCoreWorldbook(name));
+      abortIfNeeded(abort.signal);
+      const preparation = await withCharacterDeadline((signal, progress) => {
+        markProgress = progress;
+        const source = adapters.inference;
+        const tracked = source && Object.fromEntries(['inferParticipants', 'inferCandidates', 'completeCandidate', 'fill', 'fillMissingFields'].filter((key) => typeof source[key] === 'function').map((key) => [key, async (...args) => {
+          const result = await source[key](...args);
+          progress();
+          return result;
+        }]));
+        return prepareEnemyCandidates(sourceContext, { ...adapters, ...(tracked ? { inference: tracked } : {}), signal, requireProfiles: !!this.hostAdapter, includePlayer: !!this.hostAdapter });
+      }, { timeoutMs: configured.timeoutMs, signal: abort.signal, label: '战前人物准备', resetOnProgress: true });
       if (request !== this.characterPreparationRequest || epoch !== this.epoch || this.state.scope.chatId !== scope.chatId || this.state.scope.branchId !== scope.branchId || this.state.scope.messageUid !== scope.messageUid) throw new Error('人物读取期间聊天分支已改变或读取已取消，请重新读取');
+      if (this.coreRuleConfig().characterKey !== coreConfig.characterKey || coreSelectionKey(this.coreRuleConfig().selection) !== coreSelectionKey(coreConfig.selection)) throw new Error('底则配置或角色卡在准备期间改变，请重新读取');
+      preparation.coreRules = coreRules;
+      preparation.coreRulesSelectionKey = coreSelectionKey(coreConfig.selection);
       this.characterPreparation = preparation;
       return this.characterConfirmationPanel();
     } finally { if (this.preparationAbort === abort) this.preparationAbort = null; }
@@ -149,7 +180,10 @@ export class BattleController {
     const scope = this.hostAdapter?.scope?.() || this.state.scope;
     if (scope.chatId !== this.state.scope.chatId || scope.branchId !== this.state.scope.branchId) throw new Error('当前聊天分支已改变');
     const confirmed = confirmEnemyCandidates(this.characterPreparation, edits, options);
+    if (this.characterPreparation.coreRulesSelectionKey && this.characterPreparation.coreRulesSelectionKey !== coreSelectionKey(this.coreRuleConfig().selection)) throw new Error('底则配置已改变，请重新准备人物');
     const next = applyConfirmedEnemies(this.state, confirmed);
+    next.coreRules = clone(this.characterPreparation.coreRules || []);
+    next.coreRulesSelectionKey = this.characterPreparation.coreRulesSelectionKey;
     this.registry = new TechniqueRegistry(next.registrySnapshot);
     this.state = next;
     this.characterPreparation = null;
@@ -157,35 +191,44 @@ export class BattleController {
     return this.state;
   }
   cancelCharacterPreparation(){this.preparationAbort?.abort();this.preparationAbort=null;this.characterPreparationRequest+=1;this.characterPreparation=null;}
-  start(){this.assertIdleRequest();if(this.characterPreparation?.status && this.characterPreparation.status !== 'confirmed')throw new Error('请先在人物确认页逐项确认全部候选人物');const scope=this.hostAdapter?.scope?.();if(scope?.available===false)throw new Error('当前聊天没有可用的助手消息锚点；请先生成新的正文消息。');this.assertPrepared();this.state=startBattle(this.state);this.emit();return this.state;}
+  start(){this.assertIdleRequest();if(this.coreRuleConfig().selection.length && this.state.coreRulesSelectionKey!==coreSelectionKey(this.coreRuleConfig().selection))throw new Error('常驻底则尚未加载，请重新准备人物');if(this.characterPreparation?.status && this.characterPreparation.status !== 'confirmed')throw new Error('请先在人物确认页逐项确认全部候选人物');const scope=this.hostAdapter?.scope?.();if(scope?.available===false)throw new Error('当前聊天没有可用的助手消息锚点；请先生成新的正文消息。');this.assertPrepared();this.state=startBattle(this.state);this.emit();return this.state;}
   cancelPending(){this.epoch+=1;this.inFlight?.abort();this.inFlight=null;this.bridgeQueuedAction=null;}
   stop(reason='用户停止'){this.cancelPending();this.hostAdapter?.clearScenePacket?.();this.state=stopBattle({...this.state,history:this.state.history.map((record)=>record.status==='prepared'?{...record,status:'interrupted',error:reason}:record)},reason);this.emit();return this.state;}
   continueNext(options = {}){this.assertIdleRequest();if(this.bridgeQueuedAction)throw new Error('本轮场景包仍等待主剧情生成；请先生成正文或跳过本轮正文');this.state=nextRound(this.state, options);this.emit();return this.state;}
   assertIdleRequest(){if(this.inFlight)throw new Error('正在处理本轮请求，请等待或停止');}
   async persistToHost(record,state,scope){if(!this.hostAdapter)return{persisted:true,confirmed:true,localOnly:true};try{const result=await this.hostAdapter.persistReceipt?.(stripSecrets(record,this.secrets()),stripSecrets(state,this.secrets()),scope);this.log({kind:'host_persistence',actionId:record?.actionId,capability:result});return result||{persisted:false,confirmed:false,reason:'宿主未返回保存确认'};}catch(error){const result={persisted:false,confirmed:false,reason:error.message};this.log({kind:'host_persistence',capability:result});return result;}}
   async queueMainStory(record, scope) {
+    if (!this.hostAdapter) return { queued: false, reason: '宿主不可用；可复制场景包或使用独立正文API' };
+    if (this.bridgeQueuedAction === record.actionId && this.hostAdapter?.activePacket) return { queued: true, sendRequested: true, deduplicated: true };
+    this.bridgeQueuedAction = record.actionId;
+    this.state = { ...this.state, phase: 'narrating', pending: { actionId: record.actionId, roundId: record.roundId } };
+    this.onChange(this.state, getPlayerView(this.state));
     await this.checkpoints;
     const saved = await this.persistToHost(record, this.state, scope);
     if (this.hostAdapter && (!saved?.persisted || !saved?.confirmed)) {
       this.state.hostSync = { status: 'pending', reason: saved?.reason };
+      this.state.phase = 'committed';
       this.storage.writeSession(stripSecrets(this.state, this.secrets()));
       this.log({ kind: 'host_injection', actionId: record.actionId, capability: { queued: false, reason: '宿主保存未确认，已保留本地提交；重试保存不会重新裁定' } });
       return { queued: false, pending: true };
     }
-    if (!this.hostAdapter) return { queued: false, reason: '宿主不可用；可复制场景包或使用独立正文API' };
+    if (!this.hostAdapter) { this.state.phase = 'committed'; return { queued: false, reason: '宿主不可用；可复制场景包或使用独立正文API' }; }
     try {
-      const result = await this.hostAdapter.injectScenePacket?.(record.narrativePacket, scope);
+      const userAction = [record.action?.label, record.action?.intent].filter((value, index, values) => typeof value === 'string' && value.trim() && values.indexOf(value) === index).join('\n');
+      const result = await this.hostAdapter.injectScenePacket?.(record.narrativePacket, scope, { userAction });
       this.log({ kind: 'host_injection', actionId: record.actionId, capability: result });
-      if (!result?.queued) return result;
+      if (!result?.queued) { this.state.phase = 'committed'; this.state.lastError = result?.reason || '场景包注入失败'; this.emit(); return result; }
       this.bridgeQueuedAction = record.actionId;
       // Set the action before native send; completion can arrive immediately.
       const send = this.hostAdapter.sendQueuedScenePacket?.(scope) || { requested: false, reason: '宿主不支持自动发送，场景包已保留' };
       this.log({ kind: 'host_auto_send', actionId: record.actionId, capability: send });
       this.state.lastError = send.requested ? null : send.reason;
+      if (!send.requested) this.state.phase = 'committed';
       this.storage.writeSession(stripSecrets(this.state, this.secrets()));
       this.onChange(this.state, getPlayerView(this.state));
       return { ...result, sendRequested: send.requested, reason: send.reason };
     } catch (error) {
+      this.state.phase = 'committed'; this.state.lastError = error.message; this.emit();
       this.log({ kind: 'host_injection', capability: { queued: false, reason: error.message } });
       return { queued: false, reason: error.message };
     }
@@ -202,9 +245,18 @@ export class BattleController {
     try{const result=await judgeAndCommit(this.state,action,{adjudicator:this.adjudicator,narrator:this.narrator,settings:this.settings,signal:controller.signal,save,logger:(entry)=>{if(epoch===this.epoch)this.log(entry);},onCommit:async(record,state)=>{if(epoch!==this.epoch)return;const saved=await this.persistToHost(record,state,scope);abortIfNeeded(controller.signal);return{allowed:!this.hostAdapter||!!(saved?.persisted&&saved?.confirmed),reason:saved?.reason};}});if(epoch!==this.epoch)return{stale:true,state:this.state};this.state=result.state;this.emit();await this.checkpoints;const saved=await this.persistToHost(result.record,this.state,scope);if(this.settings.autoNarrative&&this.settings.narrator.mode==='main_story'&&saved?.persisted&&saved?.confirmed)await this.queueMainStory(result.record,scope);else if(this.settings.narrator.mode==='main_story'&&this.hostAdapter)this.state.hostSync={status:'pending',reason:saved?.reason};this.storage.writeSession(stripSecrets(this.state,this.secrets()));this.onChange(this.state,getPlayerView(this.state));return result;}catch(error){if(epoch!==this.epoch||controller.signal.aborted)return{stale:true,state:this.state};throw error;}finally{if(this.inFlight===controller)this.inFlight=null;}}
   async rewrite(actionId){return this.withEventOperationLock(() => this.rewriteUnlocked(actionId));}
   async rewriteUnlocked(actionId){await this.ready;this.assertIdleRequest();this.hostAdapter?.clearScenePacket?.();const epoch=this.epoch;const controller=new AbortController();this.inFlight=controller;const scope=clone(this.hostAdapter?.scope?.()||this.state.scope);const save=async(state)=>{if(epoch!==this.epoch)throw new DOMException('作用域已变化','AbortError');this.state=state;this.emit();await this.checkpoints;};try{const result=await rewriteNarrative(this.state,actionId,this.narrator,{signal:controller.signal,save,logger:(entry)=>{if(epoch===this.epoch)this.log(entry);},originalPrompt:this.settings.originalPrompt});if(epoch!==this.epoch)return{stale:true,state:this.state};this.state=result.state;await this.persistToHost(result.record,this.state,scope);this.emit();await this.checkpoints;if(this.settings.narrator.mode==='main_story')await this.queueMainStory(result.record,scope);return result;}catch(error){if(epoch!==this.epoch||controller.signal.aborted)return{stale:true,state:this.state};throw error;}finally{if(this.inFlight===controller)this.inFlight=null;}}
-  async retryHostPersistence(){await this.checkpoints;const scope=this.hostAdapter?.scope?.()||this.state.scope;const record=this.state.history.filter((item)=>['committed','complete'].includes(item.status)).at(-1);const result=await this.persistToHost(record,this.state,scope);this.state.hostSync={status:result?.persisted&&result?.confirmed?'confirmed':'pending',reason:result?.reason};this.storage.writeSession(stripSecrets(this.state,this.secrets()));if(result?.persisted&&result?.confirmed&&record&&!record.narrative?.text&&this.settings.narrator.mode==='main_story')await this.queueMainStory(record,scope);this.onChange(this.state,getPlayerView(this.state));return result;}
-  skipPendingNarrative(){this.hostAdapter?.clearScenePacket?.();this.bridgeQueuedAction=null;const record=this.state.history.filter((item)=>['committed','complete'].includes(item.status)).at(-1);if(record?.narrative?.pending)record.narrative={...record.narrative,pending:false,metadata:{mode:'skipped',reason:'玩家跳过正文，裁定事实保留'}};this.state={...this.state,version:this.state.version+1};this.emit();}
-  async recordHostNarrative(result){this.bridgeQueuedAction=null;if(result.scope?.chatId!==this.state.scope.chatId||result.scope?.branchId!==this.state.scope.branchId)return;const record=this.state.history.find((item)=>item.actionId===result.actionId);if(!record||!record.narrativePacket)return;if(result.transport)record.storyLink={transport:result.transport,sent:result.transport==='input-box'&&result.inputVerified===true};if(result.status==='complete'){record.narrative={text:String(result.text||''),metadata:{source:'SillyTavern normal generation'}};record.status='complete';}else record.narrativeError='主剧情生成已停止；裁定事实保持';this.state={...this.state,version:this.state.version+1,phase:'awaiting_next',updatedAt:new Date().toISOString()};this.log({kind:'host_narrative_result',actionId:record.actionId,narrative:record.narrative,capability:{status:result.status}});this.emit();await this.persistToHost(record,this.state,result.scope);}
+  async retryHostPersistence(){await this.checkpoints;const scope=this.hostAdapter?.scope?.()||this.state.scope;const record=this.state.history.filter((item)=>['committed','complete'].includes(item.status)).at(-1);const result=await this.persistToHost(record,this.state,scope);this.state.hostSync={status:result?.persisted&&result?.confirmed?'confirmed':'pending',reason:result?.reason};this.storage.writeSession(stripSecrets(this.state,this.secrets()));if(result?.persisted&&result?.confirmed&&record&&!record.narrative?.text&&record.narrative?.metadata?.mode!=='skipped'&&this.state.phase!=='ended'&&this.settings.narrator.mode==='main_story')await this.queueMainStory(record,scope);this.onChange(this.state,getPlayerView(this.state));return result;}
+  skipPendingNarrative(){this.hostAdapter?.clearScenePacket?.();this.bridgeQueuedAction=null;const record=this.state.history.filter((item)=>['committed','complete'].includes(item.status)).at(-1);if(record)record.narrative={...record.narrative,pending:false,metadata:{mode:'skipped',reason:'玩家跳过正文，裁定事实保留'}};this.state={...this.state,phase:'awaiting_next',pending:null,version:this.state.version+1};this.emit();}
+  async recordHostNarrative(result){
+    if(result.scope?.chatId!==this.state.scope.chatId||result.scope?.branchId!==this.state.scope.branchId||this.bridgeQueuedAction!==result.actionId)return;
+    const record=this.state.history.find((item)=>item.actionId===result.actionId);if(!record||!record.narrativePacket)return;
+    if(result.transport)record.storyLink={transport:result.transport,sent:result.transport==='input-box'&&result.inputVerified===true};
+    const complete=result.status==='complete'&&typeof result.text==='string'&&!!result.text.trim();
+    if(complete){this.bridgeQueuedAction=null;record.narrative={text:result.text,metadata:{source:'SillyTavern normal generation'}};record.status='complete';delete record.narrativeError;}
+    else record.narrativeError='主剧情生成已停止或未返回正文；裁定事实保留，可重试发送或跳过正文';
+    this.state={...this.state,version:this.state.version+1,phase:complete?'awaiting_next':'committed',pending:null,lastError:complete?null:record.narrativeError,updatedAt:new Date().toISOString()};
+    this.log({kind:'host_narrative_result',actionId:record.actionId,narrative:record.narrative,capability:{status:result.status}});this.emit();await this.persistToHost(record,this.state,result.scope);
+  }
   importScene(input){this.assertIdleRequest();if(!['idle','ended'].includes(this.state.phase))throw new Error('活动战斗中不能导入新场景，请先停止');const data=typeof input==='string'?JSON.parse(input):clone(input);const entries=data.registry||this.registry.snapshot();const registry=new TechniqueRegistry(entries);if(!data.scene||!data.actors?.player||!Array.isArray(data.actors.enemies))throw new Error('场景需 scene、actors.player、actors.enemies');for(const actor of [data.actors.player,...data.actors.enemies])if(!actor.id||!actor.name)throw new Error('角色需id/name');if(new Set([data.actors.player,...data.actors.enemies].map((a)=>a.id)).size!==data.actors.enemies.length+1)throw new Error('角色id重复');this.cancelPending();this.characterPreparationRequest+=1;this.characterPreparation=null;this.hostAdapter?.clearScenePacket?.();const priorVersion=this.state.version;this.registry=registry;this.state=createInitialState({chatId:this.state.scope.chatId,branchId:this.state.scope.branchId,scene:data.scene,player:data.actors.player,enemies:data.actors.enemies,semanticState:data.semanticState,causalState:data.causalState,combatLedger:data.combatLedger,resourceRules:data.resourceRules,registrySnapshot:registry.snapshot()});this.state.version=priorVersion+1;this.logs=[];this.storage.replaceLogs([]);this.emit();return this.state;}
   importRegistry(raw){this.assertIdleRequest();if(!['idle','ended'].includes(this.state.phase))throw new Error('活动战斗中不能替换功法');const input=typeof raw==='string'?JSON.parse(raw):raw;const registry=new TechniqueRegistry(Array.isArray(input)?input:input.registry||[input]);this.registry=registry;this.state={...this.state,registrySnapshot:registry.snapshot(),ruleMemory:createRuleMemory(registry.snapshot()),version:this.state.version+1};this.emit();return registry.snapshot();}
   exportData(){return JSON.stringify(stripSecrets({schema:'battle_v2_export',exportedAt:new Date().toISOString(),state:this.state,logs:this.logs,settings:this.settings,registry:this.registry.snapshot()},this.secrets()),null,2);}

@@ -37,10 +37,10 @@ async function fixture(count = 1) {
   })) });
 }
 
-function mount(t, preparation, onConfirm = () => {}) {
+function mount(t, preparation, onConfirm = () => {}, onCancel = () => {}, busy = false) {
   const root = document.createElement('div');
   document.body.append(root);
-  const props = reactive({ preparation: buildCharacterConfirmationPanel(preparation), busy: false, onConfirm });
+  const props = reactive({ preparation: buildCharacterConfirmationPanel(preparation), busy, onConfirm, onCancel });
   const app = createApp(Panel, props);
   app.mount(root);
   t.after(() => { app.unmount(); root.remove(); });
@@ -48,11 +48,21 @@ function mount(t, preparation, onConfirm = () => {}) {
 }
 
 async function acknowledge(root, index = 0) {
-  const input = root.querySelectorAll('.xy-character-candidate__ack input')[index];
+  const input = root.querySelectorAll('.xy-character-candidate > .xy-character-candidate__ack input')[index];
   input.checked = true;
   input.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
   await nextTick();
 }
+
+test('cancel remains usable during character generation', async (t) => {
+  let cancelled = false;
+  const { root } = mount(t, await fixture(), () => {}, () => { cancelled = true; }, true);
+  await nextTick();
+  assert.equal(root.querySelector('[data-action="cancel"]').disabled, false);
+  root.querySelector('[data-action="cancel"]').click();
+  assert.equal(cancelled, true);
+  assert.equal(root.querySelector('[data-action="retry"]').disabled, true);
+});
 
 async function inputValue(input, value) {
   input.value = value;
@@ -167,11 +177,14 @@ test('presentation preserves nested arrays, long values, empty and unknown field
 });
 
 test('complete profile review hides internal fields and requires both protagonist and enemy acknowledgments', async (t) => {
-  const preparation = await prepareEnemyCandidates({ scope, playerId: 'player', enemies: [{ id: 'e', name: '厉沧海' }] }, {
+  const preparation = await prepareEnemyCandidates({ scope, registry: authoritativeEntries(), playerId: 'player', playerCandidate: fullCombatProfile('许新毅'), enemies: [{ id: 'e', name: '厉沧海' }] }, {
     includePlayer: true, requireProfiles: true,
     inference: { completeCandidate: async ({ side }) => fullCombatProfile(side === 'player' ? '许新毅' : '厉沧海') }
   });
   const { root, button } = mount(t, preparation);
+  const method = root.querySelector('[data-active-method]');
+  assert.equal(method.checked, false);
+  method.checked = true; method.dispatchEvent(new dom.window.Event('change', { bubbles: true })); await nextTick();
   assert.equal(root.querySelector('[data-candidate-id="player"] [data-action="remove"]'), null);
   assert.ok(root.querySelector('[data-field-group="techniques.0"]'));
   assert.equal(root.querySelector('[data-field-group="techniques.0"]').open, false);

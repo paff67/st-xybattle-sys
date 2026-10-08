@@ -28,7 +28,7 @@ function create(id, kind = 'effect', dependsOn = [], overrides = {}) {
 }
 function proposal(state, operations) { return { baseRevision: state.combatLedger.revision, operations }; }
 function outcome(request, operations = []) {
-  return { summary: '按规则建立结构', before: request.context.semanticState, after: structuredClone(request.context.semanticState), reason: '依据节点规则', ruleRefs: node.ruleRefs, publicEvents: ['结构已建立'],
+  return { actorChanges: [], summary: '按规则建立结构', before: request.context.semanticState, after: structuredClone(request.context.semanticState), reason: '依据节点规则', ruleRefs: node.ruleRefs, publicEvents: ['结构已建立'],
     exchange: { playerResult: '主角保持站位', opponents: [], environmentResult: '未破坏地形', boundaries: ['未造成伤害'] },
     combatChanges: { baseRevision: request.context.combatLedger.revision, operations } };
 }
@@ -45,7 +45,8 @@ test('authoritative binding replaces invented player definitions without grantin
   const draft = await prepareEnemyCandidates({ registry: entries, scope: { chatId: 'c', branchId: 'b' }, playerCandidate: wrong, enemies: [{ id: 'e', name: '敌人' }] }, {
     includePlayer: true, requireProfiles: true, inference: { completeCandidate: async ({ side }) => side === 'player' ? wrong : fullCombatProfile() }
   });
-  const state = applyConfirmedEnemies(createInitialState({ chatId: 'c', branchId: 'b' }), confirmEnemyCandidates(draft));
+  assert.equal(draft.candidates[0].fields.techniques.length, 0);
+  const state = applyConfirmedEnemies(createInitialState({ chatId: 'c', branchId: 'b' }), confirmEnemyCandidates(draft, { player: { learnedTechniqueRefs: [{ registryId: dielang.id, techniqueIds: [jump.id], evidence: '用户手动选择' }] } }));
   assertBindings(state);
   assert.equal(state.registrySnapshot.find((entry) => entry.id === dielang.id).techniques.find((move) => move.id === jump.id).originalDefinition, jump.originalDefinition);
   assert.ok(buildAdjudicationRequest(startBattle(state), { label: '跳弓', techniqueId: jump.id }).prompt.includes(JSON.stringify(jump.originalDefinition).slice(1, -1)));
@@ -125,7 +126,7 @@ test('full rule memory and bounded counterexamples reconstruct independently of 
   assert.ok(selectNegativeCases(state, { label: '跳弓' }).some((item) => item.techniqueIds.includes(jump.id)));
   assert.equal(buildAdjudicationRequest(restoreBattle(JSON.parse(JSON.stringify(state))), input).prompt, buildAdjudicationRequest(state, input).prompt);
   const prompt = buildAdjudicationRequest(state, input).prompt;
-  assert.match(prompt, /不是本场事实/);
+  assert.ok(JSON.parse(prompt).context.negativeCases.length > 0);
   assert.ok(JSON.stringify(projectRuleContext(entries)).length < JSON.stringify(entries).length / 2);
   const nextCatalog = createRuleMemory(entries);
   nextCatalog.interactions[0].boundary = '被修改的全局库';

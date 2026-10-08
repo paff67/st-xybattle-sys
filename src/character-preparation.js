@@ -1,7 +1,12 @@
 import { createRuleMemory } from './authoritative-rules.js';
+import { initializeCombatObjects } from './combat-ledger.js';
 import { clone } from './common.js';
+import { activeAbilityRegistry } from './worldbook-abilities.js';
 import { COMBAT_PROFILE_SCHEMA, normalizeCombatProfile, combatProfileIssues, compileCombatProfile } from './combat-profile.js';
 import { TechniqueRegistry } from './battle-registry.js';
+import { isCharacterTimeout } from './character-deadline.js';
+import { knownPlayerProfile } from './player-profile.js';
+import { isProtagonistRecord } from './character-response.js';
 
 /**
  * Character preparation is deliberately a read-only, pre-battle boundary.
@@ -330,8 +335,8 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
   const participants = typeof aiSource?.inferParticipants === 'function' ? await aiSource.inferParticipants(clone(context), { signal }) : null;
   const inferredRaw = participants ? participants.candidates || [] : await inferCandidates(aiSource, context, signal);
   const strictProfiles = requireProfiles || typeof aiSource?.completeCandidate === 'function';
-  const all = [...explicit];
-  inferredRaw.forEach((item, index) => { const match = matchingCandidate(all, item, index); if (match && !all.includes(match)) all.push(match); });
+  const all = explicit.filter((item) => !isProtagonistRecord(item));
+  inferredRaw.filter((item) => !isProtagonistRecord(item)).forEach((item, index) => { const match = matchingCandidate(all, item, index); if (match && !all.includes(match)) all.push(match); });
   if (includePlayer) {
     const rawPlayer = participants?.player || context.playerCandidate || {};
     const facts = rawPlayer.explicitFacts || rawPlayer.fields || rawPlayer;
@@ -350,10 +355,16 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
     let merged = mergeCharacterCandidate(candidate, { mvu: mvuResult.value, database: databaseResult.value, inference: aiParts.inferred, aiExtracted });
     let completionStatus = { status: aiSource ? 'not_requested' : 'not_configured' };
     const completionFn = aiSource && typeof aiSource.completeCandidate === 'function' ? aiSource.completeCandidate.bind(aiSource) : null;
-    if (completionFn) {
+    if (candidate.role === 'player' && strictProfiles) {
+      // Player facts are local MVU facts, never AI or database proposals.
+      merged.fields = knownPlayerProfile(redactCharacterSource(mvuResult.value || context.playerCandidate || {}), { id: candidate.id, name: candidate.name, registry: context.registry || [] });
+      merged.conflicts = [];
+      completionStatus = { status: 'not_requested' };
+    } else if (completionFn && candidate.role !== 'player') {
       try {
         const completed = await completionFn({ candidate: clone(merged.fields), knownFields: clone(merged.fields), context: { ...clone(context), scene: clone(participants?.scene || context.scene || {}) }, signal, side: candidate.role || 'enemy' });
         const completedData = completed?.data ?? completed?.candidate ?? completed?.fields ?? completed;
+        if (isProtagonistRecord(completedData)) throw new Error('模型返回了许妍的资料，已丢弃；请重新生成敌人档案。');
         if (completedData && typeof completedData === 'object') {
           merged = mergeCharacterCandidate(merged, { mvu: mvuResult.value, database: databaseResult.value, inference: aiParts.inferred, aiExtracted, aiCompleted: completedData });
           // A complete profile is one coherent definition, not another bag of
@@ -362,14 +373,14 @@ export async function prepareEnemyCandidates(context = {}, { mvu, database, infe
           completionStatus = { status: 'matched' };
         } else completionStatus = { status: 'missing' };
       } catch (error) {
-        if (signal?.aborted) throw error;
+        if (signal?.aborted || isCharacterTimeout(error)) throw error;
         if (strictProfiles && error.partialProfile) merged.fields = normalizeCombatProfile(redactCharacterSource(error.partialProfile), { id: candidate.id, side: candidate.role || 'enemy' });
         completionStatus = { status: 'read_failed', error: String(error?.message || error) };
       }
     }
     let fillStatus = { status: aiSource ? 'not_requested' : 'not_configured' };
     const fillFn = aiSource && (typeof aiSource.fill === 'function' ? aiSource.fill.bind(aiSource) : typeof aiSource.fillMissingFields === 'function' ? aiSource.fillMissingFields.bind(aiSource) : null);
-    if (fillFn && !completionFn) {
+    if (fillFn && !completionFn && candidate.role !== 'player') {
       const missingFields = ['realm', '境界', 'visibleInfo', 'resources', 'techniques', 'abilities', 'skills'].filter((key) => merged.fields?.[key] == null);
       try {
         const fill = await fillFn({ candidate: clone(merged.fields), knownFields: clone(merged.fields), missingFields, context: clone(context), signal }, { context: clone(context), signal });
@@ -432,6 +443,7 @@ export function confirmEnemyCandidates(preparation, edits = {}, { removeIds = []
     let fields = redactCharacterSource(clone(candidate.fields));
     for (const [path, value] of leaves(patch)) setPath(fields, path, value);
     if (preparation.requiresCompleteProfiles) {
+      if (candidate.role !== 'player' && isProtagonistRecord(fields)) throw new Error('许妍不能作为敌人确认，相关资料已拒绝。');
       fields = normalizeCombatProfile(fields, { id: candidate.id, side: candidate.role || 'enemy', registry: preparation.registrySnapshot || [] });
       const issues = combatProfileIssues(fields);
       if (issues.length) throw new Error(`${fields.name || '人物'}资料不完整：${issues.join('；')}`);
@@ -489,12 +501,14 @@ export function applyConfirmedEnemies(state, preparation) {
     if (preparation.candidates.some((candidate) => candidate.role !== 'player' && candidate.id === player.id)) throw new Error('敌方人物 id 与主角重复');
     const enemies = compiled.filter((item) => item.actor.id !== player.id).map((item) => item.actor);
     if (new Set([player.id, ...enemies.map((enemy) => enemy.id)]).size !== enemies.length + 1) throw new Error('敌方人物 id 与主角重复');
-    const registrySnapshot = [...sourceRegistry.filter((entry) => !entry.characterProfileId), ...compiled.map((item) => item.entry)];
+    const registrySnapshot = [...activeAbilityRegistry(sourceRegistry, [player, ...enemies]).filter((entry) => !entry.characterProfileId), ...compiled.map((item) => item.entry)];
     new TechniqueRegistry(registrySnapshot);
     const ids = new Set([...compiled.map((item) => item.actor.id), ...state.actors.enemies.map((enemy) => enemy.id)]);
     const resourceRules = [...(state.resourceRules || []).filter((rule) => !ids.has(rule.actorId)), ...compiled.flatMap((item) => item.resourceRules)];
-    const positions = Object.fromEntries([player, ...enemies].filter((actor) => actor.visibleInfo?.position).map((actor) => [actor.id, actor.visibleInfo.position]));
-    return { ...clone(state), scene: { ...clone(state.scene), ...clone(preparation.scene || {}) }, actors: { player, enemies }, registrySnapshot, ruleMemory: createRuleMemory(registrySnapshot), resourceRules, semanticState: { ...clone(state.semanticState), positions }, characterPreparation: clone(preparation), version: Number(state.version || 0) + 1, updatedAt: new Date().toISOString() };
+    const positions = Object.fromEntries([player, ...enemies].filter((actor) => actor.state?.position || actor.visibleInfo?.position).map((actor) => [actor.id, actor.state?.position || actor.visibleInfo.position]));
+    const next = { ...clone(state), scene: { ...clone(state.scene), ...clone(preparation.scene || {}) }, actors: { player, enemies }, registrySnapshot, ruleMemory: createRuleMemory(registrySnapshot), resourceRules, semanticState: { ...clone(state.semanticState), positions }, characterPreparation: clone(preparation), version: Number(state.version || 0) + 1, updatedAt: new Date().toISOString() };
+    next.combatLedger = initializeCombatObjects(next);
+    return next;
   }
   const enemies = confirmedEnemyActors(preparation);
   if (enemies.some((enemy) => enemy.id === state.actors?.player?.id)) throw new Error('敌方人物 id 与主角重复');

@@ -17,7 +17,7 @@
 
     <div class="xy-character-confirmation__body xy-custom-scroll" tabindex="0" aria-label="候选人物资料，可上下滚动">
       <div v-if="busy" class="xy-character-confirmation__busy" role="status" aria-live="polite">
-        正在读取上下文并由 AI 生成完整人物档案；敌人的功法、招式与资源会自动补全。
+        正在读取主角 MVU，并由 AI 生成敌人的功法、招式与资源；主角功法由你手动激活。
       </div>
 
       <div v-if="!preparation" class="xy-character-confirmation__empty">
@@ -81,14 +81,18 @@
           </p>
 
           <div v-if="profileIssues[candidate.id]?.length" class="xy-character-candidate__error" role="alert">
-            <strong>{{ candidate.role === 'player' ? '主角资料尚未完整' : '敌人自动生成未完成，请重新生成；无需手动提供设定' }}</strong>
+            <strong>{{ candidate.role === 'player' ? '请核对 MVU 资料并选择本场启用的功法（主角不使用 AI 补全）' : '敌人自动生成未完成，请重新生成；无需手动提供设定' }}</strong>
             <ul><li v-for="issue in profileIssues[candidate.id]" :key="issue">{{ issue }}</li></ul>
           </div>
-          <details v-if="candidate.role === 'player' && authorityCatalogue.length" class="xy-character-section">
-            <summary>核对已掌握的功法与招式</summary>
-            <p>只勾选已经修成的招式。招式定义来自固定功法资料，施展是否成功仍取决于本轮条件。</p>
+          <details v-if="candidate.role === 'player' && authorityCatalogue.length" open class="xy-character-section">
+            <summary>从内容库激活本场功法与法宝</summary>
+            <p>MVU 提供主角当前资料；内容库功法与法宝默认不启用。勾选后使用对应完整原文，也可调整本场启用的招式。原文中的境界描述和联动不代表主角已达到或自动生效。</p>
             <details v-for="entry in authorityCatalogue" :key="entry.id" class="xy-character-section">
               <summary>{{ entry.name }}</summary>
+              <label class="xy-character-candidate__ack">
+                <input type="checkbox" :data-active-method="entry.id" :checked="entry.techniques.every(move => hasLearned(candidate, entry.id, move.id))" :disabled="editingDisabled(candidate)" @change="toggleMethod(candidate, entry, $event.target.checked)" />
+                激活{{ entry.contentType === 'treasure' ? '法宝' : '整门功法' }}：{{ entry.name }}
+              </label>
               <label v-for="move in entry.techniques" :key="move.id" class="xy-character-candidate__ack">
                 <input type="checkbox" :data-learned-technique="move.id" :checked="hasLearned(candidate, entry.id, move.id)" :disabled="editingDisabled(candidate)" @change="toggleLearned(candidate, entry, move.id, $event.target.checked)" />
                 {{ move.name }}
@@ -135,7 +139,7 @@
         <span>{{ confirmationHint }}</span>
       </div>
       <div class="xy-character-confirmation__buttons">
-        <button type="button" data-action="cancel" :disabled="busy" @click="$emit('cancel')">取消</button>
+        <button type="button" data-action="cancel" @click="$emit('cancel')">取消</button>
         <button type="button" data-action="retry" :disabled="busy" @click="$emit('retry')">重新读取</button>
         <button type="button" class="is-primary xy-character-confirmation__confirm-button" data-action="confirm" :disabled="confirmDisabled" @click="confirm">{{ confirmLabel }}</button>
       </div>
@@ -206,7 +210,7 @@ function parsedFields(candidate) {
   }
 }
 
-const authorityCatalogue = computed(() => (props.preparation?.registrySnapshot || []).filter((entry) => entry.authority?.kind === 'user-designated-source'));
+const authorityCatalogue = computed(() => (props.preparation?.registrySnapshot || []).filter((entry) => !entry.characterProfileId && entry.techniques?.length));
 function resolvedFields(candidate) {
   return normalizeCombatProfile(parsedFields(candidate), { id: candidate.id, side: candidate.role || 'enemy', registry: props.preparation?.registrySnapshot || [] });
 }
@@ -220,6 +224,14 @@ function toggleLearned(candidate, entry, techniqueId, checked) {
   if (!ref) { ref = { registryId: entry.id, techniqueIds: [], evidence: '用户核对选择', proficiency: '' }; refs.push(ref); }
   ref.techniqueIds = checked ? [...new Set([...ref.techniqueIds, techniqueId])] : ref.techniqueIds.filter((id) => id !== techniqueId);
   fields.learnedTechniqueRefs = refs.filter((item) => item.techniqueIds.length);
+  fields.techniques = (fields.techniques || []).filter((move) => move.school !== entry.name);
+  fields.martialArts = (fields.martialArts || []).filter((method) => method.name !== entry.name);
+  updateDraft(candidate.id, JSON.stringify(fields, null, 2));
+}
+function toggleMethod(candidate, entry, checked) {
+  const fields = parsedFields(candidate);
+  fields.learnedTechniqueRefs = (fields.learnedTechniqueRefs || []).filter((ref) => ref.registryId !== entry.id);
+  if (checked) fields.learnedTechniqueRefs.push({ registryId: entry.id, techniqueIds: entry.techniques.map((move) => move.id), evidence: '用户手动激活内容库功法', proficiency: '' });
   fields.techniques = (fields.techniques || []).filter((move) => move.school !== entry.name);
   fields.martialArts = (fields.martialArts || []).filter((method) => method.name !== entry.name);
   updateDraft(candidate.id, JSON.stringify(fields, null, 2));

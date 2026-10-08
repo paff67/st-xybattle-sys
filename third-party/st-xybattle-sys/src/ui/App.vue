@@ -95,6 +95,9 @@
             <SettingsPanel 
               v-show="currentTab === 'settings'"
               :settings="controller.settings"
+              :controller="controller"
+              :battle-state="state"
+              :preparing="characterBusy"
               :events="events"
               @save="handleSaveSettings"
               @back="currentTab = 'workbench'"
@@ -304,18 +307,20 @@ async function handleStart() {
   }
 }
 
+let characterReadSequence = 0;
 async function handlePrepareCharacters() {
+  const sequence = ++characterReadSequence;
   const preparationScope = draftScopeKey.value;
   characterBusy.value = true;
   characterPanel.value = null;
   try {
     notification.value = '';
     const prepared = await props.controller.prepareCharacters();
-    if (preparationScope === draftScopeKey.value) characterPanel.value = prepared;
+    if (sequence === characterReadSequence && preparationScope === draftScopeKey.value) characterPanel.value = prepared;
   } catch (error) {
-    if (preparationScope === draftScopeKey.value) notification.value = error.message;
+    if (sequence === characterReadSequence && preparationScope === draftScopeKey.value) notification.value = error.message;
   } finally {
-    if (preparationScope === draftScopeKey.value) characterBusy.value = false;
+    if (sequence === characterReadSequence && preparationScope === draftScopeKey.value) characterBusy.value = false;
   }
 }
 
@@ -332,6 +337,8 @@ function handleConfirmCharacters({ edits, removeIds }) {
 }
 
 function handleCancelCharacters() {
+  characterReadSequence += 1;
+  characterBusy.value = false;
   props.controller.cancelCharacterPreparation();
   characterPanel.value = null;
   preparingCharacters.value = false;

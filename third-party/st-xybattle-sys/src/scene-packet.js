@@ -9,6 +9,11 @@ export function validateExchange(exchange, state, { required = false } = {}) {
   const requireText = (value, path) => { if (!text(value)) throw new Error(`exchange.${path} 必须为非空文字`); return text(value); };
   if (!exchange || !Array.isArray(exchange.opponents) || !Array.isArray(exchange.boundaries)) throw new Error('裁定缺少完整 exchange：需要 opponents 与 boundaries 数组');
   const seen = new Set();
+  if (exchange.techniques !== undefined && !Array.isArray(exchange.techniques)) throw new Error('exchange.techniques 必须是主角实际使用的招式数组');
+  const playerTechniques = (exchange.techniques || []).map(move => {
+    if (!(state.actors.player.techniques || []).some(group => group.techniqueIds?.includes(move?.techniqueId)) || !state.registrySnapshot.some(entry => entry.techniques.some(item => item.id === move?.techniqueId))) throw new Error('exchange 主角招式未激活');
+    return { techniqueId: move.techniqueId, manifestation: requireText(move.manifestation, 'manifestation'), interaction: requireText(move.interaction, 'interaction') };
+  });
   const opponents = exchange.opponents.map((item) => {
     const actor = state.actors.enemies.find((enemy) => enemy.id === item?.actorId);
     if (!actor || seen.has(actor.id)) throw new Error('exchange 对手不存在或重复');
@@ -23,7 +28,7 @@ export function validateExchange(exchange, state, { required = false } = {}) {
     return { actorId: actor.id, response: requireText(item.response, 'response'), result: requireText(item.result, 'result'), techniques };
   });
   if (state.actors.enemies.some((enemy) => !seen.has(enemy.id))) throw new Error('exchange 缺少对手本轮反应（未参与者也须说明保持状态）');
-  return { playerResult: requireText(exchange.playerResult, 'playerResult'), opponents, environmentResult: requireText(exchange.environmentResult, 'environmentResult'), boundaries: exchange.boundaries.map((boundary) => requireText(boundary, 'boundaries')) };
+  return { ...(exchange.techniques !== undefined ? { techniques: playerTechniques } : {}), playerResult: requireText(exchange.playerResult, 'playerResult'), opponents, environmentResult: requireText(exchange.environmentResult, 'environmentResult'), boundaries: exchange.boundaries.map((boundary) => requireText(boundary, 'boundaries')) };
 }
 
 export function projectScenePacket(packet = {}) {
@@ -36,6 +41,7 @@ export function projectScenePacket(packet = {}) {
     const exchange = packet.exchange;
     result.exchange = {
       playerResult: text(exchange.playerResult),
+      ...(exchange.techniques ? { techniques: exchange.techniques.map(move => strings(move, ['school', 'name', 'manifestation', 'interaction'])) } : {}),
       opponents: (Array.isArray(exchange.opponents) ? exchange.opponents : []).map((opponent) => ({
         ...strings(opponent, ['name', 'response', 'result']),
         techniques: (Array.isArray(opponent.techniques) ? opponent.techniques : []).map((move) => strings(move, ['school', 'name', 'manifestation', 'interaction']))
@@ -72,6 +78,7 @@ export function createScenePacket(state, record, action = record.action) {
     playerAction: { action: action?.label, intent: action?.intent, school: move.school, technique: move.name },
     ...(exchange ? { exchange: {
       ...exchange,
+      ...(exchange.techniques ? { techniques: exchange.techniques.map(move => ({ ...namedTechnique(state, move.techniqueId), manifestation: move.manifestation, interaction: move.interaction })) } : {}),
       opponents: exchange.opponents.map((opponent) => ({
         name: state.actors.enemies.find((actor) => actor.id === opponent.actorId)?.name || '对手',
         response: opponent.response, result: opponent.result,

@@ -6,7 +6,7 @@
         <h2 class="xy-panel-title">独立机枢 · 模型与演算法</h2>
       </div>
       <p class="xy-panel-desc">
-        裁定 AI 与正文生成可分别调配独立接入点与参数；凭据保存到当前浏览器本地，仅用于本机请求，不写入聊天、战报或导出文件。
+        裁定 AI、人物生成与正文生成可分别配置 API；凭据保存到当前浏览器本地，仅用于本机请求，不写入聊天、战报或导出文件。
       </p>
     </div>
 
@@ -19,6 +19,8 @@
       </label>
       <small class="xy-field-hint">分流不会直接结算战斗。其他事务仍只准备资料，尚未实现的执行步骤会停止并保留输入。</small>
     </fieldset>
+
+    <CoreRulesSettings v-if="controller" :controller="controller" :state="battleState" :preparing="preparing" />
 
     <!-- 裁定 AI 配置区 -->
     <fieldset class="xy-config-card">
@@ -86,6 +88,48 @@
           <input v-model.number="form.judge.timeoutMs" type="number" min="1000" step="1000" class="xy-input-text" />
         </label>
       </div>
+    </fieldset>
+
+    <fieldset class="xy-config-card" data-testid="character-api-settings">
+      <legend class="xy-card-legend">人物生成 API</legend>
+      <label class="xy-checkbox-label">
+        <input type="checkbox" v-model="form.characterGenerator.inherit" @change="changeCharacterInheritance" data-testid="character-api-inherit" class="xy-checkbox" />
+        <span>沿用裁定 AI 的连接、模型、温度和超时（默认）</span>
+      </label>
+      <p class="xy-panel-desc">关闭沿用后可独立配置。此 API 识别参战人物并仅生成敌人档案；主角资料从 MVU 读取，功法由你从内容库手动选取激活。输出预算与重试次数单独设置。</p>
+      <div class="xy-form-grid">
+        <label class="xy-form-field"><span class="xy-field-label">模型标识 (Model)</span>
+          <input v-model="characterApi.model" :disabled="form.characterGenerator.inherit" data-testid="character-api-model" class="xy-input-text" /></label>
+        <label class="xy-form-field xy-col-span-2"><span class="xy-field-label">服务接入点 (Endpoint)</span>
+          <input v-model="characterApi.endpoint" :disabled="form.characterGenerator.inherit" data-testid="character-api-endpoint" placeholder="https://api.example.com/v1" class="xy-input-text" /></label>
+        <label class="xy-form-field xy-col-span-2"><span class="xy-field-label">API Key（浏览器本地保存）</span>
+          <div class="xy-password-wrap">
+            <input v-model="characterApi.apiKey" :disabled="form.characterGenerator.inherit" :type="showCharacterKey ? 'text' : 'password'" autocomplete="off" data-testid="character-api-key" class="xy-input-text" />
+            <button type="button" class="xy-pwd-toggle" @click="showCharacterKey = !showCharacterKey"><Icons :name="showCharacterKey ? 'eye-off' : 'eye'" /></button>
+          </div></label>
+        <label class="xy-form-field"><span class="xy-field-label">温度 (Temperature)</span>
+          <input v-model.number="characterApi.temperature" :disabled="form.characterGenerator.inherit" type="number" min="0" max="2" step="0.1" class="xy-input-text" /></label>
+        <label class="xy-form-field"><span class="xy-field-label">单次请求及连续无进展超时（毫秒）</span>
+          <input v-model.number="characterApi.timeoutMs" :disabled="form.characterGenerator.inherit" data-testid="character-api-timeout" type="number" min="1000" step="1000" class="xy-input-text" /></label>
+      </div>
+      <label class="xy-form-field xy-mt-3">
+        <span class="xy-field-label">人物档案生成输出上限（独立于每轮裁定，默认 8000）</span>
+        <input v-model.number="form.characterMaxOutput" type="number" min="1024" step="1024" class="xy-input-text" />
+      </label>
+      <label class="xy-form-field xy-mt-3">
+        <span class="xy-field-label">人物生成失败重试次数（0~3，默认 0；超时不重试）</span>
+        <input v-model.number="form.characterMaxRetries" type="number" min="0" max="3" step="1" class="xy-input-text" />
+        <span>每次请求单独计时；成功返回后重置准备计时。单次请求超时立即报错且不重试。</span>
+      </label>
+      <label class="xy-form-field xy-mt-3">
+        <span class="xy-field-label">发送给人物生成 AI 的上下文消息条数（1~100，默认 20）</span>
+        <input v-model.number="form.characterMessageCount" type="number" min="1" max="100" step="1" class="xy-input-text" />
+      </label>
+      <label class="xy-form-field xy-mt-3">
+        <span class="xy-field-label">候选人物补全提示词（仅生成敌人；主角从 MVU 与内容库读取）</span>
+        <textarea v-model="form.characterCompletionPrompt" rows="12" class="xy-input-textarea xy-prompt-editor"></textarea>
+      </label>
+
     </fieldset>
 
     <!-- 正文演进 / 叙事桥接配置区 -->
@@ -162,15 +206,6 @@
       </label>
 
       <label class="xy-form-field xy-mt-3">
-        <span class="xy-field-label">人物档案生成输出上限（独立于每轮裁定，默认 8000）</span>
-        <input v-model.number="form.characterMaxOutput" type="number" min="1024" step="1024" class="xy-input-text" />
-      </label>
-      <label class="xy-form-field xy-mt-3">
-        <span class="xy-field-label">候选人物补全提示词（固定境界、功法、招式、资源与战斗偏好；确认后生效）</span>
-        <textarea v-model="form.characterCompletionPrompt" rows="12" class="xy-input-textarea xy-prompt-editor"></textarea>
-      </label>
-
-      <label class="xy-form-field xy-mt-3">
         <span class="xy-field-label">战斗裁定提示词（保存后作为独立裁定 AI 的 system prompt）</span>
         <textarea v-model="form.adjudicationPrompt" rows="16" class="xy-input-textarea xy-prompt-editor"></textarea>
       </label>
@@ -190,11 +225,15 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import Icons from './Icons.vue';
+import CoreRulesSettings from './CoreRulesSettings.vue';
 
 const props = defineProps({
   settings: { type: Object, default: () => ({}) },
+  controller: { type: Object, default: null },
+  battleState: { type: Object, default: () => ({ phase: 'idle' }) },
+  preparing: Boolean,
   events: { type: Object, default: null }
 });
 
@@ -202,6 +241,13 @@ const emit = defineEmits(['save', 'back']);
 
 const showJudgeKey = ref(false);
 const showNarratorKey = ref(false);
+const showCharacterKey = ref(false);
+const characterApi = computed(() => form.characterGenerator.inherit ? form.judge : form.characterGenerator);
+function changeCharacterInheritance() {
+  if (!form.characterGenerator.inherit && !form.characterGenerator.endpoint && !form.characterGenerator.model) {
+    Object.assign(form.characterGenerator, form.judge, { inherit: false, mode: 'http' });
+  }
+}
 
 const form = reactive({
   judge: {
@@ -224,11 +270,14 @@ const form = reactive({
     repairAttempts: 1,
     timeoutMs: 60000
   },
+  characterGenerator: { inherit: true, mode: 'http', endpoint: '', model: '', apiKey: '', temperature: 0.2, timeoutMs: 60000 },
   autoNarrative: true,
   eventAutoEnabled: false,
   originalPrompt: '',
   characterCompletionPrompt: '',
   characterMaxOutput: 8000,
+  characterMaxRetries: 0,
+  characterMessageCount: 20,
   adjudicationPrompt: ''
 });
 
@@ -236,11 +285,14 @@ watch(() => props.settings, (s) => {
   if (!s) return;
   if (s.adjudicator) Object.assign(form.judge, s.adjudicator);
   if (s.narrator) Object.assign(form.narrator, s.narrator);
+  Object.assign(form.characterGenerator, s.characterGenerator || { inherit: true });
   form.autoNarrative = !!s.autoNarrative;
   form.eventAutoEnabled = s.eventAutoEnabled === true;
   form.originalPrompt = s.originalPrompt || '';
   form.characterCompletionPrompt = s.characterCompletionPrompt || '';
   form.characterMaxOutput = s.characterMaxOutput || 8000;
+  form.characterMaxRetries = s.characterMaxRetries ?? 0;
+  form.characterMessageCount = s.characterMessageCount ?? 20;
   form.adjudicationPrompt = s.adjudicationPrompt || '';
 }, { immediate: true, deep: true });
 
@@ -248,11 +300,14 @@ function onSave() {
   emit('save', {
     adjudicator: { ...form.judge },
     narrator: { ...form.narrator },
+    characterGenerator: { ...form.characterGenerator },
     autoNarrative: form.autoNarrative,
     eventAutoEnabled: form.eventAutoEnabled,
     originalPrompt: form.originalPrompt,
     characterCompletionPrompt: form.characterCompletionPrompt,
     characterMaxOutput: form.characterMaxOutput,
+    characterMaxRetries: form.characterMaxRetries,
+    characterMessageCount: form.characterMessageCount,
     adjudicationPrompt: form.adjudicationPrompt
   });
 }
@@ -260,6 +315,9 @@ function onSave() {
 
 <style scoped>
 .xy-settings-panel {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   max-width: 1100px;
   margin: 0 auto;
   padding: 24px 28px 40px;
@@ -297,6 +355,7 @@ function onSave() {
 }
 
 .xy-config-card {
+  min-width: 0;
   border: 1px solid var(--xy-border-subtle);
   border-radius: 12px;
   background: rgba(12, 26, 46, 0.75);
@@ -322,7 +381,7 @@ function onSave() {
 
 .xy-form-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin-top: 12px;
 }
@@ -332,6 +391,7 @@ function onSave() {
 }
 
 .xy-form-field {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -341,6 +401,8 @@ function onSave() {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
   font-size: 11px;
   color: var(--xy-text-muted);
   font-family: var(--xy-font-sans);
@@ -352,6 +414,10 @@ function onSave() {
 }
 
 .xy-input-text, .xy-input-select, .xy-input-textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
   padding: 8px 12px;
   border-radius: 10px;
   border: 1px solid rgba(56, 189, 248, 0.2);
@@ -414,6 +480,7 @@ function onSave() {
 }
 
 .xy-checkbox {
+  flex: 0 0 16px;
   width: 16px;
   height: 16px;
   accent-color: var(--xy-cyan-500);
@@ -425,6 +492,7 @@ function onSave() {
 
 .xy-settings-footer {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 10px;
 }
@@ -476,5 +544,16 @@ function onSave() {
   color: #ffffff;
   box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.35), 0 6px 18px rgba(0, 0, 0, 0.35);
   transform: translateY(-1px);
+}
+.xy-input-textarea { resize: vertical; line-height: 1.6; }
+.xy-input-text:disabled { opacity: .65; cursor: not-allowed; }
+@media (max-width: 1000px) {
+  .xy-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .xy-settings-panel { padding: 16px 12px 24px; }
+  .xy-config-card { padding: 14px 12px; }
+  .xy-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .xy-col-span-2 { grid-column: auto; }
 }
 </style>

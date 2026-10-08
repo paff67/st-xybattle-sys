@@ -1,6 +1,10 @@
 import { publicCharacterTraits } from './combat-profile.js';
 // Presentation only: never rewrite AI/source fields to translate their labels.
 const names = {
+  profile: '能力档案', state: '当前状态', resourceTraits: '资源性质', initialCombatObjects: '当前已形成的术式',
+  burden: '当前负担', basis: '状态依据', depletionConsequences: '不足的后果', recoveryConditions: '恢复条件',
+  sustaining: '持续维持负担', onUse: '施展负担', amplifiers: '负担加重因素', overuseConsequences: '过度使用后果', limits: '限制',
+  label: '名称', statuses: '持续状态', positionOrTarget: '位置或目标', technique: '来源招式', dependsOn: '依赖对象', kind: '对象类型',
   learnedTechniqueRefs: '已修功法绑定', proficiency: '修炼程度', evidence: '掌握依据',
   id: '内部编号', name: '名称', identity: '身份', cultivationRealm: '修为境界', cultivation: '修为', realm: '境界',
   currentState: '当前状态', combatStyle: '战斗方式', weapon: '武器', weapons: '武器', stance: '姿态', position: '站位',
@@ -59,7 +63,7 @@ const definitions = [
   { id: 'identity', label: '身份与当前状态', keys: ['id', 'name', 'identity', 'cultivationRealm', 'cultivation', 'realm', 'currentState', 'combatStyle', 'weapon', 'weapons', 'stance', 'position', '身份', '境界', '修为', '当前状态', '武器', '姿态', '站位'] },
   { id: 'visible', label: '可见情报与行动倾向', keys: ['visibleInfo', 'observed', 'behavior', '公开表现', '可观察招式', '可能特征'] },
   { id: 'techniques', label: '功法、招式与能力', keys: ['learnedTechniqueRefs', 'martialArts', 'techniques', 'skills', 'abilities', '功法', '招式', '技能', '能力'] },
-  { id: 'resources', label: '资源、装备与弱点', keys: ['resourceDefinitions', 'resources', 'weaknesses', 'equipment', 'artifacts', '资源', '弱点', '装备', '法宝'] },
+  { id: 'resources', label: '资源、状态与弱点', keys: ['state', 'resourceTraits', 'initialCombatObjects', 'resourceDefinitions', 'resources', 'weaknesses', 'equipment', 'artifacts', '资源', '弱点', '装备', '法宝'] },
   { id: 'hidden', label: '构造补充与裁定专用资料', keys: ['hidden', 'generated', '隐藏信息'] },
   { id: 'other', label: '补充资料', keys: [] }
 ];
@@ -95,6 +99,7 @@ export function actorTraitLabels(actor) {
 }
 
 export function actorResourceLabels(actor) {
+  if (actor.state?.schema) return Object.fromEntries((actor.state.resources || []).filter(item => ['public', 'player'].includes(item.visibility)).map(item => [item.name, [item.condition, item.burden, ...item.limitations].filter(Boolean).join('；')]));
   return Object.fromEntries(Object.entries(actor.resources || {}).filter(([, value]) => Number.isFinite(value)).map(([key, value]) => [actor.resourceDefinitions?.find((item) => item.key === key)?.name || normalizedNames[normalize(key)] || '战斗资源', value]));
 }
 
