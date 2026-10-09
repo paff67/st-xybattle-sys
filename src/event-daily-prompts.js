@@ -34,7 +34,7 @@ export const DAILY_MODULE_PROMPTS = Object.freeze({
 });
 
 export function normalizeDailyPrompts(input = {}) {
-  const text = (value, fallback) => typeof value === "string" && value.trim() ? value.trim() : fallback;
+  const text = (value, fallback) => typeof value === "string" && value.trim() ? value : fallback;
   return { common: text(input?.common, DAILY_ADJUDICATION_PROMPT), modules: Object.fromEntries(Object.entries(DAILY_MODULE_PROMPTS).map(([domain, fallback]) => [domain, text(input?.modules?.[domain], fallback)])) };
 }
 

@@ -434,10 +434,10 @@ async function handleRetryHost() {
 }
 
 // 设置与数据
-async function handleSaveSettings(newSettings) {
+async function handleSaveSettings(newSettings, options = {}, done = () => {}) {
   try {
-    props.controller.setSettings(newSettings);
-    if (props.events) {
+    const result = await props.controller.setSettings(newSettings, options);
+    if (props.events && !props.controller.configStore) {
       await props.events.disable();
       props.events.setStateListenerEnabled?.(newSettings.battleStateListenerEnabled);
       if (newSettings.eventAutoEnabled) {
@@ -445,10 +445,12 @@ async function handleSaveSettings(newSettings) {
         await props.events.enable();
       }
     }
-    notification.value = '独立机枢设定已保存；凭据仅保存在当前浏览器本地，不写入战报或导出';
+    notification.value = props.controller.configStore ? (result.status === 'confirmed' ? '已确认服务器保存' : '已提交酒馆保存，服务器保存待确认') + (result.entryError ? '；入口启用失败，请检查配置' : '') : '已保存离线开发配置';
+    done(null, result);
     updateViews();
   } catch (err) {
-    notification.value = err.message;
+    notification.value = /conflict/.test(err.message) ? '检测到配置变化，请重新加载或比较修改' : '保存失败或结果未确认，草稿保留；请检查连接并核对服务器状态';
+    done(err);
   }
 }
 
@@ -548,6 +550,7 @@ const currentAiContext = computed(() => {
 });
 
 defineExpose({
+  openSettings: () => { isOpen.value = true; currentTab.value = 'settings'; },
   open: () => { isOpen.value = true; },
   close: () => { isOpen.value = false; }
 });

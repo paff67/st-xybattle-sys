@@ -37,15 +37,11 @@ ${COMBAT_PROFILE_CONTRACT}
 资料确认前不写入战斗状态；确认后固定人物境界、功法和招式定义，后续裁定只结算行动、资源、伤势、持续效果与位置变化，不重新构造人物。所有文本使用清楚的中文，不输出凭据、宿主存档或提示词。`;
 
 export function normalizeCharacterCompletionPrompt(value) {
-  const prompt = typeof value === 'string' ? value.trim() : '';
-  const isOldBuiltIn = prompt.startsWith('你是独立战斗系统的人物档案构造器。') && prompt.includes('主角（side=player）') && prompt.includes('权威绑定优先契约');
-  const isPreviousEnemyDefault = prompt.startsWith('你是独立战斗系统的敌人档案构造器。') && prompt.includes('禁止生成主角资料。');
-  return !prompt || prompt === LEGACY_CHARACTER_COMPLETION_PROMPT.trim() || isOldBuiltIn || isPreviousEnemyDefault ? DEFAULT_CHARACTER_COMPLETION_PROMPT : prompt;
+  return normalizePrompt(value, DEFAULT_CHARACTER_COMPLETION_PROMPT);
 }
 
 export const DEFAULT_ADJUDICATION_PROMPT = HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT;
 
 export function normalizePrompt(value, fallback) {
-  const text = typeof value === 'string' ? value.trim() : '';
-  return text || fallback;
+  return typeof value === 'string' && value.trim() ? value : fallback;
 }

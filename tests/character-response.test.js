@@ -47,6 +47,7 @@ test('preparation and confirmation filter protagonist from enemy results', async
   assert.throws(() => confirmEnemyCandidates(draft, { g: fullCombatProfile('许妍') }), /不能作为敌人/);
 });
 
-test('previous default migrates to the named protagonist enemy-only prompt', () => {
-  assert.equal(normalizeCharacterCompletionPrompt('你是独立战斗系统的敌人档案构造器。禁止生成主角资料。'), DEFAULT_CHARACTER_COMPLETION_PROMPT);
+test('previous saved prompt is preserved rather than guessed as a builtin', () => {
+  const saved = '你是独立战斗系统的敌人档案构造器。禁止生成主角资料。';
+  assert.equal(normalizeCharacterCompletionPrompt(saved), saved);
 });

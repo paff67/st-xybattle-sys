@@ -1,5 +1,4 @@
 import { normalizeDailyPrompts } from './event-daily-prompts.js';
-import { LEGACY_ADJUDICATOR_SYSTEM_PROMPT } from './legacy-adjudicator-prompt.js';
 import { clone, abortIfNeeded, normalizeChatCompletionsEndpoint } from './common.js';
 import { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, formatScenePacketForStoryAI } from './battle-adjudicator-prompt.js';
 import { normalizeCharacterCompletionPrompt, normalizePrompt } from './character-prompts.js';
@@ -25,7 +24,7 @@ export function normalizeSettings(input = {}) {
     config.temperature = Number(config.temperature); config.maxOutput = Number(config.maxOutput); config.repairAttempts = Number(config.repairAttempts); config.timeoutMs = Number(config.timeoutMs);
     if (!Number.isFinite(config.temperature) || config.temperature < 0 || config.temperature > 2 || !Number.isInteger(config.maxOutput) || config.maxOutput < 1 || !Number.isInteger(config.repairAttempts) || config.repairAttempts < 0 || config.repairAttempts > 3 || !Number.isFinite(config.timeoutMs) || config.timeoutMs < 100) throw new Error('模型参数无效（温度0~2；修复0~3）');
   }
-  return { adjudicator, narrator, characterGenerator, dailyAdjudicator, dailyTotalTimeoutMs, dailyPrompts: normalizeDailyPrompts(input.dailyPrompts), autoNarrative: input.autoNarrative !== false, eventAutoEnabled: input.eventAutoEnabled === true, battleStateListenerEnabled: input.battleStateListenerEnabled === true, originalPrompt: input.originalPrompt || '', characterMaxOutput, characterMaxRetries, characterMessageCount, characterCompletionPrompt: normalizeCharacterCompletionPrompt(input.characterCompletionPrompt), adjudicationPrompt: input.adjudicationPrompt?.trim() === LEGACY_ADJUDICATOR_SYSTEM_PROMPT.trim() ? HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT : normalizePrompt(input.adjudicationPrompt, HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT), developerLogs: input.developerLogs !== false };
+  return { adjudicator, narrator, characterGenerator, dailyAdjudicator, dailyTotalTimeoutMs, dailyPrompts: normalizeDailyPrompts(input.dailyPrompts), autoNarrative: input.autoNarrative !== false, eventAutoEnabled: input.eventAutoEnabled === true, battleStateListenerEnabled: input.battleStateListenerEnabled === true, originalPrompt: input.originalPrompt || '', characterMaxOutput, characterMaxRetries, characterMessageCount, characterCompletionPrompt: normalizeCharacterCompletionPrompt(input.characterCompletionPrompt), adjudicationPrompt: normalizePrompt(input.adjudicationPrompt, HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT), developerLogs: input.developerLogs !== false };
 }
 // Used by both settings save and bootstrap so independent daily configuration survives reload.
 export function dailyRuntimeSettings(settings) {

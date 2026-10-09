@@ -1,15 +1,16 @@
 <template>
-  <div class="xy-settings-panel xy-custom-scroll">
+  <div class="xy-settings-panel xy-custom-scroll" :inert="saving">
     <div class="xy-panel-header">
       <div>
         <span class="xy-panel-kicker">INDEPENDENT ADAPTER CONFIGURATION</span>
         <h2 class="xy-panel-title">独立机枢 · 模型与演算法</h2>
       </div>
       <p class="xy-panel-desc">
-        战斗裁定、非战斗裁定、人物生成与正文生成可分别配置 API；凭据保存到当前浏览器本地，仅用于本机请求，不写入聊天、战报或导出文件。
+        {{ controller?.configStore ? '酒馆账号配置' : '离线开发配置' }} · {{ saveMessage }}
       </p>
     </div>
 
+    <p class="xy-panel-desc">参数、提示词和密钥保存在当前酒馆账号设置中；另一设备需刷新后读取。密钥是普通设置字符串，不进入战报或普通导出。跨设备切换前请刷新，避免同时编辑。</p>
     <fieldset class="xy-config-card">
       <legend class="xy-card-legend">日常事务入口 · 开发阶段</legend>
       <p class="xy-panel-desc">默认关闭。开启后，普通输入直接续写；战斗沿用现有工作台。修炼突破、炼丹炼器、探查、疗伤、破阵、追逃与日常事务默认后台裁定，右上方显示具体任务与取消按钮。取消后不注入裁定结果，直接交给主 AI 续写。日志页可查看资料、依据摘要与结果。</p>
@@ -57,7 +58,7 @@
 
         <label class="xy-form-field xy-col-span-2">
           <span class="xy-field-label">
-            <span>API Key (浏览器本地保存)</span>
+            <span>API Key（酒馆账号设置）</span>
             <small class="xy-field-hint">保存后刷新页面仍可使用；清空并保存即可移除</small>
           </span>
           <div class="xy-password-wrap">
@@ -108,7 +109,7 @@
           <input v-model="dailyApi.model" :disabled="form.dailyAdjudicator.inherit" data-testid="daily-api-model" class="xy-input-text" /></label>
         <label class="xy-form-field xy-col-span-2"><span class="xy-field-label">服务接入点 (Endpoint)</span>
           <input v-model="dailyApi.endpoint" :disabled="form.dailyAdjudicator.inherit" data-testid="daily-api-endpoint" placeholder="https://api.example.com/v1" class="xy-input-text" /></label>
-        <label class="xy-form-field xy-col-span-2"><span class="xy-field-label">API Key（浏览器本地保存）</span>
+        <label class="xy-form-field xy-col-span-2"><span class="xy-field-label">API Key（酒馆账号设置）</span>
           <div class="xy-password-wrap">
             <input v-model="dailyApi.apiKey" :disabled="form.dailyAdjudicator.inherit" :type="showDailyKey ? 'text' : 'password'" autocomplete="off" data-testid="daily-api-key" class="xy-input-text" />
             <button type="button" class="xy-pwd-toggle" :aria-label="showDailyKey ? '隐藏非战斗 API Key' : '显示非战斗 API Key'" @click="showDailyKey = !showDailyKey"><Icons :name="showDailyKey ? 'eye-off' : 'eye'" /></button>
@@ -127,18 +128,18 @@
 
     <fieldset class="xy-config-card" data-testid="daily-prompt-settings">
       <legend class="xy-card-legend">非战斗裁定提示词</legend>
-      <p class="xy-panel-desc">每次裁定使用“通用提示词 + 当前模块提示词”。修改后点击页面底部保存，下次事务生效。请保留通用提示词中的 JSON 返回接口；程序仍会校验结果结构与资料引用。留空并保存会恢复该项默认值。</p>
+      <p class="xy-panel-desc">通用提示词与模块提示词</p>
       <details class="xy-mt-3">
         <summary>通用裁定提示词</summary>
         <label class="xy-form-field xy-mt-3"><span class="xy-field-label">非战斗通用提示词</span>
           <textarea v-model="form.dailyPrompts.common" data-testid="daily-common-prompt" rows="14" class="xy-input-textarea xy-prompt-editor"></textarea></label>
-        <button type="button" class="xy-back-btn xy-mt-3" data-testid="daily-reset-common" @click="form.dailyPrompts.common = DAILY_ADJUDICATION_PROMPT">恢复通用默认提示词</button>
+        <button type="button" class="xy-back-btn xy-mt-3" data-testid="daily-reset-common" @click="resetPrompt('dailyCommon')">恢复通用默认提示词</button>
       </details>
       <details v-for="domain in DAILY_DOMAINS" :key="domain" class="xy-mt-3">
         <summary>{{ domainContract(domain).label }}专项提示词</summary>
         <label class="xy-form-field xy-mt-3"><span class="xy-field-label">{{ domainContract(domain).label }}专项提示词</span>
           <textarea v-model="form.dailyPrompts.modules[domain]" :data-testid="'daily-prompt-' + domain" rows="5" class="xy-input-textarea"></textarea></label>
-        <button type="button" class="xy-back-btn xy-mt-3" :data-testid="'daily-reset-' + domain" @click="form.dailyPrompts.modules[domain] = DAILY_MODULE_PROMPTS[domain]">恢复本模块默认提示词</button>
+        <button type="button" class="xy-back-btn xy-mt-3" :data-testid="'daily-reset-' + domain" @click="resetPrompt(domain)">恢复本模块默认提示词</button>
       </details>
     </fieldset>
 
@@ -154,7 +155,7 @@
           <input v-model="characterApi.model" :disabled="form.characterGenerator.inherit" data-testid="character-api-model" class="xy-input-text" /></label>
         <label class="xy-form-field xy-col-span-2"><span class="xy-field-label">服务接入点 (Endpoint)</span>
           <input v-model="characterApi.endpoint" :disabled="form.characterGenerator.inherit" data-testid="character-api-endpoint" placeholder="https://api.example.com/v1" class="xy-input-text" /></label>
-        <label class="xy-form-field xy-col-span-2"><span class="xy-field-label">API Key（浏览器本地保存）</span>
+        <label class="xy-form-field xy-col-span-2"><span class="xy-field-label">API Key（酒馆账号设置）</span>
           <div class="xy-password-wrap">
             <input v-model="characterApi.apiKey" :disabled="form.characterGenerator.inherit" :type="showCharacterKey ? 'text' : 'password'" autocomplete="off" data-testid="character-api-key" class="xy-input-text" />
             <button type="button" class="xy-pwd-toggle" @click="showCharacterKey = !showCharacterKey"><Icons :name="showCharacterKey ? 'eye-off' : 'eye'" /></button>
@@ -214,7 +215,7 @@
         </label>
 
         <label class="xy-form-field xy-col-span-2">
-          <span class="xy-field-label">API Key (浏览器本地保存)</span>
+          <span class="xy-field-label">API Key（酒馆账号设置）</span>
           <div class="xy-password-wrap">
             <input 
               v-model="form.narrator.apiKey" 
@@ -260,19 +261,33 @@
       <label class="xy-form-field xy-mt-3">
         <span class="xy-field-label">战斗裁定提示词（保存后作为独立裁定 AI 的 system prompt）</span>
         <textarea v-model="form.adjudicationPrompt" rows="16" class="xy-input-textarea xy-prompt-editor"></textarea>
+        <button class="xy-back-btn" @click="resetPrompt('adjudication')">恢复战斗默认提示词</button>
+        <button class="xy-back-btn" @click="resetPrompt('character')">恢复人物默认提示词</button>
       </label>
     </div>
 
     <!-- 底部操作按钮 -->
     <div class="xy-settings-footer">
-      <button class="xy-save-btn" @click="onSave">
+      <button class="xy-save-btn" :disabled="saving || preparing" @click="onSave">
         <Icons name="check" />
         <span>保存机枢设定</span>
       </button>
+      <button v-if="controller?.configStore" class="xy-back-btn" :disabled="saving || preparing" @click="reloadHost">重新加载酒馆配置</button>
+      <button v-if="controller?.configEnvelope" class="xy-back-btn" @click="exportBackup">导出配置（不含密钥）</button>
+      <button v-if="controller?.configEnvelope" class="xy-back-btn" :disabled="saving" @click="verifySave">核对服务器保存</button>
+      <label v-if="controller?.configStore" class="xy-back-btn">导入配置到草稿<input type="file" accept="application/json,.json" :disabled="saving" @change="importBackup" /></label>
       <button class="xy-back-btn" @click="$emit('back')">
         <span>返回战场</span>
       </button>
     </div>
+    <section v-if="migrationSources.length">
+      <h3>本地配置来源</h3>
+      <select v-model.number="selectedSource" class="xy-input-select" :disabled="saving"><option v-for="(source, index) in migrationSources" :key="source.key" :value="index">{{ source.key }}</option></select>
+      <p v-if="preview?.error">本地配置损坏，无法迁入</p>
+      <table v-else-if="preview"><thead><tr><th>API</th><th>模型</th><th>地址</th><th>密钥</th><th>参数差异</th></tr></thead><tbody><tr v-for="(api, name) in preview.apis" :key="name"><td>{{ name }}</td><td>{{ api.parameters.model }}</td><td style="overflow-wrap:anywhere">{{ api.parameters.endpoint }}</td><td>{{ api.hasCredential ? '有' : '无' }}</td><td>{{ api.differs ? '不同' : '—' }}</td></tr></tbody></table>
+      <p v-if="preview?.prompts">提示词差异：战斗 {{ preview.prompts.adjudication.differs ? '不同' : '相同' }}；人物 {{ preview.prompts.character.differs ? '不同' : '相同' }}；非战斗 {{ preview.prompts.daily.differs ? '不同' : '相同' }}</p>
+      <button class="xy-back-btn" :disabled="saving || preparing || !!preview?.error" @click="migrateSelected">迁入酒馆配置</button>
+    </section>
   </div>
 </template>
 
@@ -282,6 +297,10 @@ import Icons from './Icons.vue';
 import CoreRulesSettings from './CoreRulesSettings.vue';
 import { DAILY_ADJUDICATION_PROMPT, DAILY_MODULE_PROMPTS, DAILY_DOMAINS, normalizeDailyPrompts } from '../../event-daily-prompts.js';
 import { domainContract } from '../../event-domain-contracts.js';
+import { migrationEnvelope, migrationPreview } from '../../config-migration.js';
+import { builtinPromptPolicy, exportConfig, createConfigEnvelope, runtimeConfig } from '../../config-schema.js';
+import { DEFAULT_ADJUDICATION_PROMPT, DEFAULT_CHARACTER_COMPLETION_PROMPT } from '../../character-prompts.js';
+import { downloadJson } from '../../utils.js';
 
 const props = defineProps({
   settings: { type: Object, default: () => ({}) },
@@ -292,6 +311,67 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['save', 'back']);
+const saving = ref(false), saveMessage = ref('未保存修改'), baseWriteId = ref(null);
+const resetPolicies = reactive({});
+const importedPatch = ref(null);
+const migrationSources = computed(() => props.controller?.localConfigSources ?? []);
+const selectedSource = ref(0);
+const preview = computed(() => {
+  const source = migrationSources.value[selectedSource.value];
+  if (!source) return null;
+  try { return migrationPreview(source, props.controller?.configEnvelope); } catch { return { error: true }; }
+});
+function reloadHost() {
+  if (props.controller?.inFlight || props.controller?.configBusy?.()) { saveMessage.value = '事务处理中，不能重新加载'; return; }
+  if (globalThis.confirm('重新加载页面会丢弃未保存修改，继续？')) globalThis.location.reload();
+}
+function exportBackup() { downloadJson('xybattle-config.json', JSON.stringify(exportConfig(props.controller.configEnvelope), null, 2)); }
+async function verifySave() {
+  try {
+    const result = await props.controller.configStore.verifyPersisted(props.controller.configEnvelope.writeId);
+    saveMessage.value = result.status === 'confirmed' ? '已确认服务器保存' : '服务器保存尚未确认，请保持页面并检查连接';
+  } catch { saveMessage.value = '服务器核对失败，请检查连接'; }
+}
+async function importBackup(event) {
+  try {
+    const file = event.target.files?.[0]; if (!file) return;
+    const data = JSON.parse(await file.text());
+    if (data.schemaVersion !== 1) throw new Error();
+    const envelope = createConfigEnvelope(data.settings, { previous: props.controller.configEnvelope, credentials: data.credentials ?? {}, promptPolicy: data.promptPolicy });
+    loadForm(runtimeConfig(envelope));
+    importedPatch.value = data.settings;
+    Object.assign(resetPolicies, envelope.promptPolicy, envelope.promptPolicy.dailyModules);
+    delete resetPolicies.dailyModules;
+    saveMessage.value = '配置已导入草稿，检查后点击保存；未提供的密钥继续保留';
+  } catch { saveMessage.value = '配置文件无效，未修改运行时'; }
+  finally { event.target.value = ''; }
+}
+function resetPrompt(name) {
+  const policy = builtinPromptPolicy();
+  resetPolicies[name] = policy[name] ?? policy.dailyModules[name];
+  if (name === 'adjudication') form.adjudicationPrompt = DEFAULT_ADJUDICATION_PROMPT;
+  else if (name === 'character') form.characterCompletionPrompt = DEFAULT_CHARACTER_COMPLETION_PROMPT;
+  else if (name === 'dailyCommon') form.dailyPrompts.common = DAILY_ADJUDICATION_PROMPT;
+  else form.dailyPrompts.modules[name] = DAILY_MODULE_PROMPTS[name];
+}
+function submitDraft(settings, options = {}) {
+  if (saving.value) return;
+  saving.value = true; saveMessage.value = '正在提交配置';
+  emit('save', settings, { baseWriteId: baseWriteId.value, ...options }, (error, result) => {
+    if (error) { saving.value = false; saveMessage.value = /conflict/.test(error.message) ? '配置冲突，草稿保留' : '保存失败或结果未确认，草稿保留'; return; }
+    loadForm(props.controller.settings);
+    saving.value = false;
+    baseWriteId.value = props.controller?.configEnvelope?.writeId ?? null;
+    saveMessage.value = result?.status === 'confirmed' ? '已确认服务器保存' : '已提交，服务器保存待确认';
+    if (result?.entryError) saveMessage.value += '；入口启用失败';
+  });
+}
+function migrateSelected() {
+  const source = migrationSources.value[selectedSource.value];
+  if (!source || source.error) return;
+  const envelope = migrationEnvelope(source, { previous: props.controller.configEnvelope });
+  submitDraft(source.settings, { credentials: source.credentials, promptPolicy: envelope.promptPolicy, migration: envelope.migration });
+}
 
 const showJudgeKey = ref(false);
 const showNarratorKey = ref(false);
@@ -346,8 +426,9 @@ const form = reactive({
   adjudicationPrompt: ''
 });
 
-watch(() => props.settings, (s) => {
+function loadForm(s) {
   if (!s) return;
+  baseWriteId.value = props.controller?.configEnvelope?.writeId ?? null;
   if (s.adjudicator) Object.assign(form.judge, s.adjudicator);
   if (s.narrator) Object.assign(form.narrator, s.narrator);
   Object.assign(form.characterGenerator, s.characterGenerator || { inherit: true });
@@ -363,10 +444,24 @@ watch(() => props.settings, (s) => {
   form.characterMaxRetries = s.characterMaxRetries ?? 0;
   form.characterMessageCount = s.characterMessageCount ?? 20;
   form.adjudicationPrompt = s.adjudicationPrompt || '';
-}, { immediate: true, deep: true });
+}
+watch(() => props.settings, (s, previous) => {
+  if (previous) return;
+  loadForm(s);
+}, { immediate: true });
+watch(form, () => { if (!saving.value) saveMessage.value = '有未保存修改'; }, { deep: true, flush: 'sync' });
 
 function onSave() {
-  emit('save', {
+  const policy = { dailyModules: {} };
+  for (const [name, entry] of Object.entries(resetPolicies)) {
+    const value = name === 'adjudication' ? form.adjudicationPrompt : name === 'character' ? form.characterCompletionPrompt : name === 'dailyCommon' ? form.dailyPrompts.common : form.dailyPrompts.modules[name];
+    const builtin = name === 'adjudication' ? DEFAULT_ADJUDICATION_PROMPT : name === 'character' ? DEFAULT_CHARACTER_COMPLETION_PROMPT : name === 'dailyCommon' ? DAILY_ADJUDICATION_PROMPT : DAILY_MODULE_PROMPTS[name];
+    if (value !== builtin) continue;
+    if (['adjudication', 'character', 'dailyCommon'].includes(name)) policy[name] = entry;
+    else policy.dailyModules[name] = entry;
+  }
+  submitDraft({
+    ...(importedPatch.value ?? {}),
     adjudicator: { ...form.judge },
     narrator: { ...form.narrator },
     characterGenerator: { ...form.characterGenerator },
@@ -382,7 +477,7 @@ function onSave() {
     characterMaxRetries: form.characterMaxRetries,
     characterMessageCount: form.characterMessageCount,
     adjudicationPrompt: form.adjudicationPrompt
-  });
+  }, { promptPolicy: policy });
 }
 </script>
 

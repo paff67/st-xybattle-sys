@@ -84,8 +84,8 @@ test('legacy rewrite and input transport remove nested packets, duplicate facts 
   for (const safe of [received, parsed]) assert.doesNotMatch(JSON.stringify(safe), /旧事件|清晨|演示台|尚未交手|剧烈冲击|写作禁令|重复|BATTLE_SCENE_PACKET_JSON/);
 });
 
-test('saved previous default migrates, custom prompts stay editable, and request always includes the exchange contract', () => {
-  assert.equal(normalizeSettings({ adjudicationPrompt: LEGACY_ADJUDICATOR_SYSTEM_PROMPT }).adjudicationPrompt, HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT);
+test('saved prompts remain verbatim and request always includes the exchange contract', () => {
+  assert.equal(normalizeSettings({ adjudicationPrompt: LEGACY_ADJUDICATOR_SYSTEM_PROMPT }).adjudicationPrompt, LEGACY_ADJUDICATOR_SYSTEM_PROMPT);
   assert.equal(normalizeSettings({ adjudicationPrompt: '自定义裁定规则' }).adjudicationPrompt, '自定义裁定规则');
   const prompt = buildAdjudicationPrompt({}, { label: '试探' });
   assert.match(prompt, /exchange.*playerResult/s);

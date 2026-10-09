@@ -59,6 +59,7 @@ export function createEventRuntime({ contextProvider = () => globalThis.SillyTav
     recoverBattleEntries: () => entry?.recover(),
     capability: () => gate.capability(),
     // Explicit development API; there is no production keyword/pass fallback.
+    configurationBusy: () => !!coordinator.active || !!entry?.active,
     configureRouter(router) { if (gate.enabled || coordinator.active) throw new Error('请先停用事件入口'); coordinator.router = router; },
     configureAutomaticPreparation(config = {}) {
       if (gate.enabled || coordinator.active) throw new Error('请先停用事件入口');

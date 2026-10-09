@@ -103,8 +103,8 @@ test('HTTP completion repairs partial profiles and uses fixed battle profile ins
   assert.equal(localPlayer.identity, '琴修');
 });
 
-test('old default completion prompt migrates; custom prompt persists; generation budget is separate', () => {
-  assert.equal(normalizeSettings({ characterCompletionPrompt: LEGACY_CHARACTER_COMPLETION_PROMPT }).characterCompletionPrompt, DEFAULT_CHARACTER_COMPLETION_PROMPT);
+test('saved completion prompt remains verbatim; generation budget is separate', () => {
+  assert.equal(normalizeSettings({ characterCompletionPrompt: LEGACY_CHARACTER_COMPLETION_PROMPT }).characterCompletionPrompt, LEGACY_CHARACTER_COMPLETION_PROMPT);
   const settings = normalizeSettings({ characterCompletionPrompt: '我的自定义补全约束', adjudicator: { maxOutput: 1600 } });
   assert.equal(settings.characterCompletionPrompt, '我的自定义补全约束');
   assert.equal(settings.characterMaxOutput, 8000);
