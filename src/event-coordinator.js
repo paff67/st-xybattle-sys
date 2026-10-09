@@ -1,5 +1,6 @@
 import { EVENT_NAMESPACE as NS, copyEvent as copy, canonicalEvent, inputDigest, inputSnapshot, newEventId, createEventRecord, transitionEvent, invalidateEventChain } from './event-state.js';
 import { EventPersistenceError } from './event-store.js';
+import { stripSecrets } from './common.js';
 
 const user = message => message?.is_user === true;
 const assistant = message => message?.is_user === false && !message.is_system;
@@ -16,10 +17,16 @@ export function eventBattleState(root, event) {
     seen.add(key);
     const parent = root.events[key];
     if (!parent || parent.status === 'rolled_back') return null;
-    if (parent.execution?.status === 'committed') return copy(parent.execution.afterState);
+    if (parent.execution?.schema === 'event_combat_commit_v1' && parent.execution.status === 'committed') return copy(parent.execution.afterState);
     key = parent.parentEventId;
   }
   return null;
+}
+export function eventDailyChanges(root, event) {
+  const parent = root.events[event.parentEventId];
+  // Only the immediate predecessor is pending projection. Older receipts are
+  // historical facts, not permanent constraints on later legitimate changes.
+  return parent?.status === 'committed' && parent.execution?.schema === 'event_daily_commit_v1' ? copy(parent.execution.changes || []) : [];
 }
 function identityPatch(message, id) {
   const identity = copy(eventMessageIdentity(message) || {});
@@ -45,14 +52,54 @@ export function abortableEventTask(operation, signal, timeoutMs) {
 }
 
 export class EventCoordinator {
+  // Exact native response only. This does not create a counterfeit input event.
+  async bindObservedNarrative({ input, message, requestId, assertFresh }) {
+    const scope = this.store.scope();
+    return this.lock.queued(`${scope.avatar}:${scope.chatId}`, `observe:${requestId}`, async () => {
+      assertFresh();
+      const root = await this.store.load(scope); assertFresh();
+      const at = scope.chat.indexOf(message);
+      if (at !== scope.chat.length - 1 || scope.chat[at - 1] !== input || !user(input) || !assistant(message)) throw new Error('状态观察目标不是本次精确回复');
+      const existing = this.observedIdentity(message, root);
+      if (existing?.requestId === requestId) return existing;
+      const patches = scope.chat.filter(row => user(row) || assistant(row)).map(row => identityPatch(row, this.id));
+      const target = patches.find(patch => patch.message === message);
+      delete target.value.story;
+      const lineage = patches.filter(patch => assistant(patch.message) && patch.message !== message).map(patch => patch.value.swipeUid);
+      const key = canonicalEvent(lineage);
+      root.branches[key] ||= lineage.length ? this.id() : root.rootBranchUid;
+      target.value.activationObservation = { requestId, branchUid: root.branches[key], completed: true };
+      await this.store.write(scope, root, patches, assertFresh); assertFresh();
+      return this.observedIdentity(message, this.store.local(scope));
+    });
+  }
+  observedIdentity(message, root = this.store.local(this.store.scope())) {
+    const scope = this.store.scope(), identity = eventMessageIdentity(message);
+    if (!identity?.messageUid || !identity?.swipeUid || scope.chat.at(-1) !== message) return null;
+    const event = root?.events?.[identity.story?.eventId];
+    const binding = event?.status !== 'rolled_back' && event?.generationBindings.find(item => item.status === 'completed' && item.requestId === identity.story?.requestId && item.assistantMessageUid === identity.messageUid && item.swipeUid === identity.swipeUid);
+    const observed = identity.activationObservation;
+    if (!binding && !observed?.completed) return null;
+    return { chatId: scope.chatId, avatar: scope.avatar, branchUid: binding ? event.branchUid : observed.branchUid,
+      assistantMessageUid: identity.messageUid, swipeUid: identity.swipeUid, requestId: binding?.requestId || observed.requestId,
+      parentEventId: binding ? event.eventId : null, predecessorEventId: binding ? event.parentEventId : null,
+      skipped: binding && event.reasonCode === 'user_skipped_adjudication' };
+  }
   constructor({ store, lock, router = null, id = newEventId, timeoutMs = 30000, onStatus = () => {} }) {
     Object.assign(this, { store, lock, router, id, timeoutMs, onStatus });
     this.epoch = 0;
     this.active = null;
   }
-  status(status, reason = null) { this.lastStatus = { status, reason }; this.onStatus(this.lastStatus); }
+  status(status, reason = null, detail = {}) { this.lastStatus = { status, reason, ...detail }; this.onStatus(this.lastStatus); }
+  skipAdjudication() {
+    const task = this.active;
+    if (!task || task.generating || task.finalizing || !['captured', 'routing'].includes(task.event?.status)) return false;
+    task.skipAdjudication = true;
+    task.controller.abort();
+    return true;
+  }
   cancel(reason = '用户停止') {
-    if (this.active) { this.active.cancelReason = reason; this.active.controller.abort(); }
+    if (this.active) { this.active.skipAdjudication = false; this.active.cancelReason = reason; this.active.controller.abort(); }
   }
   scopeChanged() {
     this.epoch += 1;
@@ -60,6 +107,7 @@ export class EventCoordinator {
     this.active?.release?.();
     this.active = null;
     this.store.abandonChangedScope();
+    this.status('ready');
   }
   assertActive(task) {
     this.store.assertScope(task.scope);
@@ -160,11 +208,19 @@ export class EventCoordinator {
         task.root = await this.saveEvent(task, task.root, task.event);
         this.assertActive(task); this.status('routing');
         if (typeof this.router !== 'function') throw new Error('P3 分流器尚未配置');
-        const route = await abortableEventTask(() => this.router({ input: inputSnapshot(input), message: input, event: copy(task.event), battleState: eventBattleState(task.root, task.event), signal: task.controller.signal }), task.controller.signal, this.timeoutMs);
+        task.event.audit = [];
+        const onProgress = detail => {
+          this.assertActive(task);
+          const entry = stripSecrets({ ...detail, at: new Date().toISOString() }, this.secrets || []);
+          if (JSON.stringify(entry).length > 100000 || task.event.audit.length >= 40) throw new Error('事件审计资料过大');
+          task.event.audit.push(entry);
+          this.status(detail.stage, null, { domain: detail.domain, actionKey: detail.actionKey });
+        };
+        const route = await abortableEventTask(() => this.router({ input: inputSnapshot(input), message: input, event: copy(task.event), battleState: eventBattleState(task.root, task.event), dailyChanges: eventDailyChanges(task.root, task.event), signal: task.controller.signal, onProgress }), task.controller.signal, this.timeoutMs);
         this.assertActive(task);
         if (!route || !['pass', 'needs_context', 'unsupported', 'adjudicate', 'handoff'].includes(route.decision)) throw new Error('无效的分流结果，拒绝默认放行');
         // P0/P1 never executes a domain or makes a success/failure judgment.
-        const executed = route.decision === 'adjudicate' && route.execution?.schema === 'event_combat_commit_v1' && route.execution.status === 'validated';
+        const executed = route.decision === 'adjudicate' && ['event_combat_commit_v1', 'event_daily_commit_v1'].includes(route.execution?.schema) && route.execution.status === 'validated';
         const status = executed ? 'committed' : { pass: 'passed', handoff: 'handed_off', needs_context: 'needs_input', unsupported: 'unsupported', adjudicate: 'unsupported' }[route.decision];
         const details = route.framework === 'auto-preparation-v1' ? copy({ framework: route.framework, policyId: route.policyId,
           scope: route.scope, battlefield: route.battlefield, actions: route.actions, missingInformation: route.missingInformation,
@@ -176,6 +232,8 @@ export class EventCoordinator {
       if (['passed', 'committed'].includes(task.event.status)) {
         task.event = { ...task.event, generationBindings: [...task.event.generationBindings, { requestId, kind, status: 'pending', assistantMessageUid: null, swipeUid: null }] };
       }
+      task.finalizing = true;
+      this.status('persisting');
       task.root = await this.saveEvent(task, task.root, task.event);
       this.assertActive(task);
       if (!['passed', 'committed'].includes(task.event.status)) { this.status(task.event.status, task.event.reasonCode); return { allow: false, event: copy(task.event) }; }
@@ -183,12 +241,32 @@ export class EventCoordinator {
       this.status('generating_story');
       return { allow: true, event: copy(task.event) };
     } catch (error) {
+      // Explicit skip is the only fail-open path. Keep the same native request;
+      // an ignored abort/late model response can never produce a result packet.
+      if (task.skipAdjudication && task.epoch === this.epoch && this.active === task) {
+        try {
+          this.store.assertScope(task.scope);
+          task.finalizing = true;
+          task.event = { ...task.event, status: 'passed', reasonCode: 'user_skipped_adjudication', route: { decision: 'pass' },
+            generationBindings: [...task.event.generationBindings, { requestId, kind, status: 'pending', assistantMessageUid: null, swipeUid: null }] };
+          delete task.event.execution;
+          task.event.audit ||= [];
+          task.event.audit.push({ stage: 'user_skipped_adjudication', at: new Date().toISOString() });
+          task.root = await this.saveEvent(task, task.root, task.event);
+          this.store.assertScope(task.scope);
+          if (task.epoch !== this.epoch || this.active !== task || !task.skipAdjudication) throw new Error('取消后聊天作用域已变化或宿主已停止');
+          task.generating = true;
+          this.status('generating_story', 'user_skipped_adjudication');
+          return { allow: true, event: copy(task.event) };
+        } catch (skipError) { error = skipError; }
+      }
       const pending = error instanceof EventPersistenceError;
-      this.status(pending ? 'persistence_pending' : task.controller.signal.aborted ? 'cancelled' : 'rejected', error.message);
+      const reason = stripSecrets(String(error.message), this.secrets || []);
+      if (task.epoch === this.epoch && this.active === task) this.status(pending ? 'persistence_pending' : task.controller.signal.aborted ? 'cancelled' : 'rejected', reason);
       const wasCancelled = task.controller.signal.aborted;
       task.controller.abort();
       if (!pending && task.event && ['captured', 'routing'].includes(task.event.status) && task.epoch === this.epoch) {
-        try { task.event = transitionEvent(task.event, wasCancelled ? 'cancelled' : 'rejected', 'request_interrupted'); await this.saveEvent(task, task.root, task.event); }
+        try { task.event = { ...transitionEvent(task.event, wasCancelled ? 'cancelled' : 'rejected', 'request_interrupted'), error: reason }; await this.saveEvent(task, task.root, task.event); this.status(task.event.status, reason); }
         catch (saveError) { this.status('persistence_pending', saveError.message); }
       }
       return { allow: false, reason: error.message };

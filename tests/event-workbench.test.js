@@ -10,6 +10,14 @@ const response = (text, domain = 'combat') => ({ decision: 'adjudicate', missing
   intent: text, source: { id: 'input', quote: text }, execution: 'now', dependsOn: [], opponentNames: ['顾澜'],
   worldSignal: { kind: 'attack_observed', purpose: 'combat', confrontation: 'linked', evidence: [{ id: 'input', quote: text }] } }] });
 
+test('explicitly skipped input does not launch a second adjudication after narrative', async () => {
+  let calls = 0;
+  const runtime = createEventRuntime({ contextProvider: () => ({}), windowRef: {}, controller: {} });
+  runtime.configureAutomaticAdjudication({ request: async () => { calls++; throw new Error('must not run'); } });
+  await runtime.gate.afterNarrative({ event: { status: 'passed', reasonCode: 'user_skipped_adjudication' } });
+  assert.equal(calls, 0); runtime.destroy();
+});
+
 test('delayed controller initialization cannot hand a routed battle into another chat', async () => {
   let context = { chatId: 'A', chat: [] }, release, opened = 0;
   const controller = { ready: new Promise(resolve => { release = resolve; }), onBattleEntry: () => { opened++; } };

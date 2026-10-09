@@ -1,3 +1,4 @@
+import { normalizeDailyPrompts } from './event-daily-prompts.js';
 import { LEGACY_ADJUDICATOR_SYSTEM_PROMPT } from './legacy-adjudicator-prompt.js';
 import { clone, abortIfNeeded, normalizeChatCompletionsEndpoint } from './common.js';
 import { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, formatScenePacketForStoryAI } from './battle-adjudicator-prompt.js';
@@ -14,14 +15,25 @@ export function normalizeSettings(input = {}) {
   if (!input.adjudicator) for (const key of Object.keys(defaultConfig).concat('apiKey')) if (input[key] !== undefined) adjudicator[key] = input[key];
   const narrator = { ...defaultConfig, mode: 'main_story', temperature: 0.7, ...input.narrator };
   const characterGenerator = { ...defaultConfig, mode: 'http', ...input.characterGenerator, inherit: input.characterGenerator?.inherit !== false };
+  const dailyAdjudicator = { ...defaultConfig, mode: 'http', ...input.dailyAdjudicator, inherit: input.dailyAdjudicator?.inherit !== false };
+  const dailyTotalTimeoutMs = Number(input.dailyTotalTimeoutMs ?? Math.max(Number(adjudicator.timeoutMs) * 4, 120000));
+  if (!Number.isFinite(dailyTotalTimeoutMs) || dailyTotalTimeoutMs < 100) throw new Error('非战斗事务总超时必须至少为 100 毫秒');
   if (!input.narrator && input.mode === 'mock') narrator.mode = 'mock';
   if (!input.narrator && input.mode === 'http') Object.assign(narrator, { ...adjudicator, repairAttempts: 0 });
-  for (const config of [adjudicator, narrator, characterGenerator]) {
+  for (const config of [adjudicator, narrator, characterGenerator, dailyAdjudicator]) {
     if (!['unconfigured','http','mock','main_story','packet'].includes(config.mode)) throw new Error('未知模型模式');
     config.temperature = Number(config.temperature); config.maxOutput = Number(config.maxOutput); config.repairAttempts = Number(config.repairAttempts); config.timeoutMs = Number(config.timeoutMs);
     if (!Number.isFinite(config.temperature) || config.temperature < 0 || config.temperature > 2 || !Number.isInteger(config.maxOutput) || config.maxOutput < 1 || !Number.isInteger(config.repairAttempts) || config.repairAttempts < 0 || config.repairAttempts > 3 || !Number.isFinite(config.timeoutMs) || config.timeoutMs < 100) throw new Error('模型参数无效（温度0~2；修复0~3）');
   }
-  return { adjudicator, narrator, characterGenerator, autoNarrative: input.autoNarrative !== false, eventAutoEnabled: input.eventAutoEnabled === true, originalPrompt: input.originalPrompt || '', characterMaxOutput, characterMaxRetries, characterMessageCount, characterCompletionPrompt: normalizeCharacterCompletionPrompt(input.characterCompletionPrompt), adjudicationPrompt: input.adjudicationPrompt?.trim() === LEGACY_ADJUDICATOR_SYSTEM_PROMPT.trim() ? HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT : normalizePrompt(input.adjudicationPrompt, HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT), developerLogs: input.developerLogs !== false };
+  return { adjudicator, narrator, characterGenerator, dailyAdjudicator, dailyTotalTimeoutMs, dailyPrompts: normalizeDailyPrompts(input.dailyPrompts), autoNarrative: input.autoNarrative !== false, eventAutoEnabled: input.eventAutoEnabled === true, battleStateListenerEnabled: input.battleStateListenerEnabled === true, originalPrompt: input.originalPrompt || '', characterMaxOutput, characterMaxRetries, characterMessageCount, characterCompletionPrompt: normalizeCharacterCompletionPrompt(input.characterCompletionPrompt), adjudicationPrompt: input.adjudicationPrompt?.trim() === LEGACY_ADJUDICATOR_SYSTEM_PROMPT.trim() ? HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT : normalizePrompt(input.adjudicationPrompt, HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT), developerLogs: input.developerLogs !== false };
+}
+// Used by both settings save and bootstrap so independent daily configuration survives reload.
+export function dailyRuntimeSettings(settings) {
+  const config = settings.dailyAdjudicator?.inherit !== false ? settings.adjudicator : settings.dailyAdjudicator;
+  if (config?.mode !== 'http' || !config.endpoint?.trim() || !config.model?.trim()) throw new Error('自动事务入口需要配置非战斗 API 的真实接口和模型，或沿用已配置的战斗裁定 AI');
+  return { endpoint: config.endpoint, model: config.model, apiKey: config.apiKey || '', temperature: config.temperature,
+    maxOutput: config.maxOutput, requestTimeoutMs: config.timeoutMs, totalTimeoutMs: settings.dailyTotalTimeoutMs,
+    dailyPrompts: normalizeDailyPrompts(settings.dailyPrompts) };
 }
 export function characterApiSettings(settings) {
   return { ...(settings.characterGenerator?.inherit !== false ? settings.adjudicator : settings.characterGenerator), maxOutput: settings.characterMaxOutput, maxRetries: settings.characterMaxRetries, messageCount: settings.characterMessageCount };

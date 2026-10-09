@@ -6,9 +6,10 @@ import { EVENT_DOMAINS } from './event-domain-contracts.js';
 import { validateEventRoute, combatActivationCandidates } from './event-router.js';
 import { battlefieldProjection } from './event-battlefield-state.js';
 import { storyText } from './story-context.js';
+import { createDailyExecutor } from './event-daily.js';
 
 export function createWorkbenchEventRouter(options = {}) {
-  return createAutomaticEventPreparation({ ...options, combatHandoff: true });
+  return createAutomaticEventPreparation({ ...options, combatHandoff: true, onPrepared: createDailyExecutor(options) });
 }
 
 // Scene-creation/OOC inputs pass through ST first. Inspect only the exact new

@@ -56,16 +56,18 @@ export class HostEventStore {
     if (canonicalEvent(disk.root) !== canonicalEvent(local)) throw new EventPersistenceError('本地与服务器事件版本不同，请重新加载聊天');
     return copy(disk.root || emptyEventStore(scope.chatId, this.id));
   }
-  write(scope, root, patches = []) {
+  write(scope, root, patches = [], assertCurrent) {
     return this.serialize(async () => {
       if (this.pending) throw new EventPersistenceError('有未确认的事件写入，请先重试保存');
       this.assertScope(scope);
+      assertCurrent?.();
       const disk = await this.remote(scope), local = this.local(scope);
       const baseline = disk.root;
       if (canonicalEvent(baseline) !== canonicalEvent(local) || (baseline?.revision || 0) !== root.revision) throw new EventPersistenceError('事件版本冲突，拒绝覆盖');
       const candidate = { ...copy(root), revision: root.revision + 1, writeId: this.id() };
       validateEventStore(candidate, scope.chatId);
-      this.pending = { scope, baseline: copy(baseline), candidate, patches: patches.map(p => ({ ...p, value: copy(p.value), fingerprint: canonicalEvent(inputSnapshot(p.message)) })) };
+      assertCurrent?.();
+      this.pending = { scope, assertCurrent, baseline: copy(baseline), candidate, patches: patches.map(p => ({ ...p, value: copy(p.value), fingerprint: canonicalEvent(inputSnapshot(p.message)) })) };
       return this.persistPending();
     });
   }
@@ -107,6 +109,8 @@ export class HostEventStore {
       const before = await this.remote(scope);
       if (this.confirmed(before, pending)) { this.pending = null; return copy(pending.candidate); }
       if (canonicalEvent(before.root) !== canonicalEvent(pending.baseline) && canonicalEvent(before.root) !== canonicalEvent(pending.candidate)) throw new EventPersistenceError('另一写入者已修改事件存档，请重新加载聊天');
+      try { pending.assertCurrent?.(); }
+      catch (error) { this.pending = null; throw error; }
       this.applyPatches(pending);
       if (typeof this.contextProvider().saveChat !== 'function') throw new EventPersistenceError('宿主缺少保存接口');
       await this.contextProvider().saveChat();

@@ -12,7 +12,7 @@ import { fullCombatProfile } from './fixtures/combat-profile.js';
 
 // Exercise real Vue component state and DOM events, without browser automation.
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { pretendToBeVisual: true });
-for (const key of ['window', 'document', 'Element', 'HTMLElement', 'SVGElement', 'Node']) globalThis[key] = dom.window[key];
+for (const key of ['window', 'document', 'Element', 'HTMLElement', 'SVGElement', 'Node', 'Document']) globalThis[key] = dom.window[key];
 globalThis.requestAnimationFrame = dom.window.requestAnimationFrame.bind(dom.window);
 const { createApp, nextTick } = await import('vue');
 const modules = new Map();
@@ -36,18 +36,38 @@ async function compileVue(filename) {
 const App = (await import((await compileVue('src/ui/App.vue')).href)).default;
 after(async () => { await Promise.all([...modules.values()].map((url) => unlink(url))); dom.window.close(); });
 
-async function mount(t) {
+async function mount(t, events = null, open = true) {
   const controller = new BattleController({ storage: null, chatId: 'draft-test', branchId: 'main' });
   await controller.ready;
   const root = document.createElement('div'); document.body.append(root);
-  const app = createApp(App, { controller });
-  const vm = app.mount(root); vm.open(); await nextTick();
+  const app = createApp(App, { controller, events });
+  const vm = app.mount(root); if (open) vm.open(); await nextTick();
   t.after(() => { app.unmount(); root.remove(); controller.dispose(); });
   return { root, controller, vm };
 }
 async function input(node, value, event = 'input') {
   node.value = value; node.dispatchEvent(new dom.window.Event(event, { bubbles: true })); await nextTick();
 }
+
+test('daily toast stays outside the closed workbench, names the task, cancels and opens persisted audit', async t => {
+  let listener, cancelled = 0, unsubscribed = false;
+  const events = { inspect: () => ({ status: 'ready', receipts: [] }), subscribe(fn) { listener = fn; return () => { unsubscribed = true; }; }, cancelAdjudication() { cancelled++; } };
+  const { root } = await mount(t, events, false);
+  listener({ status: 'adjudicating', domain: 'pursuit', canCancel: true, receipts: [{ eventId: 'event-one', status: 'routing', audit: [{ domain: 'pursuit', stage: 'adjudicating' }] }] });
+  await nextTick();
+  const toast = root.querySelector('[data-testid="event-progress"]');
+  assert.match(toast.textContent, /追踪.*追逃/);
+  assert.equal(root.querySelector('.xy-modal-backdrop').style.display, 'none');
+  toast.querySelector('.xy-event-cancel').click(); await nextTick(); assert.equal(cancelled, 1);
+  assert.equal(toast.querySelector('.xy-event-cancel'), null);
+  toast.querySelector('button').click(); await nextTick();
+  assert.notEqual(root.querySelector('.xy-modal-backdrop').style.display, 'none');
+  assert.match(root.querySelector('[data-testid="event-audit"]').textContent, /追逃/);
+  listener({ status: 'generating_story', reason: 'user_skipped_adjudication', receipts: [] }); await nextTick();
+  assert.match(toast.textContent, /本次不注入裁定结果/);
+  listener({ status: 'ready', receipts: [] }); await nextTick(); assert.equal(root.querySelector('[data-testid="event-progress"]'), null);
+  t.after(() => assert.equal(unsubscribed, true));
+});
 async function tab(root, label) {
   [...root.querySelectorAll('.xy-tab-btn')].find((button) => button.textContent.includes(label)).click(); await nextTick();
 }
@@ -55,6 +75,46 @@ async function reopen(root) {
   root.querySelector('[aria-label="关闭工作台"]').click(); await nextTick();
   root.querySelector('#xybattle-v2-launcher').click(); await nextTick();
 }
+
+test('daily settings UI saves independent API and per-module prompts into the active runtime', async t => {
+  let configured, enabled = 0;
+  const events = { inspect: () => ({ status: 'ready', receipts: [] }), subscribe: () => () => {},
+    disable: async () => {}, configureAutomaticAdjudication: value => { configured = value; }, enable: async () => { enabled++; } };
+  const { root, controller } = await mount(t, events);
+  await tab(root, '独立机枢');
+  const get = id => root.querySelector(`[data-testid="${id}"]`);
+  assert.equal(get('daily-api-model').disabled, true);
+  get('daily-api-inherit').click(); await nextTick();
+  assert.equal(get('daily-api-model').disabled, false);
+  await input(get('daily-api-model'), 'daily-ui-model');
+  await input(get('daily-api-endpoint'), 'https://daily-ui.invalid/v1');
+  await input(get('daily-api-key'), 'daily-ui-secret');
+  await input(get('daily-api-temperature'), '0.6');
+  await input(get('daily-api-output'), '7000');
+  await input(get('daily-api-timeout'), '15000');
+  await input(get('daily-total-timeout'), '90000');
+  await input(get('daily-common-prompt'), '自定义通用提示词');
+  await input(get('daily-prompt-recovery'), '自定义疗伤提示词');
+  await input(get('daily-prompt-alchemy'), '暂存炼丹提示词');
+  get('daily-reset-alchemy').click(); await nextTick();
+  assert.notEqual(get('daily-prompt-alchemy').value, '暂存炼丹提示词');
+  get('daily-api-inherit').click(); await nextTick();
+  get('daily-api-inherit').click(); await nextTick();
+  assert.equal(get('daily-api-model').value, 'daily-ui-model');
+  root.querySelector('.xy-settings-panel input[type="checkbox"]').click(); await nextTick();
+  root.querySelector('.xy-save-btn').click();
+  await new Promise(resolve => setTimeout(resolve, 20)); await nextTick();
+  assert.equal(enabled, 1);
+  assert.equal(configured.model, 'daily-ui-model');
+  assert.equal(configured.temperature, 0.6);
+  assert.equal(configured.maxOutput, 7000);
+  assert.equal(configured.requestTimeoutMs, 15000);
+  assert.equal(configured.totalTimeoutMs, 90000);
+  assert.equal(configured.dailyPrompts.common, '自定义通用提示词');
+  assert.equal(configured.dailyPrompts.modules.recovery, '自定义疗伤提示词');
+  assert.equal(controller.settings.adjudicator.mode, 'unconfigured');
+  assert.equal(controller.settings.dailyAdjudicator.apiKey, 'daily-ui-secret');
+});
 
 test('closing/reopening and switching tabs preserve action, selected technique and unsaved settings', async (t) => {
   const { root } = await mount(t);
@@ -115,18 +175,19 @@ test('battle verdict and timeline display committed results even if stored narra
 });
 
 
-test('automatic battle entry uses the same preparation panel and never starts before acknowledgment', async t => {
+test('automatic battle entry UI only displays controller preparation and never invokes a model or starts combat', async t => {
   const { root, controller, vm } = await mount(t);
   let preparations = 0, starts = 0;
   const preparation = await prepareEnemyCandidates({ scope: controller.state.scope, enemies: [{ ...fullCombatProfile('顾澜'), id: 'gulan' }] });
   controller.hostAdapter = {};
   controller.prepareCharacters = async () => { preparations++; return buildCharacterConfirmationPanel(preparation); };
   controller.start = () => { starts++; };
+  controller.characterPreparation = preparation;
   vm.close(); await nextTick();
-  await controller.onBattleEntry({ decision: 'handoff' }); await nextTick();
-  assert.equal(preparations, 1); assert.equal(starts, 0);
+  await controller.onBattleEntry({ status: 'accepted' }); await nextTick();
+  assert.equal(preparations, 0); assert.equal(starts, 0);
   assert.ok(root.querySelector('[data-testid="character-confirmation-panel"]'));
   assert.match(root.querySelector('[data-testid="character-confirmation-panel"]').textContent, /顾澜/);
-  await controller.onBattleEntry({ decision: 'handoff' });
-  assert.equal(preparations, 1, 'duplicate routing must preserve the pending review');
+  await controller.onBattleEntry({ status: 'accepted' });
+  assert.equal(preparations, 0, 'duplicate display must preserve the pending review');
 });

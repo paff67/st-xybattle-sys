@@ -101,7 +101,7 @@ test('P3 ended battles keep resources and effects, with no exit-based healing', 
 });
 
 test('P3 state lookup follows parent lineage and ignores other branches and invalidated ancestors', () => {
-  const root = { events: { a: { status: 'committed', execution: { status: 'committed', afterState: { value: 'A' } } }, b: { status: 'passed', parentEventId: 'a' }, other: { status: 'committed', execution: { status: 'committed', afterState: { value: 'OTHER' } } } } };
+  const root = { events: { a: { status: 'committed', execution: { schema: 'event_combat_commit_v1', status: 'committed', afterState: { value: 'A' } } }, b: { status: 'passed', parentEventId: 'a' }, other: { status: 'committed', execution: { schema: 'event_combat_commit_v1', status: 'committed', afterState: { value: 'OTHER' } } } } };
   assert.deepEqual(eventBattleState(root, { parentEventId: 'b' }), { value: 'A' });
   root.events.a.status = 'rolled_back'; assert.equal(eventBattleState(root, { parentEventId: 'b' }), null);
 });

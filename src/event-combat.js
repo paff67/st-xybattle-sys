@@ -4,6 +4,7 @@ import { proposeBattleAction, commitBattleProposal } from './battle-proposal.js'
 import { createCharacterJsonRequest } from './character-source-adapters.js';
 import { HIGH_MARTIAL_EVENT_POLICY } from './event-world-policy.js';
 import { clone, stripSecrets } from './common.js';
+import { createDailyExecutor } from './event-daily.js';
 
 export function createEventCombatPipeline({ request, adjudicator, policy = HIGH_MARTIAL_EVENT_POLICY, ...options } = {}) {
   const ask = request || createCharacterJsonRequest(options);
@@ -18,6 +19,7 @@ export function createEventCombatPipeline({ request, adjudicator, policy = HIGH_
     onPrepared: async (route, { snapshot, args, assertFresh }) => {
       // P3 owns combat only. Refuse the whole mixed event before any proposal;
       // later perception/recovery executors can share this transaction boundary.
+      if (route.actions.length && route.actions.every(action => action.domain !== 'combat')) return createDailyExecutor({ ...options, request: ask, policy })(route, { snapshot, args, assertFresh });
       if (!route.actions.length || route.actions.some(action => action.domain !== 'combat')) return { ...route, decision: 'unsupported', reasonCode: 'domain_not_implemented' };
       assertFresh();
       let working = args.battleState ? clone(args.battleState) : null;

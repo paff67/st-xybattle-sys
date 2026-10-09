@@ -114,6 +114,12 @@ export class BattleHostAdapter {
     infos[swipeId] = { ...clone(raw.extra || {}), ...infos[swipeId] };
     return { message_id: id, name: raw.name, role: raw.role || (raw.is_user ? 'user' : raw.extra?.type === 'narrator' ? 'system' : 'assistant'), is_hidden: !!raw.is_system, swipe_id: swipeId, swipes: clone(swipes), swipes_data: Array.from({ length: swipes.length }, (_, index) => clone(raw.variables?.[index] ?? raw.swipes_data?.[index] ?? {})), swipes_info: infos };
   }
+  selectPreparationSource(message) {
+    const context = this.context(), index = context.chat?.indexOf(message);
+    if (index < 0 || index !== this.latestAssistantId(context) || message.is_user !== false || message.is_system) throw new Error('人物准备来源不是当前有效回复');
+    this.anchor = { chatId: this.chatId(context), messageId: index, raw: message, writable: true };
+    return this.scope();
+  }
   scope() {
     const context = this.context(), chatId = this.chatId(context), explicitId = this.explicitMessageId(context);
     let id = this.anchor?.chatId === chatId ? this.anchor.messageId : null;

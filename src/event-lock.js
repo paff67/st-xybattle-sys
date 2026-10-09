@@ -21,4 +21,19 @@ export class EventOperationLock {
     const release = await this.acquire(key, owner);
     try { return await operation(); } finally { release(); }
   }
+  async queued(key, owner, operation, { signal, timeoutMs = 30000 } = {}) {
+    const end = Date.now() + timeoutMs;
+    while (true) {
+      if (signal?.aborted) throw new DOMException('排队已取消', 'AbortError');
+      if (Date.now() >= end) throw new Error('战斗准备等待共享锁超时');
+      let release;
+      try { release = await this.acquire(key, owner); }
+      catch (error) {
+        if (!/另一|当前聊天/.test(error.message)) throw error;
+        await new Promise(resolve => setTimeout(resolve, 50)); continue;
+      }
+      try { if (signal?.aborted) throw new DOMException('排队已取消', 'AbortError'); return await operation(); }
+      finally { release(); }
+    }
+  }
 }

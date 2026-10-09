@@ -6,18 +6,24 @@
         <h2 class="xy-panel-title">独立机枢 · 模型与演算法</h2>
       </div>
       <p class="xy-panel-desc">
-        裁定 AI、人物生成与正文生成可分别配置 API；凭据保存到当前浏览器本地，仅用于本机请求，不写入聊天、战报或导出文件。
+        战斗裁定、非战斗裁定、人物生成与正文生成可分别配置 API；凭据保存到当前浏览器本地，仅用于本机请求，不写入聊天、战报或导出文件。
       </p>
     </div>
 
     <fieldset class="xy-config-card">
       <legend class="xy-card-legend">日常事务入口 · 开发阶段</legend>
-      <p class="xy-panel-desc">默认关闭。开启后，普通输入继续生成正文；战斗行动交给现有工作台，先由 AI 提取人物资料，再由你确认开战。创建战斗场景时先生成正文，再识别是否需要准备战斗。</p>
+      <p class="xy-panel-desc">默认关闭。开启后，普通输入直接续写；战斗沿用现有工作台。修炼突破、炼丹炼器、探查、疗伤、破阵、追逃与日常事务默认后台裁定，右上方显示具体任务与取消按钮。取消后不注入裁定结果，直接交给主 AI 续写。日志页可查看资料、依据摘要与结果。</p>
       <label class="xy-checkbox-label xy-mt-3">
         <input type="checkbox" v-model="form.eventAutoEnabled" class="xy-checkbox" />
         <span>启用自动分流与战斗准备（保存后生效）</span>
       </label>
-      <small class="xy-field-hint">分流不会直接结算战斗。其他事务仍只准备资料，尚未实现的执行步骤会停止并保留输入。</small>
+      <small class="xy-field-hint">分流不会直接结算战斗。非战斗事务完成裁定后，将结果注入本轮正文；资料不足或请求失败会停止并保留输入。</small>
+    </fieldset>
+
+    <fieldset class="xy-config-card">
+      <legend class="xy-card-legend">MVU 战斗状态监听</legend>
+      <label class="xy-checkbox-label"><input type="checkbox" v-model="form.battleStateListenerEnabled" class="xy-checkbox" /><span>状态从其他有效值变为“待裁定”时自动准备战斗（默认关闭）</span></label>
+      <p class="xy-panel-desc">独立于语义分流。只读取当前回复的 MVU，沿用人物准备与确认流程，不执行首轮行动、不自动发送正文。初次打开已有待裁定状态不会回放。缺少可关联的 MVU 更新接口时，日志会显示不可用，仍可手动开始。</p>
     </fieldset>
 
     <CoreRulesSettings v-if="controller" :controller="controller" :state="battleState" :preparing="preparing" />
@@ -88,6 +94,52 @@
           <input v-model.number="form.judge.timeoutMs" type="number" min="1000" step="1000" class="xy-input-text" />
         </label>
       </div>
+    </fieldset>
+
+    <fieldset class="xy-config-card" data-testid="daily-api-settings">
+      <legend class="xy-card-legend">非战斗裁定 API</legend>
+      <label class="xy-checkbox-label">
+        <input type="checkbox" v-model="form.dailyAdjudicator.inherit" @change="changeDailyInheritance" data-testid="daily-api-inherit" class="xy-checkbox" />
+        <span>沿用战斗裁定 AI 的连接、模型、温度、输出上限与单次超时（默认）</span>
+      </label>
+      <p class="xy-panel-desc">用于自动分流、资料提取与非战斗裁定。关闭沿用后可独立配置；战斗开战后的裁定仍使用战斗 API。当前不自动重试失败请求。</p>
+      <div class="xy-form-grid">
+        <label class="xy-form-field"><span class="xy-field-label">模型标识 (Model)</span>
+          <input v-model="dailyApi.model" :disabled="form.dailyAdjudicator.inherit" data-testid="daily-api-model" class="xy-input-text" /></label>
+        <label class="xy-form-field xy-col-span-2"><span class="xy-field-label">服务接入点 (Endpoint)</span>
+          <input v-model="dailyApi.endpoint" :disabled="form.dailyAdjudicator.inherit" data-testid="daily-api-endpoint" placeholder="https://api.example.com/v1" class="xy-input-text" /></label>
+        <label class="xy-form-field xy-col-span-2"><span class="xy-field-label">API Key（浏览器本地保存）</span>
+          <div class="xy-password-wrap">
+            <input v-model="dailyApi.apiKey" :disabled="form.dailyAdjudicator.inherit" :type="showDailyKey ? 'text' : 'password'" autocomplete="off" data-testid="daily-api-key" class="xy-input-text" />
+            <button type="button" class="xy-pwd-toggle" :aria-label="showDailyKey ? '隐藏非战斗 API Key' : '显示非战斗 API Key'" @click="showDailyKey = !showDailyKey"><Icons :name="showDailyKey ? 'eye-off' : 'eye'" /></button>
+          </div></label>
+        <label class="xy-form-field"><span class="xy-field-label">温度 (Temperature)</span>
+          <input v-model.number="dailyApi.temperature" :disabled="form.dailyAdjudicator.inherit" data-testid="daily-api-temperature" type="number" min="0" max="2" step="0.1" class="xy-input-text" /></label>
+        <label class="xy-form-field"><span class="xy-field-label">最大输出 (Max Tokens)</span>
+          <input v-model.number="dailyApi.maxOutput" :disabled="form.dailyAdjudicator.inherit" data-testid="daily-api-output" type="number" min="1" step="1" class="xy-input-text" /></label>
+        <label class="xy-form-field"><span class="xy-field-label">单次请求超时（毫秒）</span>
+          <input v-model.number="dailyApi.timeoutMs" :disabled="form.dailyAdjudicator.inherit" data-testid="daily-api-timeout" type="number" min="100" step="1000" class="xy-input-text" /></label>
+        <label class="xy-form-field"><span class="xy-field-label">整次事务总时限（毫秒）</span>
+          <input v-model.number="form.dailyTotalTimeoutMs" data-testid="daily-total-timeout" type="number" min="100" step="1000" class="xy-input-text" /></label>
+      </div>
+      <p class="xy-field-hint">总时限独立设置，覆盖分流、资料提取及各行动裁定；任一时限到达即停止并报错。</p>
+    </fieldset>
+
+    <fieldset class="xy-config-card" data-testid="daily-prompt-settings">
+      <legend class="xy-card-legend">非战斗裁定提示词</legend>
+      <p class="xy-panel-desc">每次裁定使用“通用提示词 + 当前模块提示词”。修改后点击页面底部保存，下次事务生效。请保留通用提示词中的 JSON 返回接口；程序仍会校验结果结构与资料引用。留空并保存会恢复该项默认值。</p>
+      <details class="xy-mt-3">
+        <summary>通用裁定提示词</summary>
+        <label class="xy-form-field xy-mt-3"><span class="xy-field-label">非战斗通用提示词</span>
+          <textarea v-model="form.dailyPrompts.common" data-testid="daily-common-prompt" rows="14" class="xy-input-textarea xy-prompt-editor"></textarea></label>
+        <button type="button" class="xy-back-btn xy-mt-3" data-testid="daily-reset-common" @click="form.dailyPrompts.common = DAILY_ADJUDICATION_PROMPT">恢复通用默认提示词</button>
+      </details>
+      <details v-for="domain in DAILY_DOMAINS" :key="domain" class="xy-mt-3">
+        <summary>{{ domainContract(domain).label }}专项提示词</summary>
+        <label class="xy-form-field xy-mt-3"><span class="xy-field-label">{{ domainContract(domain).label }}专项提示词</span>
+          <textarea v-model="form.dailyPrompts.modules[domain]" :data-testid="'daily-prompt-' + domain" rows="5" class="xy-input-textarea"></textarea></label>
+        <button type="button" class="xy-back-btn xy-mt-3" :data-testid="'daily-reset-' + domain" @click="form.dailyPrompts.modules[domain] = DAILY_MODULE_PROMPTS[domain]">恢复本模块默认提示词</button>
+      </details>
     </fieldset>
 
     <fieldset class="xy-config-card" data-testid="character-api-settings">
@@ -228,6 +280,8 @@
 import { computed, reactive, ref, watch } from 'vue';
 import Icons from './Icons.vue';
 import CoreRulesSettings from './CoreRulesSettings.vue';
+import { DAILY_ADJUDICATION_PROMPT, DAILY_MODULE_PROMPTS, DAILY_DOMAINS, normalizeDailyPrompts } from '../../event-daily-prompts.js';
+import { domainContract } from '../../event-domain-contracts.js';
 
 const props = defineProps({
   settings: { type: Object, default: () => ({}) },
@@ -242,6 +296,13 @@ const emit = defineEmits(['save', 'back']);
 const showJudgeKey = ref(false);
 const showNarratorKey = ref(false);
 const showCharacterKey = ref(false);
+const showDailyKey = ref(false);
+const dailyApi = computed(() => form.dailyAdjudicator.inherit ? form.judge : form.dailyAdjudicator);
+function changeDailyInheritance() {
+  if (!form.dailyAdjudicator.inherit && !form.dailyAdjudicator.endpoint && !form.dailyAdjudicator.model) {
+    Object.assign(form.dailyAdjudicator, form.judge, { inherit: false, mode: 'http', repairAttempts: 0 });
+  }
+}
 const characterApi = computed(() => form.characterGenerator.inherit ? form.judge : form.characterGenerator);
 function changeCharacterInheritance() {
   if (!form.characterGenerator.inherit && !form.characterGenerator.endpoint && !form.characterGenerator.model) {
@@ -271,8 +332,12 @@ const form = reactive({
     timeoutMs: 60000
   },
   characterGenerator: { inherit: true, mode: 'http', endpoint: '', model: '', apiKey: '', temperature: 0.2, timeoutMs: 60000 },
+  dailyAdjudicator: { inherit: true, mode: 'http', endpoint: '', model: '', apiKey: '', temperature: 0.2, maxOutput: 1600, timeoutMs: 60000 },
+  dailyTotalTimeoutMs: 240000,
+  dailyPrompts: normalizeDailyPrompts(),
   autoNarrative: true,
   eventAutoEnabled: false,
+  battleStateListenerEnabled: false,
   originalPrompt: '',
   characterCompletionPrompt: '',
   characterMaxOutput: 8000,
@@ -286,8 +351,12 @@ watch(() => props.settings, (s) => {
   if (s.adjudicator) Object.assign(form.judge, s.adjudicator);
   if (s.narrator) Object.assign(form.narrator, s.narrator);
   Object.assign(form.characterGenerator, s.characterGenerator || { inherit: true });
+  Object.assign(form.dailyAdjudicator, s.dailyAdjudicator || { inherit: true });
+  form.dailyTotalTimeoutMs = s.dailyTotalTimeoutMs ?? Math.max(form.judge.timeoutMs * 4, 120000);
+  form.dailyPrompts = normalizeDailyPrompts(s.dailyPrompts);
   form.autoNarrative = !!s.autoNarrative;
   form.eventAutoEnabled = s.eventAutoEnabled === true;
+  form.battleStateListenerEnabled = s.battleStateListenerEnabled === true;
   form.originalPrompt = s.originalPrompt || '';
   form.characterCompletionPrompt = s.characterCompletionPrompt || '';
   form.characterMaxOutput = s.characterMaxOutput || 8000;
@@ -301,8 +370,12 @@ function onSave() {
     adjudicator: { ...form.judge },
     narrator: { ...form.narrator },
     characterGenerator: { ...form.characterGenerator },
+    dailyAdjudicator: { ...form.dailyAdjudicator },
+    dailyTotalTimeoutMs: form.dailyTotalTimeoutMs,
+    dailyPrompts: { common: form.dailyPrompts.common, modules: { ...form.dailyPrompts.modules } },
     autoNarrative: form.autoNarrative,
     eventAutoEnabled: form.eventAutoEnabled,
+    battleStateListenerEnabled: form.battleStateListenerEnabled,
     originalPrompt: form.originalPrompt,
     characterCompletionPrompt: form.characterCompletionPrompt,
     characterMaxOutput: form.characterMaxOutput,

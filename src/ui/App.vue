@@ -1,5 +1,6 @@
 <template>
   <div id="xybattle-v2-root" class="xy-root-container">
+    <EventProgress v-if="events" :progress="eventProgress" @details="openEventLogs" @cancel="events.cancelAdjudication()" />
     <!-- 悬浮灵符启动器 (Draggable Floating Daoist Seal Launcher) -->
     <button 
       ref="launcherRef"
@@ -127,6 +128,8 @@
               v-show="currentTab === 'developer'"
               :ai-context="currentAiContext"
               :logs="controller.logs || []"
+              :events="eventProgress.receipts || []"
+              :activations="eventProgress.activations || []"
               @copy-debug="handleCopyDebug"
               @export-debug="handleExportDebug"
               @export-public="handleExportPublicLogs"
@@ -147,6 +150,8 @@ import DataPanel from './components/DataPanel.vue';
 import DeveloperPanel from './components/DeveloperPanel.vue';
 import ContentLibraryPanel from './components/ContentLibraryPanel.vue';
 import CharacterConfirmationPanel from './components/CharacterConfirmationPanel.vue';
+import EventProgress from './components/EventProgress.vue';
+import { dailyRuntimeSettings } from '../adapters.js';
 import { downloadJson } from '../utils.js';
 import { getAiReadContext } from '../battle-state.js';
 import { stripSecrets } from '../common.js';
@@ -161,6 +166,9 @@ const props = defineProps({
 
 const isOpen = ref(false);
 const currentTab = ref('workbench');
+const eventProgress = shallowRef(props.events?.inspect?.() || { status: 'ready', receipts: [] });
+const unsubscribeEvents = props.events?.subscribe?.(value => { eventProgress.value = value; });
+function openEventLogs() { isOpen.value = true; currentTab.value = 'developer'; }
 const notification = ref('');
 const contentStore = new ContentStore();
 const preparingCharacters = ref(false);
@@ -281,16 +289,20 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  unsubscribeEvents?.();
   window.removeEventListener('keydown', onKeydown);
   props.controller.onBattleEntry = null;
 });
 
 // 动作指令处理器
-props.controller.onBattleEntry = async () => {
+props.controller.onBattleEntry = event => {
   isOpen.value = true;
   currentTab.value = 'workbench';
-  if (characterBusy.value || preparingCharacters.value) return;
-  if (['idle', 'ended'].includes(props.controller.state.phase)) await handleStart();
+  characterBusy.value = event.status === 'preparing';
+  characterPanel.value = props.controller.characterConfirmationPanel();
+  preparingCharacters.value = characterBusy.value || !!characterPanel.value;
+  if (event.reason) notification.value = event.reason;
+  updateViews();
 };
 async function handleStart() {
   try {
@@ -339,6 +351,7 @@ function handleConfirmCharacters({ edits, removeIds }) {
 function handleCancelCharacters() {
   characterReadSequence += 1;
   characterBusy.value = false;
+  props.events?.cancelBattlePreparation?.();
   props.controller.cancelCharacterPreparation();
   characterPanel.value = null;
   preparingCharacters.value = false;
@@ -426,11 +439,9 @@ async function handleSaveSettings(newSettings) {
     props.controller.setSettings(newSettings);
     if (props.events) {
       await props.events.disable();
+      props.events.setStateListenerEnabled?.(newSettings.battleStateListenerEnabled);
       if (newSettings.eventAutoEnabled) {
-        const judge = props.controller.settings.adjudicator;
-        if (judge.mode !== 'http' || !judge.endpoint || !judge.model) throw new Error('自动事务入口需要先配置真实裁定 AI 的接口和模型');
-        props.events.configureAutomaticAdjudication({ endpoint: judge.endpoint, model: judge.model, apiKey: judge.apiKey || '',
-          requestTimeoutMs: judge.timeoutMs, totalTimeoutMs: Math.max(judge.timeoutMs * 4, 120000), maxOutput: judge.maxOutput });
+        props.events.configureAutomaticAdjudication(dailyRuntimeSettings(props.controller.settings));
         await props.events.enable();
       }
     }
@@ -464,11 +475,15 @@ function handleExportPublicLogs() {
 }
 
 function handleExportDebug() {
-  downloadJson(`battle-v2-developer-logs-${Date.now()}.json`, props.controller.debugLogExport());
+  downloadJson(`battle-v2-developer-logs-${Date.now()}.json`, completeDebugLog());
+}
+
+function completeDebugLog() {
+  return JSON.stringify({ battle: JSON.parse(props.controller.debugLogExport()), events: props.events?.inspect?.().receipts || [], battleActivations: props.events?.inspect?.().activations || [] }, null, 2);
 }
 
 async function handleCopyDebug() {
-  await navigator.clipboard.writeText(props.controller.debugLogExport());
+  await navigator.clipboard.writeText(completeDebugLog());
   notification.value = '已复制完整天道开发审计日志';
 }
 

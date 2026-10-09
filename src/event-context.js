@@ -2,6 +2,7 @@ import { stripSecrets } from './common.js';
 import { canonicalEvent, inputSnapshot, inputDigest, EVENT_NAMESPACE } from './event-state.js';
 import { battlefieldProjection } from './event-battlefield-state.js';
 import { narrativeActors } from './narrative-profile.js';
+import { storyText } from './story-context.js';
 
 const copy = value => JSON.parse(JSON.stringify(value));
 const selectedVariables = message => Array.isArray(message?.variables) ? message.variables[message.swipe_id || 0] : message?.variables;
@@ -49,7 +50,7 @@ export function createEventContextReader({ contextProvider = () => globalThis.Si
     const mvuData = stripSecrets(copy(adaptMvu(rawMvu) ?? null));
     const acuData = stripSecrets(copy(adaptAcu(rawAcu) ?? null));
     const history = prior.map((row, index) => ({ row, index })).filter(({ row }) => !row.is_system)
-      .slice(-historyLimit).map(({ row, index }) => ({ id: `history:${index}`, role: row.is_user ? 'user' : 'assistant', text: String(row.mes || '').slice(-historyChars) }));
+      .slice(-historyLimit).map(({ row, index }) => ({ id: `history:${index}`, role: row.is_user ? 'user' : 'assistant', text: (row.is_user ? String(row.mes || '') : storyText(row.mes)).slice(-historyChars) }));
     const input = { id: 'input', text: String(message.mes || '') };
     const sources = [{ id: 'input', kind: 'intent', branchKnown: true, data: input.text },
       ...history.map(row => ({ id: row.id, kind: 'history', branchKnown: true, data: row.text })),

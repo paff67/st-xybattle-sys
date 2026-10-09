@@ -7,7 +7,7 @@ import { createCharacterJsonRequest } from './character-source-adapters.js';
 import { stripSecrets } from './common.js';
 import { normalizeNarrativeProfile } from './narrative-profile.js';
 
-function resolveReference(ref, snapshot) {
+export function resolveReference(ref, snapshot) {
   const source = snapshot.sources.find(item => item.id === ref?.sourceId);
   if (!source || typeof ref.pointer !== 'string' || ref.pointer && !ref.pointer.startsWith('/')) throw new Error('资料引用无效');
   let value = source.data;
@@ -92,6 +92,14 @@ export function createAutomaticEventPreparation({ captureContext, request, polic
       if (route.actions.some(action => !linked.has(action.localKey))) return { ...result, decision: 'unsupported', reasonCode: 'mixed_workbench_event' };
       return { ...result, decision: 'handoff', reasonCode: 'battle_workbench_preparation' };
     }
+    if (options.readDailyDefinitions && route.actions.every(action => !['combat', 'battlefield'].includes(action.domain))) {
+      args.onProgress?.({ stage: 'extracting', domain: route.actions[0].domain, actionKey: route.actions[0].localKey });
+      const definitions = stripSecrets(await options.readDailyDefinitions(snapshot), [options.apiKey]);
+      assertFresh();
+      snapshot.definitions = definitions;
+      snapshot.sources = [...snapshot.sources, { id: 'definitions', kind: 'definition', branchKnown: false, data: definitions }];
+      args.onProgress?.({ stage: 'rules_loaded', domain: route.actions[0].domain, definitions });
+    }
     if (snapshot.battlefield.differences.length && route.actions.some(action => ['combat', 'battlefield', 'pursuit'].includes(action.domain))) {
       return { ...result, decision: 'needs_context', preparation: { status: 'needs_context', reason: 'battlefield_projection_conflict', modules: [] } };
     }
@@ -102,14 +110,16 @@ export function createAutomaticEventPreparation({ captureContext, request, polic
     const modules = [];
     for (const action of route.actions) {
       assertFresh();
+      args.onProgress?.({ stage: 'extracting', domain: action.domain, actionKey: action.localKey });
       const raw = await ask(preparationPrompt(action.domain), { action, scope: snapshot.scope, sources: snapshot.sources,
         battlefield: snapshot.battlefield, policy: policySnapshot }, requestTimeoutMs, args.signal);
       assertFresh();
       modules.push({ actionKey: action.localKey, ...validatePreparedEvidence(action.domain, raw, snapshot, profileOptions) });
+      args.onProgress?.({ stage: 'prepared', domain: action.domain, actionKey: action.localKey, evidence: modules.at(-1) });
     }
     const ready = modules.every(module => module.status === 'ready');
-    // Preparation does not satisfy execution. The P0/P1 coordinator still blocks
-    // adjudication with domain_not_implemented; no legacy confirmation is called.
+    // Preparation alone does not satisfy execution. onPrepared must produce a
+    // validated domain receipt; no legacy confirmation is called here.
     const prepared = stripSecrets({ ...result, decision: ready ? 'adjudicate' : 'needs_context',
       activationCandidates: result.activationCandidates.map(candidate => ({ ...candidate, status: ready ? 'staged' : 'needs_context' })),
       preparation: { status: ready ? 'ready' : 'needs_context', executable: false, modules } }, [options.apiKey]);

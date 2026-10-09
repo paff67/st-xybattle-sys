@@ -1,6 +1,7 @@
 // Preparation contracts, not executable adjudication modules. Each field is
 // populated from referenced evidence; no artificial opponent is required.
 export const EVENT_DOMAINS = Object.freeze({
+  daily: { label: '日常事务', required: ['subject', 'purpose', 'conditions'], optional: ['method', 'resources', 'target', 'environment'], guidance: '有不确定性或持续后果的交涉、学习、劳作等行动；普通聊天和无风险例行动作直接放行，不人为制造检定。' },
   combat: { label: '战斗', required: ['actors', 'methods', 'resources', 'situation'], optional: ['battlefield'], guidance: '双方真实参与者、动作与目标、功法完整定义、可用资源、位置和持续效果。已有战局复用固定资料。' },
   cultivation: { label: '修炼突破', required: ['subject', 'method', 'progress', 'conditions'], optional: ['resources', 'tribulation', 'battlefield'], guidance: '境界、修炼功法、积累与瓶颈、突破条件、环境、辅助物。自然雷劫不是执法镇罚；天网不代受核心劫力。' },
   alchemy: { label: '炼丹', required: ['subject', 'recipe', 'materials', 'equipment', 'method'], optional: ['stage', 'environment'], guidance: '丹方、材料数量与性质、炉具、火候与技艺、工序进度；不凭模型补造已拥有的材料或成品。' },

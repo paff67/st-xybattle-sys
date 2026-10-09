@@ -9,6 +9,8 @@ import { createAutomaticEventPreparation } from '../src/event-preparation.js';
 import { createEventCombatPipeline } from '../src/event-combat.js';
 import { scenarioRoot } from './fixtures/event-model-scenarios.js';
 import { responseFor, preparationRequest } from './fixtures/event-execution-fixture.js';
+import { createWorkbenchEventRouter } from '../src/event-workbench.js';
+import { battlefieldProjection } from '../src/event-battlefield-state.js';
 
 const copy = value => JSON.parse(JSON.stringify(value));
 const tick = () => new Promise(resolve => setImmediate(resolve));
@@ -21,6 +23,62 @@ class Events {
 }
 const user = text => ({ is_user: true, mes: text, extra: { unrelated: 'keep' } });
 const assistant = text => ({ is_user: false, mes: text, extra: {}, swipe_id: 0, swipes: [text], swipe_info: [{ extra: {} }] });
+
+test('explicit cancel passes the same native generation without packet, even when the model ignores abort', async () => {
+  for (const stage of ['routing', 'extracting', 'adjudicating', 'validating']) {
+    let release, receivedSignal, injected = 0;
+    const f = fixture({ router: async args => {
+      receivedSignal = args.signal; args.onProgress({ stage, domain: 'pursuit' });
+      await new Promise(resolve => { release = resolve; });
+      return { decision: 'adjudicate', execution: { schema: 'event_daily_commit_v1', status: 'validated', packet: { mustNotInject: true } } };
+    } });
+    f.windowRef.TavernHelper = { injectPrompts() { injected++; return { uninject() {} }; } };
+    await f.gate.setEnabled(true);
+    const pending = f.start('追踪足迹'); await until(() => !!release);
+    assert.equal(f.coordinator.skipAdjudication(), true);
+    const output = await pending;
+    assert.equal(output.aborted, 0); assert.equal(output.event.reasonCode, 'user_skipped_adjudication');
+    assert.equal(output.event.execution, undefined); assert.equal(receivedSignal.aborted, true);
+    release(); await tick(); assert.equal(injected, 0);
+    await f.story();
+    const regenerated = await f.start('', 'regenerate');
+    assert.equal(regenerated.aborted, 0); assert.equal(f.routes, 1); assert.equal(injected, 0);
+    await f.coordinator.finish({ stopped: true }); f.gate.dispose();
+  }
+});
+
+test('host stop and chat switch are not user skip and never fail open', async () => {
+  for (const mode of ['stop', 'switch']) {
+    let release;
+    const f = fixture({ router: async () => { await new Promise(resolve => { release = resolve; }); return { decision: 'pass' }; } });
+    await f.gate.setEnabled(true); const pending = f.start('疗伤'); await until(() => !!release);
+    if (mode === 'stop') await f.events.emit('GENERATION_STOPPED');
+    else { f.select('another-chat'); await f.events.emit('CHAT_CHANGED'); }
+    assert.ok((await pending).aborted > 0); release(); await tick();
+    if (mode === 'switch') assert.equal(f.coordinator.lastStatus.status, 'ready');
+    f.gate.dispose();
+  }
+});
+
+test('daily execution commits once, injects only public results and reuses receipt on regenerate', async () => {
+  let pipeline, judges = 0, injected = 0;
+  const f = fixture({ router: args => pipeline(args) });
+  pipeline = createWorkbenchEventRouter({ captureContext: async () => ({ input: { id: 'input', text: '疗伤' }, history: [], battlefield: battlefieldProjection(null, null), scope: {},
+    sources: [{ id: 'mvu', kind: 'mvu', branchKnown: true, data: { subject: '许妍', injury: '擦伤', method: '已掌握的止血法' } }] }), request: async (_prompt, input) => {
+    if (input.domains) return { decision: 'adjudicate', missingInformation: [], actions: [{ localKey: 'heal', domain: 'recovery', intent: '疗伤', source: { id: 'input', quote: '疗伤' }, execution: 'now', dependsOn: [], worldSignal: { kind: 'none', purpose: 'none', confrontation: 'none', evidence: [] } }] };
+    if (input.sources) return { fields: Object.fromEntries(['subject', 'injury', 'method'].map(field => [field, [{ sourceId: 'mvu', pointer: '/' + field }]])), missing: [], conflicts: [] };
+    judges++; return { outcome: 'success', summary: '血已止住', publicFacts: ['伤口停止渗血'], costs: [], effects: ['止血'], duration: '本次施法', missing: [], basis: [{ field: 'method', index: 0, reason: '仅供审计的判据' }], changes: [] };
+  } });
+  f.windowRef.TavernHelper = { injectPrompts(prompts) { injected++; assert.match(prompts[0].content, /血已止住/); assert.doesNotMatch(prompts[0].content, /仅供审计/); return { uninject() {} }; } };
+  await f.gate.setEnabled(true);
+  const result = await f.start('疗伤'); assert.equal(result.aborted, 0); assert.equal(result.event.status, 'committed');
+  assert.equal(result.event.execution.schema, 'event_daily_commit_v1'); assert.ok(result.event.audit.some(row => row.stage === 'prepared'));
+  assert.equal(f.coordinator.skipAdjudication(), false);
+  await f.story(); await f.start('', 'regenerate');
+  assert.equal(judges, 1); assert.equal(injected, 2);
+  await f.coordinator.finish({ stopped: true }); f.gate.dispose();
+});
+
 function fixture({ router = async () => ({ decision: 'pass' }), timeoutMs = 1000 } = {}) {
   let n = 0, routes = 0, saves = 0, skipSave = false;
   const id = () => `test-id-${++n}`, events = new Events(), disks = new Map();

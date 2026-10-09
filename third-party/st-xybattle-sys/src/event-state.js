@@ -26,6 +26,7 @@ export function validateEventStore(store, chatId) {
   if (!store || store.schema !== 'event_store_v1' || store.chatId !== chatId || !Number.isSafeInteger(store.revision) || store.revision < 0 || !store.events || !store.branches || !store.rootBranchUid) {
     throw new Error('事件存档格式或聊天身份不匹配');
   }
+  if (store.battleActivation && (store.battleActivation.schema !== 'battle_activation_v1' || !store.battleActivation.observations || !store.battleActivation.records)) throw new Error('战斗唤起元数据格式无效');
   return store;
 }
 const transitions = {

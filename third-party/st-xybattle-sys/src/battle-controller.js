@@ -26,7 +26,7 @@ export class BattleController {
     this.emit(); return result;
   }
   constructor({ storage, credentialStorage, chatId = 'default-chat', branchId = 'main', adjudicator, narrator, hostAdapter, registry = new TechniqueRegistry(), onChange = () => {}, initialScene = {}, initialPlayer, initialEnemies = [], semanticState } = {}) {
-    this.storage = storage instanceof BattleStorage ? storage : new BattleStorage(storage,{chatId,branchId}); this.credentialStorage=credentialStorage; this.registry=registry; const persistedSettings=this.storage.readSettings(); const credentials=readCredentialSettings(this.credentialStorage); this.settings=normalizeSettings({...persistedSettings,adjudicator:{...persistedSettings.adjudicator,...credentials.adjudicator},narrator:{...persistedSettings.narrator,...credentials.narrator},characterGenerator:{...persistedSettings.characterGenerator,...credentials.characterGenerator}}); const configured=adaptersFromSettings(this.settings); this.adjudicator=adjudicator||configured.adjudicator; this.narrator=narrator||configured.narrator; this.customAdapters={adjudicator,narrator}; this.hostAdapter=hostAdapter; this.onChange=onChange; this.epoch=0; this.inFlight=null; this.checkpoints=Promise.resolve(); this.bridgeQueuedAction=null; this.characterPreparation=null; this.characterPreparationRequest=0;
+    this.storage = storage instanceof BattleStorage ? storage : new BattleStorage(storage,{chatId,branchId}); this.credentialStorage=credentialStorage; this.registry=registry; const persistedSettings=this.storage.readSettings(); const credentials=readCredentialSettings(this.credentialStorage); this.settings=normalizeSettings({...persistedSettings,adjudicator:{...persistedSettings.adjudicator,...credentials.adjudicator},narrator:{...persistedSettings.narrator,...credentials.narrator},characterGenerator:{...persistedSettings.characterGenerator,...credentials.characterGenerator},dailyAdjudicator:{...persistedSettings.dailyAdjudicator,...credentials.dailyAdjudicator}}); const configured=adaptersFromSettings(this.settings); this.adjudicator=adjudicator||configured.adjudicator; this.narrator=narrator||configured.narrator; this.customAdapters={adjudicator,narrator}; this.hostAdapter=hostAdapter; this.onChange=onChange; this.epoch=0; this.inFlight=null; this.checkpoints=Promise.resolve(); this.bridgeQueuedAction=null; this.characterPreparation=null; this.characterPreparationRequest=0;
     this.initialOptions={registrySnapshot:registry.snapshot(),player:initialPlayer||this.defaultPlayer(),enemies:initialEnemies,...initialScene,semanticState}; const restored=hostAdapter?null:this.storage.readSession(); this.state=restored?restoreBattle(restored):createInitialState({...this.initialOptions,chatId,branchId}); if(restored)this.registry=new TechniqueRegistry(this.state.registrySnapshot); this.logs=this.storage.readLogs();
     this.ready=Promise.resolve(); if(hostAdapter){hostAdapter.start?.();this.unsubScope=hostAdapter.subscribeScopeChange?.((scope)=>{this.ready=this.switchScope(scope);});this.unsubNarrative=hostAdapter.subscribeNarrative?.((result)=>this.recordHostNarrative(result));this.unsubTranscript=hostAdapter.subscribeTranscriptChange?.(()=>{this.ready=this.reconcileTranscript();return this.ready;});this.unsubSent=hostAdapter.subscribePacketSent?.((event)=>this.recordPacketSent(event));this.ready=this.initializeHost();}
   }
@@ -98,9 +98,9 @@ export class BattleController {
     if (this.hostAdapter && (this.state.characterPreparation?.status !== 'confirmed' || this.state.characterPreparation?.profileSchema !== 'battle_combat_profile_v2')) throw new Error('请先通过开始战斗生成并确认本场人物资料');
   }
   emit({persistHost=true}={}){this.storage.writeSession(stripSecrets(this.state,this.secrets()));this.onChange(this.state,getPlayerView(this.state));if(this.hostAdapter&&persistHost){const state=clone(this.state),scope=clone(this.hostAdapter.scope?.()||this.state.scope),epoch=this.epoch;if(scope.available===false)return;this.checkpoints=this.checkpoints.catch(()=>{}).then(async()=>{if(epoch!==this.epoch)return{persisted:false,confirmed:false,stale:true};const result=await this.persistToHost(null,state,scope);if(epoch===this.epoch&&this.state.version===state.version){this.state.hostSync={status:result?.persisted&&result?.confirmed?'confirmed':'pending',reason:result?.reason||null};this.storage.writeSession(stripSecrets(this.state,this.secrets()));this.onChange(this.state,getPlayerView(this.state));}return result;});}}
-  secrets(){return[this.settings.adjudicator.apiKey,this.settings.narrator.apiKey,this.settings.characterGenerator.apiKey];}
+  secrets(){return[this.settings.adjudicator.apiKey,this.settings.narrator.apiKey,this.settings.characterGenerator.apiKey,this.settings.dailyAdjudicator.apiKey];}
   log(entry){this.logs=this.storage.appendLog(stripSecrets(entry,this.secrets()));}
-  setSettings(patch){if(this.inFlight||this.preparationAbort)throw new Error('请求中不能更换模型设置');const merged={...this.settings,...patch};if(patch.adjudicator)merged.adjudicator={...this.settings.adjudicator,...patch.adjudicator};if(patch.narrator)merged.narrator={...this.settings.narrator,...patch.narrator};if(patch.characterGenerator)merged.characterGenerator={...this.settings.characterGenerator,...patch.characterGenerator};if(patch.mode!==undefined){delete merged.adjudicator;delete merged.narrator;}this.settings=normalizeSettings(merged);this.storage.writeSettings(this.settings);writeCredentialSettings(this.settings,this.credentialStorage);this.setAdapters(adaptersFromSettings(this.settings));this.emit();return this.settings;}
+  setSettings(patch){if(this.inFlight||this.preparationAbort)throw new Error('请求中不能更换模型设置');const merged={...this.settings,...patch};if(patch.adjudicator)merged.adjudicator={...this.settings.adjudicator,...patch.adjudicator};if(patch.narrator)merged.narrator={...this.settings.narrator,...patch.narrator};if(patch.characterGenerator)merged.characterGenerator={...this.settings.characterGenerator,...patch.characterGenerator};if(patch.dailyAdjudicator)merged.dailyAdjudicator={...this.settings.dailyAdjudicator,...patch.dailyAdjudicator};if(patch.dailyPrompts)merged.dailyPrompts={...this.settings.dailyPrompts,...patch.dailyPrompts,modules:{...this.settings.dailyPrompts.modules,...patch.dailyPrompts.modules}};if(patch.mode!==undefined){delete merged.adjudicator;delete merged.narrator;}this.settings=normalizeSettings(merged);this.storage.writeSettings(this.settings);writeCredentialSettings(this.settings,this.credentialStorage);this.setAdapters(adaptersFromSettings(this.settings));this.emit();return this.settings;}
   setAdapters({adjudicator,narrator}={}){if(adjudicator)this.adjudicator=adjudicator;if(narrator)this.narrator=narrator;}
   /** Attach the browser catalogue. It is deliberately not auto-applied. */
   async hydrateContentStore(contentStore) {
@@ -123,9 +123,90 @@ export class BattleController {
     this.emit();
     return registry.snapshot();
   }
-  characterConfirmationPanel(){return this.characterPreparation ? buildCharacterConfirmationPanel(this.characterPreparation) : null;}
-  async prepareCharacters({ context, mvu, database, inference } = {}) {
+  requestBattleEntry(input) {
+    this.entryRequests ||= new Map();
+    if (this.entryRequests.has(input.activationId)) return this.entryRequests.get(input.activationId);
+    const promise = this.requestBattleEntryOwned(input).finally(() => this.entryRequests.delete(input.activationId));
+    this.entryRequests.set(input.activationId, promise);
+    return promise;
+  }
+  async requestBattleEntryOwned(input) {
     await this.ready;
+    input.guard?.(); abortIfNeeded(input.signal);
+    const previous = this.state.battleEntry;
+    if (previous?.activationId === input.activationId && previous.status === 'accepted') {
+      if (this.hostAdapter && this.state.hostSync?.status !== 'confirmed') return { status: 'needs_context', reason: '已生成人物资料，但宿主保存仍待确认；请重试保存' };
+      this.characterPreparation ||= clone(previous.preparation || null);
+      this.onBattleEntry?.({ status: 'accepted' });
+      return { status: 'already_accepted', sessionId: this.state.sessionId };
+    }
+    if (!['idle', 'ended'].includes(this.state.phase) || this.characterPreparation) {
+      const sameId = previous?.battlefieldId && previous.battlefieldId !== '无' && previous.battlefieldId === input.after?.战界ID;
+      const causal = previous?.parentEventId && [input.parentEventId, input.predecessorEventId].includes(previous.parentEventId);
+      if (!sameId && !causal) return { status: 'needs_context', reason: '当前已有战斗，无法证明属于同一战局；请在工作台处理' };
+      if (previous?.battlefieldId && input.after?.战界ID && previous.battlefieldId !== input.after.战界ID) return { status: 'needs_context', reason: '当前活动战斗的战界 ID 不同' };
+      this.onBattleEntry?.({ status: 'accepted' });
+      return { status: 'already_accepted', sessionId: this.state.sessionId };
+    }
+    if (input.before?.战斗状态 === '进行中') return { status: 'needs_context', reason: '未找到可恢复的同一战斗，请手动确认场景' };
+    if (input.message && this.hostAdapter?.selectPreparationSource) {
+      this.hostAdapter.selectPreparationSource(input.message);
+      await this.ready;
+      input.guard?.(); abortIfNeeded(input.signal);
+    }
+    if (this.state.phase === 'ended') {
+      const scope = clone(this.state.scope);
+      this.state = createInitialState({ ...this.initialOptions, chatId: scope.chatId, branchId: scope.branchId, registrySnapshot: this.registry.snapshot() });
+      this.state.scope = scope;
+    }
+    this.onBattleEntry?.({ status: 'preparing' });
+    try {
+      const apply = async operation => {
+        const commit = async () => {
+          input.guard?.(); abortIfNeeded(input.signal);
+          const panel = operation();
+          if (!panel?.candidates?.some(candidate => candidate.role !== 'player')) {
+            this.characterPreparation = null;
+            const error = new Error('当前上下文没有可确认的敌方人物，请补充正文或手动准备');
+            error.code = 'needs_context'; throw error;
+          }
+          this.state.battleEntry = { activationId: input.activationId, status: 'accepted', parentEventId: input.parentEventId,
+            battlefieldId: input.after?.战界ID || null, preparation: clone(this.characterPreparation) };
+          this.emit(); await this.checkpoints;
+          input.guard?.(); abortIfNeeded(input.signal);
+          if (this.hostAdapter && this.state.hostSync?.status !== 'confirmed') throw new Error('战斗准备已生成，但宿主保存待确认；请重试保存，不重新生成人物');
+          return panel;
+        };
+        return input.apply ? input.apply(commit) : commit();
+      };
+      const mvu = input.snapshot ? { getMvuData: () => { input.guard?.(); return clone(input.snapshot); } } : undefined;
+      await this.prepareCharacters({ context: input.message ? { sourceMessageId: this.hostAdapter?.context?.()?.chat?.indexOf(input.message) } : undefined, mvu,
+        signal: input.signal, guard: input.guard, apply });
+      this.onBattleEntry?.({ status: 'accepted' });
+      return { status: 'accepted', sessionId: this.state.sessionId };
+    } catch (error) {
+      this.onBattleEntry?.({ status: 'failed', reason: error.message });
+      if (error.code === 'needs_context') return { status: 'needs_context', reason: error.message };
+      throw error;
+    }
+  }
+  characterConfirmationPanel(){this.characterPreparation ||= clone(this.state.battleEntry?.status === 'accepted' ? this.state.battleEntry.preparation || null : null);return this.characterPreparation ? buildCharacterConfirmationPanel(this.characterPreparation) : null;}
+  async prepareCharacters(options = {}) {
+    await this.ready;
+    const claim = {};
+    const acquire = () => {
+      if (this.preparationAdmission || this.preparationAbort) throw new Error('人物准备正在进行，请等待或取消');
+      this.preparationAdmission = claim;
+    };
+    const host = this.hostAdapter?.context?.() || {};
+    const avatar = host.characters?.[host.characterId]?.avatar || this.state.scope.avatar || '';
+    if (this.eventOperationLock) await this.eventOperationLock.queued(`${avatar}:${host.chatId || this.state.scope.chatId}`, 'character-admission', acquire, { signal: options.signal });
+    else acquire();
+    try { return await this.prepareCharactersOwned(options); }
+    finally { if (this.preparationAdmission === claim) this.preparationAdmission = null; }
+  }
+  async prepareCharactersOwned({ context, mvu, database, inference, signal, guard, apply } = {}) {
+    guard?.(); abortIfNeeded(signal);
     if (this.preparationAbort) throw new Error('人物准备正在进行，请等待或取消');
     this.assertIdleRequest();
     if (!['idle','ended'].includes(this.state.phase)) throw new Error('只能在战斗开始前准备敌方人物');
@@ -134,7 +215,8 @@ export class BattleController {
     if (scope.chatId !== this.state.scope.chatId || scope.branchId !== this.state.scope.branchId) throw new Error('当前聊天分支已改变');
     const hostContext = this.hostAdapter?.context?.() || {};
     const messageCount = this.settings.characterMessageCount || 20;
-    const recentMessages = Array.isArray(hostContext.chat) ? hostContext.chat.slice(-messageCount).map((message) => ({ role: message.role || (message.is_user ? 'user' : 'assistant'), text: storyText(message.mes || message.message) })) : [];
+    const sourceChat = Number.isInteger(context?.sourceMessageId) ? hostContext.chat.slice(0, context.sourceMessageId + 1) : hostContext.chat;
+    const recentMessages = Array.isArray(sourceChat) ? sourceChat.slice(-messageCount).map((message) => ({ role: message.role || (message.is_user ? 'user' : 'assistant'), text: storyText(message.mes || message.message) })) : [];
     const card = hostContext.characters?.[hostContext.characterId];
     const sourceContext = { ...clone(context || {}), scope, recentMessages,
       playerId: this.state.actors.player.id,
@@ -152,6 +234,8 @@ export class BattleController {
     this.characterPreparation = null;
     const abort = new AbortController();
     this.preparationAbort = abort;
+    const cancel = () => abort.abort();
+    signal?.addEventListener('abort', cancel, { once: true });
     try {
       const coreConfig = this.coreRuleConfig();
       const coreRules = await freezeCoreRules(coreConfig.selection, name => this.hostAdapter.readCoreWorldbook(name));
@@ -170,9 +254,9 @@ export class BattleController {
       if (this.coreRuleConfig().characterKey !== coreConfig.characterKey || coreSelectionKey(this.coreRuleConfig().selection) !== coreSelectionKey(coreConfig.selection)) throw new Error('底则配置或角色卡在准备期间改变，请重新读取');
       preparation.coreRules = coreRules;
       preparation.coreRulesSelectionKey = coreSelectionKey(coreConfig.selection);
-      this.characterPreparation = preparation;
-      return this.characterConfirmationPanel();
-    } finally { if (this.preparationAbort === abort) this.preparationAbort = null; }
+      const commit = () => { guard?.(); abortIfNeeded(signal); this.characterPreparation = preparation; return this.characterConfirmationPanel(); };
+      return apply ? await apply(commit) : commit();
+    } finally { signal?.removeEventListener('abort', cancel); if (this.preparationAbort === abort) this.preparationAbort = null; }
   }
   confirmCharacters(edits = {}, options = {}) {
     this.assertIdleRequest();
@@ -187,10 +271,11 @@ export class BattleController {
     this.registry = new TechniqueRegistry(next.registrySnapshot);
     this.state = next;
     this.characterPreparation = null;
+    if (this.state.battleEntry) delete this.state.battleEntry.preparation;
     this.emit();
     return this.state;
   }
-  cancelCharacterPreparation(){this.preparationAbort?.abort();this.preparationAbort=null;this.characterPreparationRequest+=1;this.characterPreparation=null;}
+  cancelCharacterPreparation(){this.preparationAbort?.abort();this.preparationAbort=null;this.characterPreparationRequest+=1;this.characterPreparation=null;if(this.state?.battleEntry?.preparation){delete this.state.battleEntry.preparation;this.state.battleEntry.status='cancelled';this.storage.writeSession(stripSecrets(this.state,this.secrets()));}}
   start(){this.assertIdleRequest();if(this.coreRuleConfig().selection.length && this.state.coreRulesSelectionKey!==coreSelectionKey(this.coreRuleConfig().selection))throw new Error('常驻底则尚未加载，请重新准备人物');if(this.characterPreparation?.status && this.characterPreparation.status !== 'confirmed')throw new Error('请先在人物确认页逐项确认全部候选人物');const scope=this.hostAdapter?.scope?.();if(scope?.available===false)throw new Error('当前聊天没有可用的助手消息锚点；请先生成新的正文消息。');this.assertPrepared();this.state=startBattle(this.state);this.emit();return this.state;}
   cancelPending(){this.epoch+=1;this.inFlight?.abort();this.inFlight=null;this.bridgeQueuedAction=null;}
   stop(reason='用户停止'){this.cancelPending();this.hostAdapter?.clearScenePacket?.();this.state=stopBattle({...this.state,history:this.state.history.map((record)=>record.status==='prepared'?{...record,status:'interrupted',error:reason}:record)},reason);this.emit();return this.state;}
