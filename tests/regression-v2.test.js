@@ -326,7 +326,7 @@ test('zero repair attempts make one failed HTTP call and preserve the pre-commit
   });
 });
 
-test('debug logs retain exact model input and output while credentials never enter storage or exports', async () => {
+test('logs omit model input and output while retaining safe request metadata', async () => {
   const hidden = 'enemy-private-debug-sentinel';
   const judgeKey = 'fixture-judge-sensitive-key';
   const storyKey = 'fixture-story-sensitive-key';
@@ -349,18 +349,18 @@ test('debug logs retain exact model input and output while credentials never ent
     });
     controller.start();
     await controller.submit({ actionId: 'exact-debug', label: '保留精确审计输入输出' });
-    const logs = JSON.parse(controller.debugLogExport());
+    const logs = controller.logs;
     const modelRequests = logs.filter((entry) => entry.kind === 'model_request');
     const modelResponses = logs.filter((entry) => entry.kind === 'model_response');
     const adjudicationRequest = logs.find((entry) => entry.kind === 'adjudication_request');
 
     assert.equal(modelRequests.length, 2);
     assert.equal(modelResponses.length, 2);
-    assert.deepEqual(modelRequests.map((entry) => entry.body), requests.map((request) => request.body));
-    assert.deepEqual(modelResponses.map((entry) => entry.rawResponse), wireResponses);
-    assert.equal(adjudicationRequest.request.prompt, requests[0].body.messages[1].content);
-    assert.equal(adjudicationRequest.request.context.actors.enemies[0].hidden.tactic, hidden);
-    assert.deepEqual(logs.find((entry) => entry.kind === 'ai_raw_response').rawResponse, controller.state.history[0].adjudication);
+    assert.ok(modelRequests.every(entry => entry.body === undefined));
+    assert.ok(modelResponses.every(entry => entry.rawResponse === undefined));
+    assert.equal(adjudicationRequest.request, '[omitted]');
+    assert.equal(JSON.stringify(logs).includes(hidden), false);
+    assert.equal(JSON.stringify(logs).includes('原始用户要求'), false);
 
     controller.log({ kind: 'fixture_secret_echo', apiKey: judgeKey, authorization: `Bearer ${storyKey}`, nested: { cookie: storyKey, accessToken: judgeKey }, text: `provider echoed ${judgeKey} and ${storyKey}` });
     for (const serialized of [storage.serialized(), controller.exportData(), controller.logExport(), controller.debugLogExport()]) {
@@ -371,7 +371,7 @@ test('debug logs retain exact model input and output while credentials never ent
     assert.doesNotMatch(publicLogs, new RegExp(hidden));
     assert.doesNotMatch(publicLogs, /"hidden"|"aiRead"|"rawResponse"|"prompt"|"body"/);
     assert.doesNotMatch(JSON.stringify(controller.playerView()), new RegExp(hidden));
-    assert.match(controller.debugLogExport(), new RegExp(hidden));
+    assert.doesNotMatch(controller.debugLogExport(), new RegExp(hidden));
   });
 });
 

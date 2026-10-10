@@ -1,8 +1,10 @@
+import { bindTrace, signalTrace } from './operation-log.js';
 export const isCharacterTimeout = (error) => error?.code === 'CHARACTER_TIMEOUT';
 
 // Host fetch wrappers/body readers may ignore abort. Reject independently too.
 export async function withCharacterDeadline(operation, { timeoutMs, signal, label = '人物 AI 请求', resetOnProgress = false }) {
   const controller = new AbortController();
+  bindTrace(controller.signal, signalTrace(signal));
   let timer, rejectStop;
   const stopped = new Promise((_, reject) => { rejectStop = reject; });
   const stop = (reason) => { rejectStop(reason); controller.abort(reason); };

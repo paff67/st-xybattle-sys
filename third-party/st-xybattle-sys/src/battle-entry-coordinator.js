@@ -1,3 +1,4 @@
+import { observeOperation, bindTrace, signalTrace } from './operation-log.js';
 import { activationBranchKey, activationFingerprint, observeBattleState } from './battle-state-observer.js';
 import { copyEvent } from './event-state.js';
 
@@ -11,11 +12,14 @@ export class BattleEntryCoordinator {
       const root = await this.store.load(scope);
       this.store.assertScope(scope);
       const result = await operation(ledger(root));
-      await this.store.write(scope, root, [], guard);
+      const trace = signalTrace(signal);
+      if (trace) await trace.span('activation-save', () => this.store.write(scope, root, [], guard));
+      else await this.store.write(scope, root, [], guard);
       return result;
     }, { signal });
   }
-  async observe(input) {
+  async observe(input, trace) {
+    if (!trace) return observeOperation('battle-observation', { chatId: this.store.scope().chatId, branchId:input.identity?.branchUid, requestId:input.identity?.requestId, parentRunId:signalTrace(input.signal)?.runId }, next => this.observe(input,next));
     const scope = this.store.scope();
     const candidate = await this.mutate(scope, data => {
       input.guard();
@@ -29,14 +33,17 @@ export class BattleEntryCoordinator {
       }
       return null;
     }, input.signal, input.guard);
+    trace.write('route',candidate?'success':'skipped','战界边沿选择结果',{selected:!!candidate,reasonCode:candidate?'activation_edge':'no_new_edge'});
     // Do not hold the variable observer while a model is working.
-    if (candidate) void this.request({ ...input, ...candidate, scope }).catch(error => this.onStatus({ status: 'battle_failed', reason: error.message }));
+    if (candidate) void this.request({ ...input, ...candidate, scope, parentRunId:trace.runId }).catch(error => this.onStatus({ status: 'battle_failed', reason: error.message }));
     return candidate;
   }
-  async request(input) {
+  async request(input, trace) {
+    if (!trace) return observeOperation('battle-entry', { chatId:(input.scope || this.store.scope()).chatId, branchId:input.branchUid, requestId:input.requestId, eventId:input.parentEventId, activationId:input.activationId, parentRunId:input.parentRunId || signalTrace(input.signal)?.runId }, next => this.request(input,next));
     const scope = input.scope || this.store.scope();
     const activationId = input.activationId || `entry-${activationFingerprint([scope.chatId, input.parentEventId, input.requestId, input.messageFingerprint])}`;
     const abort = new AbortController(), task = { activationId, scope, abort };
+    bindTrace(abort.signal,trace);
     const guard = () => { this.store.assertScope(scope); input.guard?.(); if (abort.signal.aborted || input.signal?.aborted) throw new DOMException('战斗准备已取消', 'AbortError'); };
     let record;
     try {
@@ -56,6 +63,7 @@ export class BattleEntryCoordinator {
         data.records[activationId] = value;
         return copyEvent(value);
       }, input.signal, guard);
+      trace.identify({ activationId }); trace.write('route',this.active===task?'success':'skipped','战斗入口选择结果',{status:record.status,reasonCode:record.relatedActivationId?'related_activation':this.active===task?'new_activation':'already_recorded'});
       if (this.active !== task) {
         if (record.status === 'accepted') {
           const acceptedId = record.relatedActivationId || activationId;
@@ -69,7 +77,7 @@ export class BattleEntryCoordinator {
       input.signal?.addEventListener('abort', cancel, { once: true });
       let result;
       try {
-        result = await this.controller.requestBattleEntry({ ...input, activationId, signal: abort.signal, guard,
+        result = await this.controller.requestBattleEntry({ ...input, activationId, signal: abort.signal, guard, trace,
           apply: operation => this.lock.queued(`${scope.avatar}:${scope.chatId}`, `entry-result:${activationId}`, async () => { guard(); return operation(); }, { signal: abort.signal }) });
       } finally { input.signal?.removeEventListener('abort', cancel); }
       guard();
@@ -82,6 +90,7 @@ export class BattleEntryCoordinator {
       this.onStatus({ status: `battle_${result.status === 'already_accepted' ? 'accepted' : result.status}`, reason: result.reason || '战斗资料已接管，等待人物确认与行动', activationId, sessionId: result.sessionId });
       return result;
     } catch (error) {
+      trace.fail('battle-entry',error);
       // Unknown persistence outcomes remain retained by HostEventStore.pending.
       if ((this.active === task || input.activationId) && !this.store.pending) {
         try { await this.mutate(scope, data => {
@@ -111,7 +120,8 @@ export class BattleEntryCoordinator {
     }).catch(() => {});
     return true;
   }
-  async recover() {
+  async recover(trace) {
+    if (!trace) return observeOperation('battle-recovery', {chatId:this.store.scope().chatId}, next=>this.recover(next));
     const scope = this.store.scope();
     return this.mutate(scope, data => {
       for (const row of Object.values(data.records)) {

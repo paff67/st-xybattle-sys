@@ -6,7 +6,7 @@
     </div>
     <div class="xy-event-actions">
       <button @click="$emit('details')">查看详情</button>
-      <button v-if="progress.canCancel && !cancelRequested" class="xy-event-cancel" @click="cancel">取消判定</button>
+      <button v-if="progress.canCancel && !cancelRequested" class="xy-event-cancel" @click="cancel">取消裁定，继续正文</button>
       <span v-else-if="cancelRequested && busy">正在取消…</span>
       <button v-if="!busy" aria-label="关闭判定提示" @click="visible = false">关闭</button>
     </div>
@@ -25,6 +25,7 @@ const failed = computed(() => ['battle_failed', 'battle_needs_context', 'battle_
 const label = computed(() => domain.value === 'pursuit' ? '追踪 / 追逃' : EVENT_DOMAINS[domain.value]?.label || '事务');
 const title = computed(() => {
   const status = props.progress.status;
+  if (props.progress.reason === 'adjudication_failed_open') return '裁定失败 · 已放行正文';
   if (status === 'battle_preparing') return '正在准备战斗人物';
   if (status === 'battle_accepted') return '战斗资料已接管';
   if (status === 'battle_cancelled') return '战斗准备已取消';
@@ -40,7 +41,7 @@ const title = computed(() => {
   if (status === 'cancelled') return '判定已停止';
   return '处理完成 · 正文继续生成';
 });
-const description = computed(() => props.progress.status?.startsWith('battle_') ? props.progress.reason || '只准备战斗资料，不追加正文。' : failed.value ? '查看日志了解缺失资料或异常原因。' : busy.value ? '后台处理中。取消判定将直接交给主 AI 续写。' : props.progress.reason === 'user_skipped_adjudication' ? '本次不注入裁定结果。' : '处理记录已保存在日志页。');
+const description = computed(() => props.progress.status?.startsWith('battle_') ? props.progress.reason || '只准备战斗资料，不追加正文。' : failed.value ? '查看运行日志了解失败阶段；已提交结果不会重复执行。' : busy.value ? '后台处理中。取消判定将直接交给主 AI 续写。' : ['user_skipped_adjudication','adjudication_failed_open'].includes(props.progress.reason) ? '本次不注入裁定结果，诊断已记录在运行日志。' : '处理记录已保存在日志页。');
 function cancel() { cancelRequested.value = true; emit('cancel'); }
 watch(() => props.progress, value => {
   clearTimeout(dismissTimer);

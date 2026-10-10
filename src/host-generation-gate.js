@@ -1,4 +1,5 @@
 import { newEventId } from './event-state.js';
+import { operationLog } from './operation-log.js';
 
 export const EVENT_INTERCEPTOR_NAME = 'xyEventGenerationInterceptor';
 const supportedKinds = new Set(['normal', 'regenerate', 'swipe']);
@@ -33,6 +34,7 @@ export class HostGenerationGate {
       content: '本轮以下结果已由独立裁定器提交。正文只描写这些既定事实，不重复扣费、不重判成败，不为未裁定行动补写结果。\n' + JSON.stringify(packet),
       filter: () => this.enabled && this.intent === intent && this.matches(intent) }], { once: true });
     if (typeof this.packetHandle?.uninject !== 'function') throw new Error('宿主注入接口未返回清理句柄');
+    this.coordinator.active?.trace?.write('injection', 'success', '已提交结果已注入正文', { eventId: event.eventId, committed: true });
   }
   start() {
     if (this.started) return this;
@@ -157,10 +159,13 @@ export class HostGenerationGate {
       this.injectPacket(result.event, intent);
       intent.accepted = true;
     } catch (error) {
+      const trace = this.coordinator.active?.trace || operationLog.start('generation-gate', { requestId: intent?.requestId, chatId: intent?.chatId });
+      trace.fail('generation-gate', error);
       abort?.(true);
       this.coordinator.cancel(error.message);
       this.clearPacket();
       await this.coordinator.finish({ stopped: true });
+      trace.end('failed');
       if (this.intent === intent) this.intent = null;
       this.onStatus({ status: 'blocked', reason: error.message });
     }

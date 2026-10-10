@@ -71,16 +71,17 @@ export function createAutomaticEventPreparation({ captureContext, request, polic
   const ask = request || createCharacterJsonRequest(options);
   const policySnapshot = structuredClone(policy);
   return async args => {
-    const snapshot = await capture(args);
+    const snapshot = args.trace ? await args.trace.span('context', () => capture(args)) : await capture(args);
     const assertFresh = () => { if (args.signal?.aborted) throw new DOMException('事件准备已取消', 'AbortError'); snapshot.assertFresh?.(); };
     assertFresh();
     // Until a multimodal/context attachment adapter exists, text-only routing
     // cannot safely decide that an unseen attachment contains no action.
     if (snapshot.hasAttachments) return { decision: 'needs_context', framework: 'auto-preparation-v1', policyId: policySnapshot.id,
       scope: snapshot.scope, battlefield: snapshot.battlefield, actions: [], missingInformation: ['attachment_context_not_supported'], activationCandidates: [], preparation: null };
-    const route = validateEventRoute(await ask(EVENT_ROUTER_PROMPT, { input: snapshot.input, history: snapshot.history,
+    const rawRoute = await ask(EVENT_ROUTER_PROMPT, { input: snapshot.input, history: snapshot.history,
       battlefield: snapshot.battlefield, activeCombat: args.battleState ? { sessionId: args.battleState.sessionId, phase: args.battleState.phase, actors: [args.battleState.actors.player, ...args.battleState.actors.enemies].map(actor => ({ id: actor.id, name: actor.name })) } : null,
-      policy: policySnapshot, domains: Object.entries(EVENT_DOMAINS).map(([id, value]) => ({ id, label: value.label })) }, requestTimeoutMs, args.signal), snapshot);
+      policy: policySnapshot, domains: Object.entries(EVENT_DOMAINS).map(([id, value]) => ({ id, label: value.label })) }, requestTimeoutMs, args.signal);
+    const route = args.trace ? await args.trace.span('validation', () => validateEventRoute(rawRoute, snapshot)) : validateEventRoute(rawRoute, snapshot);
     assertFresh();
     const result = { ...route, framework: 'auto-preparation-v1', policyId: policySnapshot.id, scope: snapshot.scope,
       battlefield: snapshot.battlefield, activationCandidates: combatActivationCandidates(route, snapshot), preparation: null };
@@ -114,7 +115,8 @@ export function createAutomaticEventPreparation({ captureContext, request, polic
       const raw = await ask(preparationPrompt(action.domain), { action, scope: snapshot.scope, sources: snapshot.sources,
         battlefield: snapshot.battlefield, policy: policySnapshot }, requestTimeoutMs, args.signal);
       assertFresh();
-      modules.push({ actionKey: action.localKey, ...validatePreparedEvidence(action.domain, raw, snapshot, profileOptions) });
+      const evidence = args.trace ? await args.trace.span('validation', () => validatePreparedEvidence(action.domain, raw, snapshot, profileOptions)) : validatePreparedEvidence(action.domain, raw, snapshot, profileOptions);
+      modules.push({ actionKey: action.localKey, ...evidence });
       args.onProgress?.({ stage: 'prepared', domain: action.domain, actionKey: action.localKey, evidence: modules.at(-1) });
     }
     const ready = modules.every(module => module.status === 'ready');

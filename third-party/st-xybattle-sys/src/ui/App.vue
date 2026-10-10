@@ -133,6 +133,7 @@
               @copy-debug="handleCopyDebug"
               @export-debug="handleExportDebug"
               @export-public="handleExportPublicLogs"
+              @retry-event-save="handleRetryEventSave"
             />
           </div>
         </section>
@@ -157,6 +158,7 @@ import { getAiReadContext } from '../battle-state.js';
 import { stripSecrets } from '../common.js';
 import demoScene from '../../sample-data/demo-scene.json' with { type: 'json' };
 import { ContentStore } from '../content-store.js';
+import { operationLog } from '../operation-log.js';
 
 const props = defineProps({
   controller: { type: Object, required: true },
@@ -423,6 +425,10 @@ function handleSkipNarrative() {
   }
 }
 
+async function handleRetryEventSave() {
+  try { await props.events?.retryPersistence(); notification.value = '事件保存已核对'; updateViews(); }
+  catch (err) { notification.value = err.message; }
+}
 async function handleRetryHost() {
   try {
     const saved = await props.controller.retryHostPersistence();
@@ -481,7 +487,7 @@ function handleExportDebug() {
 }
 
 function completeDebugLog() {
-  return JSON.stringify({ battle: JSON.parse(props.controller.debugLogExport()), events: props.events?.inspect?.().receipts || [], battleActivations: props.events?.inspect?.().activations || [] }, null, 2);
+  return operationLog.export();
 }
 
 async function handleCopyDebug() {

@@ -1,4 +1,5 @@
 import { clone, normalizeChatCompletionsEndpoint } from './common.js';
+import { signalTrace } from './operation-log.js';
 import { DEFAULT_CHARACTER_COMPLETION_PROMPT, COMBAT_PROFILE_CONTRACT, ENEMY_GENERATION_POLICY, normalizeCharacterCompletionPrompt } from './character-prompts.js';
 import { normalizeCombatProfile, combatProfileIssues } from './combat-profile.js';
 import { withCharacterDeadline, isCharacterTimeout } from './character-deadline.js';
@@ -72,12 +73,22 @@ async function readResponse(response) {
 export function createCharacterJsonRequest({ endpoint, model, apiKey = '', fetchImpl = globalThis.fetch, timeoutMs = 60000, maxOutput = 5000, temperature = 0.4, onRequestSuccess } = {}) {
   if (!endpoint || typeof fetchImpl !== 'function') throw new Error('资料 AI 需要 endpoint 与 fetch');
   return async (instruction, context, requestTimeoutMs = timeoutMs, signal) => {
-    return withCharacterDeadline(async (requestSignal) => {
+    const trace = signalTrace(signal), attempt = trace?.nextAttempt(), started = Date.now();
+    let stage = 'request';
+    trace?.write('request', 'running', '模型请求开始', { attempt, model });
+    try { return await withCharacterDeadline(async (requestSignal) => {
       const response = await fetchImpl(normalizeChatCompletionsEndpoint(endpoint), { method: 'POST', headers: { 'content-type': 'application/json', ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}) }, body: JSON.stringify({ model: model || '', temperature, max_tokens: maxOutput, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: instruction }, { role: 'user', content: `上下文：${JSON.stringify(context)}` }] }), signal: requestSignal });
+      if (requestSignal.aborted) throw requestSignal.reason;
+      trace?.write('request', response.ok ? 'success' : 'failed', '模型 HTTP 请求结束', { attempt, httpStatus: response.status }, response.ok ? 'INFO' : 'ERROR', { durationMs: Date.now() - started });
+      if (!response.ok) throw Object.assign(new Error('模型 HTTP 请求失败'), { code: 'MODEL_HTTP' });
+      stage = 'parse';
       const result = await readResponse(response);
+      if (requestSignal.aborted) throw requestSignal.reason;
+      trace?.write('parse', 'success', '模型响应解析完成', { attempt });
       onRequestSuccess?.();
       return result;
-    }, { timeoutMs: requestTimeoutMs, signal });
+    }, { timeoutMs: requestTimeoutMs, signal }); }
+    catch (error) { trace?.fail(stage, error, { attempt }); throw error; }
   };
 }
 

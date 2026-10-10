@@ -10,11 +10,14 @@
       </p>
     </div>
 
+    <RuntimeLog />
+    <p v-if="events.some(event => event.persistencePending)">事件保存待确认。请先等待正文完成，再重试保存；不会重新执行模型裁定。</p>
+    <button v-if="events.some(event => event.persistencePending)" @click="$emit('retry-event-save')">重试事件保存确认</button>
     <!-- 顶部操作条 -->
     <div class="xy-dev-actions">
       <button class="xy-dev-btn" @click="$emit('copy-debug')">
         <Icons name="copy" />
-        <span>复制完整开发审计 JSON</span>
+        <span>复制脱敏运行日志 JSON</span>
       </button>
 
       <button class="xy-dev-btn" @click="$emit('export-debug')">
@@ -103,6 +106,7 @@
 <script setup>
 import { computed } from 'vue';
 import Icons from './Icons.vue';
+import RuntimeLog from './RuntimeLog.vue';
 import { EVENT_DOMAINS } from '../../event-domain-contracts.js';
 
 const props = defineProps({
@@ -112,7 +116,7 @@ const props = defineProps({
   logs: { type: Array, default: () => [] }
 });
 
-defineEmits(['copy-debug', 'export-debug', 'export-public']);
+defineEmits(['copy-debug', 'export-debug', 'export-public', 'retry-event-save']);
 function eventLabel(event) { return [...new Set((event.route?.actions || event.audit || []).map(a => EVENT_DOMAINS[a.domain]?.label).filter(Boolean))].join(' / ') || '输入分流'; }
 function statusLabel(event) { return event.persistencePending ? '等待保存确认' : ({ captured: '已捕获', routing: '处理中', passed: '已放行', committed: '已提交', handed_off: '战斗接管', needs_input: '缺少资料', unsupported: '暂不支持', rejected: '校验失败', cancelled: '已停止', rolled_back: '已失效' })[event.status] || event.status; }
 function outcomeLabel(outcome) { return ({ success: '成功', partial: '部分完成', failure: '失败', blocked: '受阻', in_progress: '仍在进行', needs_context: '资料不足', skipped: '未执行' })[outcome] || outcome; }

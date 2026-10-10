@@ -1,4 +1,5 @@
 import { normalizeDailyPrompts } from './event-daily-prompts.js';
+import { signalTrace } from './operation-log.js';
 import { clone, abortIfNeeded, normalizeChatCompletionsEndpoint } from './common.js';
 import { HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT, formatScenePacketForStoryAI } from './battle-adjudicator-prompt.js';
 import { normalizeCharacterCompletionPrompt, normalizePrompt } from './character-prompts.js';
@@ -92,18 +93,27 @@ export class MockNarrator {
 }
 async function chatCompletion(config, messages, options = {}) {
   if (!config.endpoint || !config.model) throw new Error('HTTP 适配器缺少 endpoint 或 model');
-  abortIfNeeded(options.signal); const controller = new AbortController(); const abort = () => controller.abort(); options.signal?.addEventListener('abort', abort, { once: true }); const timer = setTimeout(abort, config.timeoutMs ?? 60000);
+  abortIfNeeded(options.signal); const controller = new AbortController(); const abort = () => controller.abort(); options.signal?.addEventListener('abort', abort, { once: true }); let timedOut = false; const timer = setTimeout(() => { timedOut = true; abort(); }, config.timeoutMs ?? 60000);
   const headers = { 'content-type': 'application/json' }; if (config.apiKey) headers.authorization = `Bearer ${config.apiKey}`;
   const body = { model: config.model, messages, temperature: config.temperature ?? 0.2, max_tokens: config.maxOutput ?? 1600, stream: false };
   if (options.jsonMode && config.jsonMode === true) body.response_format = { type: 'json_object' };
-  options.logger?.({ kind: 'model_request', requestMetadata: { model: config.model, temperature: body.temperature, maxOutput: body.max_tokens }, body: clone(body) });
+  const trace = signalTrace(options.signal), attempt = trace?.nextAttempt(), started = Date.now();
+  let stage = 'request';
+  trace?.write('request', 'running', '模型请求开始', { attempt, model: config.model });
+  trace?.write('request-diagnostic','running','模型请求参数',{attempt,temperature:body.temperature,maxTokens:body.max_tokens},'DEBUG');
+  options.logger?.({ kind: 'model_request', requestMetadata: { model: config.model, temperature: body.temperature, maxOutput: body.max_tokens } });
   try {
     const response = await fetch(normalizeChatCompletionsEndpoint(config.endpoint), { method: 'POST', headers, signal: controller.signal, body: JSON.stringify(body) });
-    const raw = await response.text(); options.logger?.({ kind: 'model_response', metadata: { status: response.status, requestId: response.headers.get('x-request-id'), model: config.model }, rawResponse: raw });
+    abortIfNeeded(controller.signal);
+    const raw = await response.text(); abortIfNeeded(controller.signal); options.logger?.({ kind: 'model_response', metadata: { status: response.status, requestId: response.headers.get('x-request-id'), model: config.model } });
+    trace?.write('request', response.ok ? 'success' : 'failed', 'HTTP 请求结束', { attempt, httpStatus: response.status }, response.ok ? 'INFO' : 'ERROR', { durationMs: Date.now() - started });
     if (!response.ok) throw new Error(`模型 API ${response.status}（详情见开发者日志）`);
+    stage = 'parse';
     const payload = JSON.parse(raw); const content = payload.result ?? payload.choices?.[0]?.message?.content ?? payload.output_text ?? payload.text ?? payload;
+    trace?.write('parse', 'success', 'HTTP 响应解析成功', { attempt });
     return { content, metadata: { model: payload.model || config.model, usage: payload.usage || null } };
-  } finally { clearTimeout(timer); options.signal?.removeEventListener('abort', abort); }
+  } catch (error) { if (timedOut) error = Object.assign(new Error('模型请求超时'), { code: 'TIMEOUT' }); trace?.fail(stage, error, { attempt }); throw error; }
+  finally { clearTimeout(timer); options.signal?.removeEventListener('abort', abort); }
 }
 export class HttpJsonAdjudicator {
   constructor(config = {}) { this.config = { timeoutMs: 60000, repairAttempts: 2, ...config }; this.isMock = false; }
@@ -112,11 +122,13 @@ export class HttpJsonAdjudicator {
     const systemPrompt = request.systemPrompt || HEAVENLY_ADJUDICATOR_SYSTEM_PROMPT;
     const messages = [{ role: 'system', content: systemPrompt }, ...(request.coreRulesSystemPrompt ? [{ role: 'system', content: request.coreRulesSystemPrompt }] : []), { role: 'user', content: request.prompt }];
     const response = await chatCompletion(config, messages, { ...options, jsonMode: true });
-    try { return extractJson(response.content); } catch (error) { error.rawContent = response.content; throw error; }
+    try { const result = extractJson(response.content); signalTrace(options.signal)?.write('parse', 'success', '裁定 JSON 解析成功'); return result; } catch (error) { error.code = 'PARSE_FAILED'; signalTrace(options.signal)?.fail('parse', error); error.rawContent = response.content; throw error; }
   }
   async repair(request, raw, error, options = {}) {
     const messages = [...(request.coreRulesSystemPrompt ? [{ role: 'system', content: request.coreRulesSystemPrompt }] : []), { role: 'system', content: '这是结构修复；保持原行动裁定事实与对敌对环境影响，禁止重新裁定。只修复 JSON 和被程序指出的字段。' }, { role: 'user', content: `${request.prompt}\n原返回：${JSON.stringify(raw)}\n程序拒绝原因：${error.message}` }];
-    const response = await chatCompletion(this.config, messages, { ...options, jsonMode: true }); return extractJson(response.content);
+    const response = await chatCompletion(this.config, messages, { ...options, jsonMode: true });
+    try { const result = extractJson(response.content); signalTrace(options.signal)?.write('parse','success','修复响应解析成功'); return result; }
+    catch (error) { error.code = 'PARSE_FAILED'; signalTrace(options.signal)?.fail('parse',error); throw error; }
   }
 }
 export class HttpJsonNarrator {

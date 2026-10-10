@@ -29,7 +29,7 @@ export class HostEventStore {
     let rows;
     if (this.readRemote) rows = await this.readRemote(scope);
     else {
-      const response = await this.fetchRef('/api/chats/get', { method: 'POST', cache: 'no-store',
+      const response = await this.fetchRef('/api/chats/get', { method: 'POST', cache: 'no-store', signal: AbortSignal.timeout(15000),
         headers: this.contextProvider().getRequestHeaders(),
         body: JSON.stringify({ ch_name: scope.name, file_name: scope.chatId, avatar_url: scope.avatar }) });
       if (!response.ok) throw new EventPersistenceError(`服务器事件回读失败 (${response.status})`);
@@ -50,6 +50,10 @@ export class HostEventStore {
     return result;
   }
   async load(scope = this.scope()) {
+    if (this.pending) {
+      const disk = await this.remote(scope);
+      if (this.confirmed(disk, this.pending)) this.pending = null;
+    }
     if (this.pending) throw new EventPersistenceError('有未确认的事件写入，请先重试保存');
     const disk = await this.remote(scope), local = this.local(scope);
     if (disk.root) validateEventStore(disk.root, scope.chatId);
@@ -113,7 +117,9 @@ export class HostEventStore {
       catch (error) { this.pending = null; throw error; }
       this.applyPatches(pending);
       if (typeof this.contextProvider().saveChat !== 'function') throw new EventPersistenceError('宿主缺少保存接口');
-      await this.contextProvider().saveChat();
+      let timer;
+      try { await Promise.race([this.contextProvider().saveChat(), new Promise((_, reject) => { timer = setTimeout(() => reject(new EventPersistenceError('宿主保存超时')), 15000); })]); }
+      finally { clearTimeout(timer); }
       this.assertScope(scope);
       let confirmed = false;
       for (let attempt = 0; attempt < this.confirmationAttempts; attempt++) {

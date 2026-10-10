@@ -1,3 +1,4 @@
+import { observeOperation, bindTrace, signalTrace } from './operation-log.js';
 import { createAutomaticEventPreparation } from './event-preparation.js';
 import { createCharacterJsonRequest } from './character-source-adapters.js';
 import { EVENT_ROUTER_PROMPT } from './event-preparation-prompts.js';
@@ -16,13 +17,15 @@ export function createWorkbenchEventRouter(options = {}) {
 // assistant linked by P1, never a globally latest message or a keyword hit.
 export function createNarrativeBattleObserver(options = {}) {
   const ask = options.request || createCharacterJsonRequest(options);
-  return async ({ message, input, signal }) => {
+  return async ({ message, input, signal, event, parentRunId }) => observeOperation('narrative-observation', {eventId:event?.eventId,branchId:event?.branchUid,parentRunId:parentRunId || signalTrace(signal)?.runId}, async trace => {
+    bindTrace(signal,trace);
     const snapshot = { input: { id: 'input', text: storyText(message.mes) },
       history: [{ id: 'request', text: input.mes }], battlefield: battlefieldProjection(null, null) };
     const route = validateEventRoute(await ask(EVENT_ROUTER_PROMPT + '\n本次input是刚完成的助手正文，history是玩家的场景请求。只判断正文末尾是否有当前未解决、需交给战斗工作台的交战或有对手的战前准备。已结束战斗、背景回忆、比喻、推演、单纯提到战界一律pass；不要把创建场景请求本身当成已发生战斗。',
       { input: snapshot.input, history: snapshot.history, battlefield: snapshot.battlefield, policy: HIGH_MARTIAL_EVENT_POLICY,
         domains: Object.entries(EVENT_DOMAINS).map(([id, value]) => ({ id, label: value.label })) }, options.requestTimeoutMs, signal), snapshot);
     const candidates = combatActivationCandidates(route, snapshot);
+    trace.write('route',candidates.length?'success':'skipped','正文战斗入口选择结果',{selected:candidates.length,reasonCode:candidates.length?'narrative_battle_preparation':'no_activation'});
     return candidates.length ? { ...route, decision: 'handoff', reasonCode: 'narrative_battle_preparation' } : null;
-  };
+  });
 }

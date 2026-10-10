@@ -1,3 +1,4 @@
+import { signalTrace } from './operation-log.js';
 import { judgeAndCommit } from './battle-state.js';
 import { clone, stableStringify, abortIfNeeded } from './common.js';
 
@@ -5,7 +6,10 @@ import { clone, stableStringify, abortIfNeeded } from './common.js';
 // host UI or callbacks can observe this provisional state.
 export async function proposeBattleAction(before, action, { adjudicator, settings = {}, signal } = {}) {
   abortIfNeeded(signal);
-  const result = await judgeAndCommit(clone(before), action, { adjudicator, signal, settings: { ...settings, autoNarrative: false } });
+  const trace=signalTrace(signal);
+  const result = await judgeAndCommit(clone(before), action, { adjudicator, signal, logger:entry=>{
+    if (['program_validation','adjudication_failed','commit'].includes(entry.kind)) trace?.write(entry.kind==='commit'?'proposal':'validation',entry.validation?.valid===false?'failed':'success','战斗提案校验',{proposalId:action.actionId,committed:false,attempt:entry.validation?.repairAttempt,code:entry.code},entry.validation?.valid===false?'ERROR':'INFO');
+  }, settings: { ...settings, autoNarrative: false } });
   abortIfNeeded(signal);
   if (result.record.adjudication?.battleStatus === 'ended') result.state.phase = 'ended';
   return { schema: 'battle_proposal_v1', base: stableStringify(before), actionId: result.record.actionId,

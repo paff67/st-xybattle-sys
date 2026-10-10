@@ -62,7 +62,9 @@ export function createDailyExecutor(options = {}) {
         currentResources: [...resources].map(([key, value]) => { const [sourceId, pointer] = JSON.parse(key); return { sourceId, pointer, value }; }) }, options.requestTimeoutMs || 60000, args.signal);
       assertFresh();
       args.onProgress?.({ stage: 'validating', domain: action.domain, actionKey: action.localKey });
-      const result = validateDailyResult(raw, module, snapshot, resources);
+      let result;
+      try { result = validateDailyResult(raw, module, snapshot, resources); args.trace?.write('validation', 'success', '日常候选通过校验', { actionKey: action.localKey, committed: false }); }
+      catch (error) { args.trace?.fail('validation', error); throw error; }
       const record = { actionKey: action.localKey, domain: action.domain, ...result };
       records.push(record);
       args.onProgress?.({ stage: 'evaluated', domain: action.domain, actionKey: action.localKey, result: record });

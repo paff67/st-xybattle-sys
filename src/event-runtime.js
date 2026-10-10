@@ -1,3 +1,4 @@
+import { operationLog } from './operation-log.js';
 import { HostEventStore } from './event-store.js';
 import { EventOperationLock } from './event-lock.js';
 import { EventCoordinator } from './event-coordinator.js';
@@ -19,6 +20,7 @@ export function createEventRuntime({ contextProvider = () => globalThis.SillyTav
   const store = options.store || new HostEventStore({ contextProvider });
   const listeners = new Set();
   let latest = { status: 'ready' }, secrets = [];
+  const unregisterLogSecrets = operationLog.registerSecrets(() => secrets);
   const inspect = () => {
     let receipts = [];
     try { receipts = Object.values(store.local(store.scope())?.events || {}); } catch { /* No selected chat. */ }
@@ -26,7 +28,7 @@ export function createEventRuntime({ contextProvider = () => globalThis.SillyTav
     if (task?.event && task.epoch === coordinator.epoch) receipts = [...receipts.filter(e => e.eventId !== task.event.eventId), task.event];
     let activations = [];
     try { activations = Object.values(store.local(store.scope())?.battleActivation?.records || {}).slice(-80).reverse(); } catch { /* No selected chat. */ }
-    return stripSecrets({ ...latest, activations, stateListener: stateObserver?.capability(), receipts: receipts.slice(-80).reverse().map(event => ({ ...event, persistencePending: !!store.pending })), canCancel: !!entry?.active || !!task && !task.finalizing && !task.generating && ['captured', 'routing'].includes(task.event?.status) }, secrets);
+    return stripSecrets({ ...latest, activations, stateListener: stateObserver?.capability(), receipts: receipts.slice(-80).reverse().map(event => ({ ...event, persistencePending: !!store.pending })), canCancel: !!entry?.active || !!task && !task.finalizing && !task.generating }, secrets);
   };
   const publish = value => {
     latest = stripSecrets({ ...value, at: new Date().toISOString() }, secrets);
@@ -132,6 +134,6 @@ export function createEventRuntime({ contextProvider = () => globalThis.SillyTav
     enable: () => gate.setEnabled(true), disable: () => { entry?.cancel('semantic_entry_disabled'); return gate.setEnabled(false); },
     retryPersistence: () => coordinator.retryPersistence(),
     recover: () => coordinator.recover(),
-    destroy() { stateObserver?.dispose(); entry?.cancel('destroyed'); for (const dispose of entryDisposers) dispose(); gate.dispose(); listeners.clear(); if (controller?.eventOperationLock === lock) controller.eventOperationLock = null; },
+    destroy() { unregisterLogSecrets(); stateObserver?.dispose(); entry?.cancel('destroyed'); for (const dispose of entryDisposers) dispose(); gate.dispose(); listeners.clear(); if (controller?.eventOperationLock === lock) controller.eventOperationLock = null; },
   };
 }

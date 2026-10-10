@@ -1,3 +1,4 @@
+import { errorCode } from './operation-log.js';
 import { createRuleMemory, assertBindings, knownRules, selectNegativeCases } from './authoritative-rules.js';
 import { projectAbilityContext } from './worldbook-abilities.js';
 import { coreRulesSystemPrompt } from './core-rules.js';
@@ -138,8 +139,9 @@ export async function judgeAndCommit(state, action, { adjudicator, narrator, set
   let raw, adjudication; const repairLimit = request.settings.repairAttempts;
   try {
     for (let attemptIndex = 0; ; attemptIndex += 1) {
-      try { raw = attemptIndex === 0 ? await adjudicator.judge(request, { signal, logger }) : await adjudicator.repair(request, raw, adjudication, { signal, logger }); abortIfNeeded(signal); logger({ kind: 'ai_raw_response', actionId: request.actionId, rawResponse: clone(raw), repairAttempt: attemptIndex }); adjudication = validateAdjudication(raw, state, { allowMock, requireExchange: !allowMock, actionId: request.actionId }); logger({ kind: 'program_validation', actionId: request.actionId, validation: { valid: true, repairAttempt: attemptIndex } }); break; }
-      catch (error) { abortIfNeeded(signal); logger({ kind: 'program_validation', actionId: request.actionId, validation: { valid: false, error: error.message, repairAttempt: attemptIndex } }); raw = error.rawContent ?? raw; if (attemptIndex >= repairLimit || typeof adjudicator.repair !== 'function' || raw === undefined) throw error; adjudication = error; }
+      let validationStarted = false;
+      try { raw = attemptIndex === 0 ? await adjudicator.judge(request, { signal, logger }) : await adjudicator.repair(request, raw, adjudication, { signal, logger }); abortIfNeeded(signal); logger({ kind: 'ai_raw_response', actionId: request.actionId, rawResponse: clone(raw), repairAttempt: attemptIndex }); validationStarted = true; adjudication = validateAdjudication(raw, state, { allowMock, requireExchange: !allowMock, actionId: request.actionId }); logger({ kind: 'program_validation', actionId: request.actionId, validation: { valid: true, repairAttempt: attemptIndex } }); break; }
+      catch (error) { abortIfNeeded(signal); logger({ kind: validationStarted ? 'program_validation' : 'adjudication_failed', actionId: request.actionId, code:errorCode(error,validationStarted?'validation':''), validation: { valid: false, error: error.message, repairAttempt: attemptIndex } }); raw = error.rawContent ?? raw; if (attemptIndex >= repairLimit || typeof adjudicator.repair !== 'function' || raw === undefined) throw error; adjudication = error; }
     }
   } catch (error) { next = transition(next, 'awaiting_player', { pending: null, lastError: error.message, history: next.history.map((item) => item.actionId === request.actionId ? { ...item, status: error.name === 'AbortError' ? 'interrupted' : 'rejected', error: error.message } : item) }); if (!signal?.aborted) await save(next); throw error; }
   if (state.version !== request.version) throw new Error('裁定期间状态版本已改变，拒绝提交旧结果');
@@ -169,14 +171,14 @@ export async function judgeAndCommit(state, action, { adjudicator, narrator, set
   if (settings.autoNarrative === false) { next = transition(next,'awaiting_next'); await save(next); logger({kind:'narrative_packet',actionId:record.actionId,packet:record.narrativePacket}); return {state:next,record:clone(record),request,deduplicated:false}; }
   next = transition(next,'narrating',{pending:{actionId:record.actionId,roundId:record.roundId}}); await save(next);
   let narrative; try { narrative = normalizeNarrative(await narrator.generate(record.narrativePacket,{signal,logger,originalPrompt:settings.originalPrompt || ''})); abortIfNeeded(signal); }
-  catch (error) { next = transition(next,'awaiting_next',{pending:null,lastError:error.message,history:next.history.map((item) => item.actionId === record.actionId ? {...record,narrativeError:error.message} : item)}); if (!signal?.aborted) await save(next); throw error; }
+  catch (error) { logger({kind:'narrative_failed',actionId:record.actionId,code:errorCode(error),committed:true}); next = transition(next,'awaiting_next',{pending:null,lastError:error.message,history:next.history.map((item) => item.actionId === record.actionId ? {...record,narrativeError:error.message} : item)}); if (!signal?.aborted) await save(next); throw error; }
   const waitingForHost = narrative.pending && narrative.metadata?.mode === 'main_story';
   const finalRecord={...record,narrative,status:narrative.pending?'committed':'complete'}; next=transition(next,waitingForHost?'narrating':'awaiting_next',{history:next.history.map((item)=>item.actionId===record.actionId?finalRecord:item),pending:waitingForHost?{actionId:record.actionId,roundId:record.roundId}:null,lastError:null}); await save(next); logger({kind:'narrative_result',actionId:record.actionId,packet:record.narrativePacket,narrative}); return {state:next,record:clone(finalRecord),request,deduplicated:false};
 }
 export async function rewriteNarrative(state,actionId,narrator,{signal,save=()=>{},logger=()=>{},originalPrompt=''}={}) {
   assertPhase(state,['awaiting_next','committed','ended']); const record=state.history.find((item)=>item.actionId===actionId&&['committed','complete'].includes(item.status)); if(!record?.narrativePacket)throw new Error('找不到可重写的已提交行动');
   let next=transition(state,'rewrite',{pending:{actionId,roundId:record.roundId}}); await save(next); let narrative;
-  try {narrative=normalizeNarrative(await narrator.rewrite(projectScenePacket(record.narrativePacket),record.narrative,{signal,logger,originalPrompt}));abortIfNeeded(signal);}catch(error){if(!signal?.aborted)await save(transition(next,'awaiting_next',{pending:null,lastError:error.message}));throw error;}
+  try {narrative=normalizeNarrative(await narrator.rewrite(projectScenePacket(record.narrativePacket),record.narrative,{signal,logger,originalPrompt}));abortIfNeeded(signal);}catch(error){logger({kind:'narrative_failed',actionId,code:errorCode(error),committed:true});if(!signal?.aborted)await save(transition(next,'awaiting_next',{pending:null,lastError:error.message}));throw error;}
   const waitingForHost = narrative.pending && narrative.metadata?.mode === 'main_story';
   const final={...record,narrative,status:narrative.pending?'committed':'complete',rewrittenAt:new Date().toISOString()}; const result=transition(next,waitingForHost?'narrating':'awaiting_next',{history:next.history.map((item)=>item.actionId===actionId?final:item),pending:waitingForHost?{actionId,roundId:record.roundId}:null,lastError:null});await save(result);logger({kind:'rewrite',actionId,packet:record.narrativePacket,narrative});return{state:result,record:clone(final)};
 }

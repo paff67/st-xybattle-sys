@@ -11,10 +11,11 @@ import { scenarioRoot } from './fixtures/event-model-scenarios.js';
 import { responseFor, preparationRequest } from './fixtures/event-execution-fixture.js';
 import { createWorkbenchEventRouter } from '../src/event-workbench.js';
 import { battlefieldProjection } from '../src/event-battlefield-state.js';
+import { operationLog } from '../src/operation-log.js';
 
 const copy = value => JSON.parse(JSON.stringify(value));
 const tick = () => new Promise(resolve => setImmediate(resolve));
-async function until(predicate) { for (let i = 0; i < 100; i++) { if (predicate()) return; await tick(); } throw new Error('condition not reached'); }
+async function until(predicate) { const deadline = Date.now() + 1500; while (Date.now() < deadline) { if (predicate()) return; await new Promise(resolve => setTimeout(resolve, 1)); } throw new Error('condition not reached'); }
 class Events {
   events = new Map();
   on(key, fn) { if (!this.events.has(key)) this.events.set(key, new Set()); this.events.get(key).add(fn); }
@@ -23,6 +24,47 @@ class Events {
 }
 const user = text => ({ is_user: true, mes: text, extra: { unrelated: 'keep' } });
 const assistant = text => ({ is_user: false, mes: text, extra: {}, swipe_id: 0, swipes: [text], swipe_info: [{ extra: {} }] });
+
+test('cancel during capture releases the native request and ignores a late read without writes',async()=>{
+  operationLog.clear(); const f=fixture();await f.gate.setEnabled(true);
+  const remote=f.store.remote.bind(f.store);let release;
+  f.store.remote=async scope=>{await new Promise(resolve=>{release=resolve;});return remote(scope);};
+  const started=f.start('private capture input');await until(()=>!!release);
+  const saves=f.saves;assert.equal(f.coordinator.active.event,null);
+  assert.equal(f.coordinator.skipAdjudication(),true);
+  assert.equal((await started).aborted,0);release();await tick();
+  assert.equal(f.saves,saves);assert.equal(f.routes,0);
+  await f.story();assert.equal(f.lock.owner,null);
+  const rows=operationLog.snapshot().filter(r=>r.module==='automatic');
+  assert.ok(rows.some(r=>r.stage==='capture'&&r.status==='cancelled'));assert.equal(rows.at(-1).status,'cancelled');
+  assert.doesNotMatch(operationLog.export(),/private capture input/);f.gate.dispose();
+});
+
+test('failed capture produces independent failure and degradation logs even without a durable receipt',async()=>{
+  operationLog.clear();const f=fixture();await f.gate.setEnabled(true);f.setSkipSave(true);
+  assert.equal((await f.start('private save input')).aborted,0);await f.story();
+  const rows=operationLog.snapshot().filter(r=>r.module==='automatic');
+  assert.ok(rows.some(r=>r.data.code==='PERSISTENCE_FAILED'));assert.ok(rows.some(r=>r.stage==='fallback'&&r.status==='degraded'));
+  assert.equal(rows.at(-1).status,'degraded');assert.equal(rows.at(-1).data.committed,false);f.gate.dispose();
+});
+
+test('uncertain adjudication commit remains blocked and logs uncertainty without claiming confirmed commit',async()=>{
+  operationLog.clear();
+  const f=fixture({router:async()=>{f.setSkipSave(true);return {decision:'adjudicate',execution:{schema:'event_daily_commit_v1',status:'validated',records:[],packet:{}}};}});
+  await f.gate.setEnabled(true);const result=await f.start('commit uncertainty');
+  assert.ok(result.aborted>0);assert.ok(f.store.pending);assert.equal(f.lock.owner,null);
+  const rows=operationLog.snapshot().filter(r=>r.module==='automatic');
+  assert.equal(rows.at(-1).status,'failed');assert.equal(rows.at(-1).data.committed,false);assert.equal(rows.at(-1).data.uncertain,true);
+  assert.ok(!rows.some(r=>r.stage==='fallback'));f.gate.dispose();
+});
+
+test('cancel still releases the native request when its pass receipt cannot be confirmed',async()=>{
+  const f=fixture({router:async()=>new Promise(()=>{})});await f.gate.setEnabled(true);
+  const pending=f.start('cancel save');await until(()=>f.routes===1);f.setSkipSave(true);
+  assert.equal(f.coordinator.skipAdjudication(),true);assert.equal((await pending).aborted,0);
+  assert.equal(f.coordinator.active.event.reasonCode,'user_skipped_adjudication');assert.ok(f.store.pending);
+  await f.story();assert.equal(f.lock.owner,null);f.gate.dispose();
+});
 
 test('explicit cancel passes the same native generation without packet, even when the model ignores abort', async () => {
   for (const stage of ['routing', 'extracting', 'adjudicating', 'validating']) {
@@ -174,7 +216,7 @@ test('P3 deleting committed input invalidates only descendant domain snapshots; 
   assert.equal(f.context().chat[0].variables[0].stat_data.主角.资源.灵力.当前, 10); await f.story();
 });
 
-test('automatic preparation persists referenced evidence but cannot release an unimplemented domain', async () => {
+test('automatic preparation persists referenced evidence but degrades unsupported preparation without injecting candidates', async () => {
   for (const missing of [false, true]) {
     let pipeline, requests = 0;
     const f = fixture({ router: args => pipeline(args) });
@@ -190,11 +232,10 @@ test('automatic preparation persists referenced evidence but cannot release an u
         target: [{ sourceId: 'input', pointer: '', quote: '竹林' }], environment: [{ sourceId: 'mvu', pointer: '/世界/地点' }] }, missing: [], conflicts: [] };
     } });
     await f.gate.setEnabled(true);
-    assert.equal((await f.start('探查竹林')).aborted, 1);
+    const output = await f.start('探查竹林'); assert.equal(output.aborted, 0); assert.equal(output.event.execution, undefined);
     const event = Object.values(f.context().chatMetadata[NS].events)[0];
-    assert.equal(event.status, missing ? 'needs_input' : 'unsupported');
-    assert.equal(event.route.preparation.status, missing ? 'needs_context' : 'ready');
-    assert.equal(event.route.actions[0].domain, 'perception'); assert.equal(event.generationBindings.length, 0);
+    assert.equal(event.status, 'routing');
+    assert.equal(event.generationBindings.length, 0); await f.story();
     assert.equal(requests, 2); assert.equal(f.lock.owner, null);
     assert.deepEqual(f.disks.get('chat-A')[2].extra[NS].receipts[event.eventId].route, event.route);
   }
@@ -239,19 +280,19 @@ test('P0 stop aborts a non-cooperative router and releases the writer without se
   assert.equal(Object.values(f.context().chatMetadata[NS].events)[0].status, 'cancelled');
 });
 
-test('P0 malformed or throwing routes fail closed; timeout cannot silently pass', async () => {
+test('P0 malformed or throwing routes degrade visibly and continue the same native story', async () => {
   for (const router of [async () => null, async () => { throw new Error('bad json'); }, () => new Promise(() => {})]) {
     const f = fixture({ router, timeoutMs: 10 }); await f.gate.setEnabled(true);
-    assert.equal((await f.start()).aborted, 1);
-    assert.equal(f.lock.owner, null); assert.equal(Object.values(f.context().chatMetadata[NS].events)[0].status, 'rejected');
+    assert.equal((await f.start()).aborted, 0);
+    assert.equal(f.coordinator.active.event.reasonCode, 'adjudication_failed_open'); await f.story(); assert.equal(f.lock.owner, null);
   }
 });
 
-test('P1 unsupported and not-yet-implemented adjudication never run a story', async () => {
+test('P1 unsupported and not-yet-implemented adjudication run a story without candidate injection', async () => {
   for (const decision of ['unsupported', 'adjudicate', 'needs_context']) {
     const f = fixture({ router: async () => ({ decision }) }); await f.gate.setEnabled(true);
-    assert.equal((await f.start()).aborted, 1); assert.equal(f.routes, 1);
-    assert.notEqual(Object.values(f.context().chatMetadata[NS].events)[0].status, 'passed');
+    assert.equal((await f.start()).aborted, 0); assert.equal(f.routes, 1);
+    assert.equal(f.coordinator.active.event.execution, undefined); await f.story();
   }
 });
 
@@ -306,14 +347,12 @@ test('P1 input edits invalidate old identity revision; attachments participate i
   await f.story();
 });
 
-test('P1 saveChat resolving without server persistence blocks main request and retry saves identical proposal', async () => {
+test('P1 failed capture persistence degrades without clearing uncertain writes or blocking future stories', async () => {
   const f = fixture(); await f.gate.setEnabled(true); f.setSkipSave(true);
-  assert.equal((await f.start()).aborted, 1); assert.equal(f.routes, 0);
-  assert.equal(f.coordinator.lastStatus.status, 'persistence_pending');
-  const pendingId = Object.keys(f.store.pending.candidate.events)[0];
-  f.setSkipSave(false); await f.coordinator.retryPersistence();
-  assert.equal(Object.keys(f.disks.get('chat-A')[0].chat_metadata[NS].events)[0], pendingId);
-  assert.equal(f.routes, 0); assert.equal(f.store.pending, null);
+  assert.equal((await f.start()).aborted, 0); assert.equal(f.routes, 0);
+  assert.ok(f.store.pending); await f.story();
+  assert.equal((await f.start('next')).aborted, 0); assert.equal(f.routes, 0);
+  await f.story(); assert.equal(f.lock.owner, null);
 });
 
 test('P1 waits for delayed server visibility after save without writing twice', async () => {
@@ -343,18 +382,17 @@ test('P0 regenerate binds native normal MESSAGE_RECEIVED to captured request', a
   assert.equal(f.gate.intent, null);
 });
 
-test('P1 route result persistence retry never calls the router a second time', async () => {
+test('P1 uncertain pass-only receipt degrades without claiming a committed result', async () => {
   const f = fixture({ router: async () => { f.setSkipSave(true); return { decision: 'pass' }; } });
-  await f.gate.setEnabled(true); assert.equal((await f.start()).aborted, 1);
-  assert.equal(f.routes, 1); f.setSkipSave(false); await f.coordinator.retryPersistence();
-  const root = f.context().chatMetadata[NS]; assert.equal(Object.values(root.events)[0].status, 'passed');
-  assert.equal((await f.start(null, 'regenerate')).aborted, 0); assert.equal(f.routes, 1); await f.story();
+  await f.gate.setEnabled(true); assert.equal((await f.start()).aborted, 0);
+  assert.equal(f.routes, 1); assert.ok(f.store.pending); assert.equal(f.coordinator.active.event.execution, undefined);
+  await f.story(); assert.equal(f.lock.owner, null);
 });
 
 test('P1 stale remote revision refuses overwrite before save', async () => {
   const f = fixture(); await f.gate.setEnabled(true); await f.start(); await f.story();
   const remote = f.disks.get('chat-A')[0].chat_metadata[NS]; remote.revision++;
-  const saves = f.saves; assert.equal((await f.start('next')).aborted, 1); assert.equal(f.saves, saves);
+  const saves = f.saves; assert.equal((await f.start('next')).aborted, 0); assert.equal(f.saves, saves); await f.story();
 });
 
 test('P1 changing chat discards delayed router output and never writes the new chat', async () => {
@@ -402,7 +440,7 @@ test('P1 origin-wide writer lock denies another tab and releases after operation
 
 test('P1 pending persistence cannot confirm a receipt against edited input', async () => {
   const f = fixture(); await f.gate.setEnabled(true); f.setSkipSave(true); await f.start('before');
-  f.context().chat[0].mes = 'after'; f.setSkipSave(false);
+  await f.coordinator.finish({ stopped: true }); f.context().chat[0].mes = 'after'; f.setSkipSave(false);
   await assert.rejects(f.coordinator.retryPersistence(), /内容已改变/);
   assert.equal(f.disks.get('chat-A').length, 0);
 });

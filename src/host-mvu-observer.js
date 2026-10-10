@@ -1,3 +1,4 @@
+import { operationLog, bindTrace } from './operation-log.js';
 import { selectedMvu, activationFingerprint } from './battle-state-observer.js';
 import { copyEvent, newEventId } from './event-state.js';
 
@@ -19,13 +20,14 @@ export class HostMvuObserver {
   }
   invalidate(reason) {
     const task = this.pending;
-    if (task) { task.abort.abort(); clearTimeout(task.timer); this.pending = null; }
+    if (task) { task.trace?.end('cancelled',{reasonCode:reason}); task.abort.abort(); clearTimeout(task.timer); this.pending = null; }
     this.onInvalidate(reason);
   }
   setEnabled(enabled) {
     this.dispose();
     if (!enabled) return this.capability();
     if (!this.capability().available) {
+      const trace=operationLog.start('mvu-listener'); trace.write('capability','degraded','MVU 监听接口暂不可用',{reasonCode:'missing_mvu_events'},'WARN'); trace.end('degraded');
       this.onStatus({ status: 'battle_unavailable', reason: '状态监听不可用：缺少可清理的 MVU 事件接口；仍可手动准备战斗' });
       // Character scripts may load after the extension/welcome screen.
       const c = this.contextProvider();
@@ -119,6 +121,7 @@ export class HostMvuObserver {
   }
   schedule(task) {
     if (!task.received || !task.ended) return;
+    if (!task.trace) { task.trace=operationLog.start('mvu-observation',{chatId:task.chatId,requestId:task.requestId,messageId:task.index}); bindTrace(task.abort.signal,task.trace); }
     if (task.processing) { task.reschedule = true; return; }
     clearTimeout(task.timer);
     task.until = Date.now() + this.waitMs;
@@ -130,14 +133,14 @@ export class HostMvuObserver {
       this.assertFresh(task);
       if (this.windowRef.Mvu?.isDuringExtraAnalysis?.()) {
         if (Date.now() < task.until) this.scheduleAfter(task);
-        else this.onStatus({ status: 'battle_mvu_not_ready', reason: '额外变量分析仍在进行，等待完成信号' });
+        else this.notReady(task, { status: 'battle_mvu_not_ready', reason: '额外变量分析仍在进行，等待完成信号' });
         return;
       }
       const snapshot = copyEvent(selectedMvu(task.message) ?? null);
       const signals = task.signals.filter(item => item.written && !item.ambiguous && !item.consumed && comparableText(item.content) === comparableText(task.text) && dataHash(item.snapshot) === dataHash(snapshot));
       if (!signals.length) {
         if (Date.now() < task.until) task.timer = setTimeout(() => void this.check(task), 100);
-        else this.onStatus({ status: 'battle_mvu_not_ready', reason: 'MVU 尚未完成精确消息写入；等待可靠更新或手动准备' });
+        else this.notReady(task, { status: 'battle_mvu_not_ready', reason: 'MVU 尚未完成精确消息写入；等待可靠更新或手动准备' });
         return;
       }
       const disk = await this.coordinator.store.remote(this.coordinator.store.scope());
@@ -146,7 +149,7 @@ export class HostMvuObserver {
       const persisted = disk.messages[task.index];
       if (persisted?.mes !== task.text || (persisted?.swipe_id || 0) !== task.swipe || dataHash(selectedMvu(persisted)) !== dataHash(snapshot)) {
         if (Date.now() < task.until) this.scheduleAfter(task);
-        else this.onStatus({ status: 'battle_mvu_not_ready', reason: '目标消息变量保存尚未确认，等待后续更新' });
+        else this.notReady(task, { status: 'battle_mvu_not_ready', reason: '目标消息变量保存尚未确认，等待后续更新' });
         return;
       }
       // A completed P1 binding (or a new independent native binding) is
@@ -155,17 +158,20 @@ export class HostMvuObserver {
       this.assertFresh(task);
       if (dataHash(selectedMvu(task.message)) !== dataHash(snapshot)) { this.scheduleAfter(task); return; }
       const guard = () => { this.assertFresh(task); if (dataHash(selectedMvu(task.message)) !== dataHash(snapshot)) throw new DOMException('MVU 快照已改变', 'AbortError'); };
+      task.trace?.identify({branchId:identity.branchUid,eventId:identity.parentEventId});
+      task.trace?.write('validation','success','精确消息与服务器 MVU 快照已核对');
       await this.onObservation({ identity, snapshot, baseline: task.baseline, message: task.message,
         messageFingerprint: activationFingerprint([task.text, task.swipe, task.requestId]), eligible: true, guard, signal: task.abort.signal });
       signals.forEach(item => { item.consumed = true; item.ref = null; });
-      task.confirmedFingerprint = dataHash(snapshot);
-    } catch (error) { if (error.name !== 'AbortError') this.report(error); }
+      task.confirmedFingerprint = dataHash(snapshot); task.trace?.end('success'); task.trace=null;
+    } catch (error) { task.trace?.fail('observation',error); task.trace?.end(error.name==='AbortError'?'cancelled':'failed'); task.trace=null; if (error.name !== 'AbortError') this.report(error); }
     finally {
       task.processing = false;
       if (this.pending === task && task.reschedule) { task.reschedule = false; this.schedule(task); }
     }
   }
   scheduleAfter(task) { task.timer = setTimeout(() => void this.check(task), 100); }
-  report(error) { this.onStatus({ status: 'battle_failed', reason: error.message }); }
+  notReady(task, status) { task.trace?.write('mvu-readback','degraded','MVU 精确写入等待超时',{code:'TIMEOUT'},'WARN'); task.trace?.end('degraded'); task.trace=null; this.onStatus(status); }
+  report(error) { const trace=operationLog.start('mvu-listener'); trace.fail('observation',error); trace.end('failed'); this.onStatus({ status: 'battle_failed', reason: error.message }); }
   dispose() { clearInterval(this.discoveryTimer); this.enabled = false; this.invalidate('listener_disabled'); for (const dispose of this.disposers.splice(0)) dispose(); }
 }

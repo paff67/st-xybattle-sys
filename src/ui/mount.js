@@ -7,6 +7,8 @@ import { createEventRuntime } from '../event-runtime.js';
 import { HostConfigStore, createServerConfigReader } from '../host-config-store.js';
 import { runtimeConfig } from '../config-schema.js';
 import { scanLocalConfig } from '../config-migration.js';
+import { operationLog } from '../operation-log.js';
+import { downloadJson } from '../utils.js';
 
 export function mountBattleSystem(options = {}) {
   const documentRef = options.documentRef ?? globalThis.document;
@@ -29,7 +31,9 @@ export function mountBattleSystem(options = {}) {
   root.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:10000;background:#171b20;color:#fff;padding:16px;max-width:320px;border:1px solid #59626d;border-radius:6px';
   const message = documentRef.createElement('p'), retry = documentRef.createElement('button');
   retry.textContent = '重试加载'; retry.hidden = true;
-  root.append(message, retry); documentRef.body.append(root);
+  const diagnostic = documentRef.createElement('button'); diagnostic.textContent = '导出启动日志';
+  diagnostic.onclick = () => downloadJson('xybattle-startup-log.json', operationLog.export());
+  root.append(message, retry, diagnostic); documentRef.body.append(root);
   let mounted, destroyed = false;
   const api = { root, configStore,
     get controller() { return mounted?.controller; }, get events() { return mounted?.events; },
@@ -38,17 +42,20 @@ export function mountBattleSystem(options = {}) {
     render: () => mounted?.render(),
     destroy: () => { destroyed = true; configStore.invalidate(); mounted?.destroy(); root.remove(); delete globalThis.XYBattle; } };
   const load = async () => {
+    const trace = operationLog.start('startup');
     retry.hidden = true; message.textContent = '正在读取酒馆配置';
     try {
-      const loaded = await configStore.load();
-      if (destroyed) return;
+      const loaded = await trace.span('config-load', () => configStore.load());
+      if (destroyed) { trace.end('cancelled'); return; }
       mounted = mountReadySystem({ ...options, configStore, configEnvelope: loaded.envelope ?? null,
         initialSettings: loaded.kind === 'present' ? runtimeConfig(loaded.envelope) : {} });
       root.remove(); globalThis.XYBattle = api;
       await mounted.controller.ready;
       if (loaded.kind === 'missing') mounted.vm.openSettings?.();
+      trace.end('success', { configuration: loaded.kind });
       return mounted;
-    } catch {
+    } catch (error) {
+      trace.fail('startup', error); trace.end('failed');
       message.textContent = '酒馆配置读取失败或接口未就绪，请重试。'; retry.hidden = false;
       throw new Error('host_config_load_failed');
     }
@@ -109,7 +116,9 @@ function mountReadySystem({
         const context = host?.context?.();
         if (!controller.settings.eventAutoEnabled || events.gate.enabled || restoringEntry || !context?.chatId || context.groupId) return;
         restoringEntry = true;
-        void events.enable().catch(error => {
+        const trace=operationLog.start('entry-restore',{attempt:restoreAttempts+1});
+        void trace.span('entry-enable',()=>events.enable()).then(()=>trace.end('success')).catch(error => {
+          trace.end('failed');
           console.warn('[xybattle] 自动事务入口未能恢复:', error);
           if (++restoreAttempts < 3) { clearTimeout(restoreTimer); restoreTimer = setTimeout(restoreEntry, 500); }
         }).finally(() => { restoringEntry = false; });
@@ -118,7 +127,7 @@ function mountReadySystem({
       // Restore after that selection rather than failing once at bootstrap.
       unsubscribeEntry = host?.subscribeScopeChange?.(() => { clearTimeout(restoreTimer); restoreAttempts = 0; restoreTimer = setTimeout(restoreEntry, 300); });
       restoreEntry();
-    } catch (error) { console.warn('[xybattle] 自动事务入口配置无效:', error); }
+    } catch (error) { const trace=operationLog.start('entry-configuration');trace.fail('validation',error);trace.end('failed');console.warn('[xybattle] 自动事务入口配置无效:', error); }
   }
 
   const app = createApp(App, {

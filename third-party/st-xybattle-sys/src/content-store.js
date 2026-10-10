@@ -1,4 +1,5 @@
 import { clone, stripSecrets } from './common.js';
+import { observeMethods } from './operation-log.js';
 import {
   contentMetadata,
   createContentExport,
@@ -80,6 +81,7 @@ export class ContentStore {
     this.warning = this.memoryMode ? 'IndexedDB 不可用，内容只保存在当前运行期间' : null;
     this.memory = memoryDatabase(dbName, storeName);
     this.dbPromise = null;
+    observeMethods(this, 'content', ['put', 'putMany', 'remove', 'clear', 'exportContents', 'update', 'copy']);
   }
 
   async ready() {
@@ -305,7 +307,7 @@ export class ContentStore {
     };
     const rewritten = rewrite(entry);
     rewritten.techniques.forEach((technique, index) => { technique.id = `${targetId}.technique-${index + 1}`; });
-    return this.put(rewritten, { contentType: source.contentType });
+    return this.put(rewritten, { contentType: source.contentType, trace: options.trace });
   }
 
   async clear() {

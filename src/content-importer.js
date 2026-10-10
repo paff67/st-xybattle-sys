@@ -1,4 +1,5 @@
 import { clone } from './common.js';
+import { observeOperation } from './operation-log.js';
 import {
   CONTENT_EXPORT_SCHEMA,
   CONTENT_PROTOCOL_VERSION,
@@ -46,19 +47,23 @@ export async function inspectContentConflicts(preview, store, { mode = 'reject' 
 }
 
 export async function importContent(raw, { store, mode = 'reject', ...options } = {}) {
+  return observeOperation('content-import', {}, async trace => {
   if (!store) throw new Error('导入内容需要 ContentStore');
   if (!['reject', 'replace'].includes(mode)) throw new Error(`不支持的导入模式：${mode}`);
-  const preview = previewContentImport(raw, options);
-  const conflicts = await inspectContentConflicts(preview, store, { mode });
-  if (mode === 'reject' && conflicts.length) throw new Error(`内容已存在：${conflicts.map((item) => item.id).join('、')}`);
+  const preview = await trace.span('validation', () => previewContentImport(raw, options));
+  const conflicts = await trace.span('conflict-check', () => inspectContentConflicts(preview, store, { mode }));
+  trace.write('route', conflicts.length && mode==='reject' ? 'failed':'success','内容冲突处理选择',{mode,conflictCount:conflicts.length},conflicts.length && mode==='reject'?'ERROR':'INFO');
+  if (mode === 'reject' && conflicts.length) throw Object.assign(new Error(`内容已存在：${conflicts.map((item) => item.id).join('、')}`), {code:'VALIDATION_FAILED'});
   if (typeof store.putMany === 'function') {
-    await store.putMany(preview.records, { overwrite: mode === 'replace' });
+    await trace.span('commit', () => store.putMany(preview.records, { overwrite: mode === 'replace', trace }));
   } else if (typeof store.importRecords === 'function') {
-    await store.importRecords(preview.records, { overwrite: mode === 'replace' });
+    await trace.span('commit', () => store.importRecords(preview.records, { overwrite: mode === 'replace' }));
   } else {
     throw new Error('ContentStore 缺少原子批量导入接口');
   }
+  trace.result.committed = true;
   return { ...preview, conflicts, imported: preview.records.map((record) => record.id) };
+  });
 }
 
 export async function exportContent(store, ids, options = {}) {
